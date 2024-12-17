@@ -1,5 +1,0 @@
-[0m[[0m[31merror[0m] [0m[0m[31m[31m-- Error: /home/ihoyle/git/mycsvvalidator/src/main/scala/config/SchemaUtils.scala:13:57 [0m[0m[0m
-[0m[[0m[31merror[0m] [0m[0m[31m13 |[0m    [33mval[0m [36mtest[0m = decode[JsonSchema.SchemaClass](jsonString)[0m
-[0m[[0m[31merror[0m] [0m[0m[31m[31m   |[0m                                                         ^[0m[0m
-[0m[[0m[31merror[0m] [0m[0m[31m   |[0mFailed to find an instance of Decoder[scala.Option[scala.collection.immutable.Map[scala.Predef.String, scala.Option[scala.Any]]]][0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
