@@ -21,6 +21,8 @@ object CSVUtils:
     }
   }
 
+  
+
   private def convertValueFunction(propertyType: String): String => Any = {
     propertyType match {
       case "integer" => (str: String) => Try(str.toInt).getOrElse(str)

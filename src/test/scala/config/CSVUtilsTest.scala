@@ -1,7 +1,7 @@
 package config
 
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-import .loadResourceFile
+import config.CSVConfig.loadResourceFile
 import org.scalatest.funsuite.AnyFunSuite
 
 class CSVUtilsTest extends AnyFunSuite:

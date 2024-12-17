@@ -1,6 +1,6 @@
 package config
 
-import .loadResourceFile
+
 import org.scalatest.funsuite.AnyFunSuite
 
 class ConfigTest extends AnyFunSuite:
