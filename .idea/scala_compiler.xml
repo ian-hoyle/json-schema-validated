@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="sbt 1" modules="mycsvvalidator" />
+    <profile name="sbt 1" modules="mycsvvalidator">
+      <parameters>
+        <parameter value="-Xmax-inlines" />
+        <parameter value="50" />
+      </parameters>
+    </profile>
   </component>
 </project>

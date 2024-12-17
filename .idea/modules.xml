@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/mycsvvalidator.iml" filepath="$PROJECT_DIR$/.idea/modules/mycsvvalidator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mycsvvalidator.mycsvvalidator-build.iml" filepath="$PROJECT_DIR$/.idea/modules/mycsvvalidator.mycsvvalidator-build.iml" />
     </modules>
   </component>
 </project>
