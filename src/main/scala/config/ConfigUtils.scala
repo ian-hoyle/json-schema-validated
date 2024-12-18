@@ -8,10 +8,6 @@ import scala.util.Try
 
 object ConfigUtils:
 
-  def getConversionFunction(propertyName: String): String => Any = CSVConfig.config.valueMap.getOrElse(propertyName, (x: String) => x)
-  
-  
-  
   def createValueConversionMap(json:Value):Map[String,String => Any]= {
     val jsonMap: LinkedHashMap[String, Value] =  json("properties").obj
     val d: mutable.Map[String, String => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj))}
