@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   commonsLang3,
   ujson,
   jsonSchemaValidator,
-  pekkoTestKit % Test,
+  scalaCsv,
+  jacksonModule,
   catsEffect,
   nscalaTime
 )

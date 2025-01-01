@@ -3,24 +3,25 @@ package config
 import ujson.Value
 import upickle.core.LinkedHashMap
 
-import scala.collection.mutable
-import scala.util.Try
+import java.net.URI
+import scala.io.Source
+import scala.util.{Try, Using}
 
 object ConfigUtils:
 
-  def createValueConversionMap(json:Value):Map[String,String => Any]= {
-    val jsonMap: LinkedHashMap[String, Value] =  json("properties").obj
-    val d: mutable.Map[String, String => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj))}
-    d.toMap
+  def loadProperties(file: String): LinkedHashMap[String, Value] = {
+    val data = {
+      if (file.startsWith("http"))
+        Using(Source.fromURL(URI.create(file).toASCIIString))(_.mkString)
+      else
+        Using(Source.fromResource(file))(_.mkString)
+    }
+    val json = ujson.read(data.getOrElse(""))
+    val jsonMap: LinkedHashMap[String, Value] = json("properties").obj
+    jsonMap
   }
 
-  def createAlternateMaps(json:Value): Map[String, Map[String, String]] = {
-    val jsonMap: LinkedHashMap[String, Value] =  json("properties").obj
-    val empty =  Map.empty[String,Map[String,String]]
-    jsonMap.foldLeft(empty)((b,c)=>b)
-  }
-  
-  private def getPropertyType(propertyValue: ujson.Obj): String = {
+  def getPropertyType(propertyValue: ujson.Obj): String = {
     propertyValue.obj.get("type") match {
       case Some(ujson.Str(singleType)) => singleType
       case Some(ujson.Arr(types)) if types.nonEmpty => types.head.str
@@ -28,9 +29,7 @@ object ConfigUtils:
     }
   }
 
-  
-
-  private def convertValueFunction(propertyType: String): String => Any = {
+  def convertValueFunction(propertyType: String): String => Any = {
     propertyType match {
       case "integer" => (str: String) => Try(str.toInt).getOrElse(str)
       case "array" => (str: String) => if (str.isEmpty) "" else str.split("\\|")
