@@ -1,9 +1,12 @@
 package csv
 
+import cats.data.{NonEmptyList, Validated}
 import config.CSVParserConfig
+import error.ValidationErrors
 import org.scalatest.funsuite.AnyFunSuite
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 import validation.{CSVConfiguration, CSVValidator, Parameters}
+import cats.data.Validated.*
 
 class CSVUtilsTest extends AnyFunSuite:
   test("Load schema") {
@@ -14,8 +17,10 @@ class CSVUtilsTest extends AnyFunSuite:
 
     val csvValidationConfig: CSVValidationResult[CSVConfiguration] = CSVValidator.prepareCSVConfiguration(params)
 
-    val csvMap = csvValidationConfig andThen CSVUtils.loadCSVData
-    println(csvMap)
-    assert(true)
+    val csvMap: Validated[NonEmptyList[ValidationErrors], List[RowData]] = csvValidationConfig andThen CSVUtils.loadCSVData
 
+    csvMap match {
+      case Valid(data) => assert(data.nonEmpty)
+      case Invalid(error) => fail("failed to load")
+    }
   }

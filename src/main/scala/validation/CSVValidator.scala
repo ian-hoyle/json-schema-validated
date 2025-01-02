@@ -25,10 +25,11 @@ object CSVValidator:
 
     initialValidation match {
       case Valid(value) =>
-        val schemaValidations = parameters.schema.map(x=>ValidatedSchema.requiredSchemaValidated(Some(x)))
+        val schemaValidations = parameters.schema.map(x=>ValidatedSchema.schemaValidated(Some(x)))
         val ioValidations = schemaValidations.map { validation =>
           IO(validation(value))
         }
+        // add other parallel validations here to ioValidations
         ioValidations.parSequence.map(_.combineAll)
       case Invalid(errors) =>
         IO.pure(errors.invalid)

@@ -16,9 +16,7 @@ object CSVParserConfig:
     else
       val r: Map[String, String] = jsonMap.toMap.map({
         case (a, c) => (c.obj.get("alternateKeys") match {
-          case Some(arr: Arr) => arr.value.head.obj.get(parameters.alternates.get) match
-            case Some(v) => v.str
-            case _ => a
+          case Some(arr: Arr) => getAlternate(parameters, a, arr)
           case _ => a
         }, a)
       })
@@ -31,9 +29,7 @@ object CSVParserConfig:
       val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
       val r: Map[String, String] = jsonMap.toMap.map({
         case (a, c) => (a, c.obj.get("alternateKeys") match {
-          case Some(arr: ujson.Arr) => arr.value.head.obj.get(parameters.alternates.get) match
-            case Some(v) => v.str
-            case _ => a
+          case Some(arr: ujson.Arr) => getAlternate(parameters, a, arr)
           case _ => a
         })
       })
@@ -44,6 +40,12 @@ object CSVParserConfig:
     val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
     val d: mutable.Map[String, String => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj)) }
     d.getOrElse(property, (x: String) => x)
+  }
+
+  private def getAlternate(parameters: Parameters, a: String, arr: Arr) = {
+    arr.value.head.obj.get(parameters.alternates.get) match
+      case Some(v) => v.str
+      case _ => a
   }
 
 

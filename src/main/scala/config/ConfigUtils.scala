@@ -2,20 +2,14 @@ package config
 
 import ujson.Value
 import upickle.core.LinkedHashMap
+import validation.jsonschema.loadData
 
-import java.net.URI
-import scala.io.Source
-import scala.util.{Try, Using}
+import scala.util.Try
 
 object ConfigUtils:
 
   def loadProperties(file: String): LinkedHashMap[String, Value] = {
-    val data = {
-      if (file.startsWith("http"))
-        Using(Source.fromURL(URI.create(file).toASCIIString))(_.mkString)
-      else
-        Using(Source.fromResource(file))(_.mkString)
-    }
+    val data = loadData(file)
     val json = ujson.read(data.getOrElse(""))
     val jsonMap: LinkedHashMap[String, Value] = json("properties").obj
     jsonMap

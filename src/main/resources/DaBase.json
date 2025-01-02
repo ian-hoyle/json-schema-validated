@@ -1,5 +1,5 @@
 {
-  "$id": "BaseSchema",
+  "$id": "/schema/baseSchema",
   "type": "object",
   "properties": {
     "client_side_checksum": {
@@ -115,7 +115,7 @@
       "propertyType": "Supplied",
       "items": {
         "type": "string",
-        "$ref": "classpath:/metadata-schema/definitionsSchema.schema.json#/definitions/languages"
+        "$ref": "classpath:/definitionsSchema.schema.json#/definitions/languages"
       },
       "alternateKeys": [
         {
@@ -171,7 +171,7 @@
       "propertyType": "Supplied",
       "items": {
         "type": "string",
-        "$ref": "classpath:/metadata-schema/definitionsSchema.schema.json#/definitions/foi_codes"
+        "$ref": "classpath:/definitionsSchema.schema.json#/definitions/foi_codes"
       },
       "alternateKeys": [
         {
@@ -183,7 +183,7 @@
     "closure_type": {
       "type": "string",
       "propertyType": "Supplied",
-      "$ref": "classpath:/metadata-schema/definitionsSchema.schema.json#/definitions/closure_types",
+      "$ref": "classpath:/definitionsSchema.schema.json#/definitions/closure_types",
       "alternateKeys": [
         {
           "tdrFileHeader": "Closure status",

@@ -48,7 +48,7 @@ object CSVValidationResult {
     override def combine( x: CSVValidationResult[List[RowData]], y: CSVValidationResult[List[RowData]] ): CSVValidationResult[List[RowData]] =
       (x, y) match {
         case (Valid(valueX), Valid(valueY)) =>
-             Valid(valueX)
+             Valid(valueY)
         case (Invalid(errorsX), Invalid(errorsY)) =>
           import ValidationErrors.combineValidationErrors
           Invalid(NonEmptyList.fromList(errorsX.toList |+| errorsY.toList).get)
