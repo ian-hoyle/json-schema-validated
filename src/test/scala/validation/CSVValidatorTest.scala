@@ -17,7 +17,6 @@ class CSVValidatorTest extends AnyFunSuite:
       case Valid(data) => println(data)
         fail("Should have failed")
       case Invalid(error) =>
-        println(error)
         assert(error.toList.size == 1)
 
   }
