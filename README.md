@@ -6,9 +6,6 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [AWS Lambda Usage](#aws-lambda-usage)
-- [Build and Test](#build-and-test)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Overview
 
