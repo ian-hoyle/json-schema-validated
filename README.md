@@ -16,6 +16,7 @@ To include `mycsvvalidator` in your project, add the following dependency to you
 
 ```scala
 libraryDependencies += "com.example" %% "mycsvvalidator" % "1.0.0"# mycsvvalidator
+```
 ## Usage
 
 Here's an example of how to use `mycsvvalidator`:
@@ -74,3 +75,4 @@ class MyLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGat
         response
   }
 }
+```
