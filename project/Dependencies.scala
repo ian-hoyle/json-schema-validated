@@ -11,5 +11,7 @@ object Dependencies {
   lazy val jsonSchemaValidator = "com.networknt" % "json-schema-validator" % "1.5.4"
   lazy val catsEffect = "org.typelevel" %% "cats-effect" % "3.5.7"
   lazy val nscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.34.0"
+  lazy val awsLambda = "com.amazonaws" % "aws-lambda-java-core" % "1.2.3"
+  lazy val awsLambdaJavaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.14.0"
 
 }

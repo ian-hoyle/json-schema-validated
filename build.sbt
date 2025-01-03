@@ -19,6 +19,8 @@ libraryDependencies ++= Seq(
   scalaCsv,
   jacksonModule,
   catsEffect,
+  awsLambda,
+  awsLambdaJavaEvents,
   nscalaTime
 )
 

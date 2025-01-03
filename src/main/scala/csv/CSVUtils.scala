@@ -19,14 +19,14 @@ object CSVUtils:
   }
 
   private def loadCSV(csvConfig: CSVConfiguration): List[RowData] = {
-    val cSVReader: CSVReader = CSVReader.open(s"src/test/resources/${csvConfig.csv}")
+    val cSVReader: CSVReader = CSVReader.open(s"src/test/resources/${csvConfig.parameters.csvFile}")
     cSVReader.allWithHeaders().map(convertToRowData(csvConfig))
       .zipWithIndex
       .map((data, index) => data.copy(row_number = Some(index + 1)))
   }
 
   private def convertToRowData(csvConfig: CSVConfiguration)(data: Map[String, String]): RowData = {
-    val assetId = getAssetId(csvConfig.idKey, data)
+    val assetId = getAssetId(csvConfig.parameters.idKey, data)
     val jsonData = convertToJSONString(csvConfig, data )
     RowData(None, assetId, data,Some(jsonData))
   }
