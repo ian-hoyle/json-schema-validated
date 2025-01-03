@@ -34,6 +34,7 @@ val parameters = Parameters(
 )
 
 val validationResult = CSVValidator.validationProgram(parameters).unsafeRunSync()
+```
 
 ## AWS Lambda Usage
 
