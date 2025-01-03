@@ -18,25 +18,27 @@ object CSVValidator:
     for {
       configuration <- prepareCSVConfiguration(parameters)
       fileValidation <- fileValidations(configuration)
-      validation <- dataValidation(fileValidation, parameters.schema)
+      validation <- dataValidation(fileValidation, configuration.schema)
     } yield validation
   } //TODO handle error with CSVValidationResult[List[RowData]]
 
-  private def fileValidations(csvConfiguration: CSVConfiguration): IO[CSVValidationResult[List[RowData]]] = {
+  private def fileValidations(csvConfiguration: CSVValidatorConfiguration): IO[CSVValidationResult[List[RowData]]] = {
     IO({
-      // UTF 8 check
+      // UTF 8 check to be added first
       CSVUtils.loadCSVData(csvConfiguration)
-        .andThen(ValidatedSchema.requiredSchemaValidated(csvConfiguration.parameters.requiredSchema))
+        .andThen(ValidatedSchema.requiredSchemaValidated(csvConfiguration.requiredSchema))
     })
   }
 
-  def prepareCSVConfiguration(parameters: Parameters): IO[CSVConfiguration] = {
+  def prepareCSVConfiguration(parameters: Parameters): IO[CSVValidatorConfiguration] = {
     IO({
       val csvConfigurationReader = for {
         altHeaderToPropertyMapper <- Reader(CSVParserConfig.alternateKeyToPropertyMapper)
         propertyToAltHeaderMapper <- Reader(CSVParserConfig.propertyToAlternateKeyMapper)
         valueMapper <- Reader(CSVParserConfig.csvStringToValueMapper)
-      } yield CSVConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper, valueMapper, parameters)
+      } yield CSVValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
+        valueMapper, parameters.csvFile, parameters.idKey,
+        parameters.requiredSchema, parameters.schema)
       csvConfigurationReader.run(parameters)
     }
     ) //TODO handle error with raiseError that contains ValidationResult
@@ -57,11 +59,15 @@ object CSVValidator:
   }
 
 
-case class CSVConfiguration(altToProperty: String => String,
-                            propertyToAlt: String => String,
-                            valueMapper: String => String => Any,
-                            parameters: Parameters)
-
+case class CSVValidatorConfiguration(altToProperty: String => String,
+                                     propertyToAlt: String => String,
+                                     valueMapper: String => String => Any,
+                                     csvFile: String,
+                                     idKey: Option[String],
+                                     requiredSchema: Option[String],
+                                     schema: List[String]
+                                    )
+// Comes from arguments
 case class Parameters(csConfig: String,
                       schema: List[String],
                       alternates: Option[String],
