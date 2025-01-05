@@ -38,8 +38,8 @@ object CSVParserConfig:
 
   def csvStringToValueMapper(parameters: Parameters)(property: String): String => Any = {
     val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
-    val d: mutable.Map[String, String => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj)) }
-    d.getOrElse(property, (x: String) => x)
+    val propertyToValueConversionMap: mutable.Map[String, String => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj)) }
+    propertyToValueConversionMap.getOrElse(property, (x: String) => x)
   }
 
   private def getAlternate(parameters: Parameters, a: String, arr: Arr) = {

@@ -23,7 +23,7 @@ class ConfigTest extends AnyFunSuite:
     assert(propertyValueConvertor("description_closed")("YES") == true)
 
  }
-  test("Load config from URL") {
+  test("Creates header property convertors") {
     val jsonConfigFileName = "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
     val altKey = "tdrFileHeader"
     val params = Parameters(jsonConfigFileName, List.empty[String], Some(altKey), "sample.csv", Some("Filepath"))
@@ -44,7 +44,7 @@ class ConfigTest extends AnyFunSuite:
   test("Invalid alternate key returns original value") {
     val jsonConfigFileName = "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
     val altKey = "badKey"
-    val params = Parameters(jsonConfigFileName, List.empty[String], Some(altKey), "sample.csv", Some("Filepath"))
+    val params = Parameters(jsonConfigFileName, List.empty[String], Some(altKey), "sample.csv")
 
     val propertyToAlternateKey = CSVParserConfig.propertyToAlternateKeyMapper(params)
     assert(propertyToAlternateKey("date_last_modified") == "date_last_modified")

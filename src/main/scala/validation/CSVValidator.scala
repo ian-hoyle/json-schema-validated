@@ -72,5 +72,5 @@ case class Parameters(csConfig: String,
                       schema: List[String],
                       alternates: Option[String],
                       csvFile: String,
-                      idKey: Option[String],
+                      idKey: Option[String] = None,
                       requiredSchema: Option[String] = None)
