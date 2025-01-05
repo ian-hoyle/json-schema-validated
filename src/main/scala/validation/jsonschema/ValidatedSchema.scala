@@ -5,7 +5,7 @@ import cats.data.{NonEmptyList, ValidatedNel}
 import cats.syntax.all.catsSyntaxValidatedId
 import com.networknt.schema.*
 import csv.RowData
-import error.ValidationErrors
+import error.{CSVValidationError, ValidationErrors}
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URI
@@ -25,15 +25,15 @@ object ValidatedSchema:
 
   def schemaValidated(schemaFile: Option[String], all: Boolean = true)(data: List[RowData]): CSVValidationResult[List[RowData]] = {
     val jsonSchema = getJsonSchema(schemaFile.get)
-    val messages = "a" -> "b" // get Message
+    val messages = "a" -> "b" // TODO get Messages probably by convention properties file same as schema file name but with .properties ext 
     val processData = if (!all)
       List(data.head)
     else
       data
 
     val errors: Seq[(Option[String], Set[ValidationMessage])] = processData.map(x => (x.assetId, jsonSchema.validate(x.json.get, InputFormat.JSON).asScala.toSet))
-    val conErr: Seq[(Option[String], Set[error.Error])] = errors.map(x => (x._1, convertValidationMessageToError(x._2)))
-    val filtered = conErr.filter(x => x._2.nonEmpty).toList
+    val conErr: Seq[(Option[String], Set[CSVValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2)))
+    val filtered: Seq[(Option[String], Set[CSVValidationError])] = conErr.filter(x => x._2.nonEmpty).toList
     if (filtered.isEmpty)
       data.valid
     else
@@ -42,12 +42,12 @@ object ValidatedSchema:
   }
 
   // needs fixing up
-  private def convertValidationMessageToError(messages: Set[ValidationMessage]): Set[error.Error] = {
+  private def convertValidationMessageToError(messages: Set[ValidationMessage]): Set[CSVValidationError] = {
     for {
       message <- messages
       vE = {
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
-        error.Error("jsonValidationErrorReason", propertyName, message.getMessageKey, "no message")
+        CSVValidationError("jsonValidationErrorReason", propertyName, message.getMessageKey, "no message")
       }
     } yield vE
   }
