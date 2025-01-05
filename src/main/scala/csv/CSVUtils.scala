@@ -9,6 +9,9 @@ import com.github.tototoshi.csv.CSVReader
 import validation.CSVValidatorConfiguration
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
+import java.net.URI
+import scala.io.Source
+
 case class RowData(row_number: Option[Int], assetId: Option[String], data: Map[String, Any], json: Option[String] = None)
 
 object CSVUtils:
@@ -19,8 +22,12 @@ object CSVUtils:
   }
 
   private def loadCSV(validatorConfig: CSVValidatorConfiguration): List[RowData] = {
-    //TODO fix csv file location
-    val cSVReader: CSVReader = CSVReader.open(s"src/test/resources/${validatorConfig.csvFile}")
+    val source = if(validatorConfig.csvFile.startsWith("http"))
+                   Source.fromURL(URI.create(validatorConfig.csvFile).toASCIIString)
+    else
+      Source.fromResource(validatorConfig.csvFile)
+
+    val cSVReader: CSVReader = CSVReader.open(source)
     cSVReader.allWithHeaders().map(convertToRowData(validatorConfig))
       .zipWithIndex
       .map((data, index) => data.copy(row_number = Some(index + 1)))
