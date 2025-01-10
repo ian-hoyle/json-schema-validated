@@ -36,7 +36,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
   def csvFileValidation(parameters: Parameters): IO[CSVValidationResult[List[RowData]]] = {
     for {
-      configuration <- prepareCSVConfiguration(parameters)
+      configuration <- prepareValidationConfiguration(parameters)
       data <- csvFileValidations(configuration)
       validation <- dataValidation(data, configuration.schema)
     } yield validation

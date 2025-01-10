@@ -17,13 +17,13 @@ import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
 object JsonSchemaValidated:
 
-  def prepareCSVConfiguration(parameters: Parameters): IO[CSVValidatorConfiguration] = {
+  def prepareValidationConfiguration(parameters: Parameters): IO[ValidatorConfiguration] = {
     IO({
       val csvConfigurationReader = for {
         altHeaderToPropertyMapper <- Reader(ValidationConfig.alternateKeyToPropertyMapper)
         propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToAlternateKeyMapper)
         valueMapper <- Reader(ValidationConfig.valueMapper)
-      } yield CSVValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
+      } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
         valueMapper, parameters.fileToValidate, parameters.idKey,
         parameters.requiredSchema, parameters.schema)
       csvConfigurationReader.run(parameters)
@@ -60,13 +60,13 @@ object JsonSchemaValidated:
   }
 
 
-case class CSVValidatorConfiguration(altToProperty: String => String,
-                                     propertyToAlt: String => String,
-                                     valueMapper: (property:String) => Any => Any,
-                                     csvFile: String,
-                                     idKey: Option[String],
-                                     requiredSchema: Option[String],
-                                     schema: List[String]
+case class ValidatorConfiguration(altToProperty: String => String,
+                                  propertyToAlt: String => String,
+                                  valueMapper: (property:String) => Any => Any,
+                                  fileToValidate: String,
+                                  idKey: Option[String],
+                                  requiredSchema: Option[String],
+                                  schema: List[String]
                                     )
 // Comes from arguments
 case class Parameters(csConfig: String,

@@ -1,7 +1,7 @@
 package csv
 
 import org.scalatest.funsuite.AnyFunSuite
-import validation.{CSVValidatorConfiguration, JsonSchemaValidated, Parameters}
+import validation.{ValidatorConfiguration, JsonSchemaValidated, Parameters}
 
 class CSVUtilsTest extends AnyFunSuite:
   test("Load schema config") {
@@ -10,7 +10,7 @@ class CSVUtilsTest extends AnyFunSuite:
     val idKey = "Filepath"
     val params = Parameters(jsonConfigFileName, List.empty[String], Some(altKey), "sample.csv", Some(idKey))
     import cats.effect.unsafe.implicits.global
-    val csvValidationConfig: CSVValidatorConfiguration = JsonSchemaValidated.prepareCSVConfiguration(params).unsafeRunSync()
+    val csvValidationConfig: ValidatorConfiguration = JsonSchemaValidated.prepareValidationConfiguration(params).unsafeRunSync()
     assert(csvValidationConfig.valueMapper("description")("desc") == "desc")
 
   }
