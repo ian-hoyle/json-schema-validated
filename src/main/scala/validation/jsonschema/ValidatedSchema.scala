@@ -4,7 +4,7 @@ import cats.*
 import cats.data.{NonEmptyList, ValidatedNel}
 import cats.syntax.all.catsSyntaxValidatedId
 import com.networknt.schema.*
-import csv.RowData
+import datalaoader.RowData
 import error.{JsonSchemaValidationError, ValidationErrors}
 
 import java.io.{ByteArrayInputStream, InputStream}
@@ -31,7 +31,7 @@ object ValidatedSchema:
     else
       data
 
-    val errors: Seq[(Option[String], Set[ValidationMessage], Map[String,Any])] = processData.map(x => (x.assetId, jsonSchema.validate(x.json.get, InputFormat.JSON).asScala.toSet,x.data))
+    val errors: Seq[(Option[String], Set[ValidationMessage], Map[String, Any])] = processData.map(x => (x.assetId, jsonSchema.validate(x.json.get, InputFormat.JSON).asScala.toSet, x.data))
     val conErr: Seq[(Option[String], Set[JsonSchemaValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2)))
     val filtered: Seq[(Option[String], Set[JsonSchemaValidationError])] = conErr.filter(x => x._2.nonEmpty).toList
     if (filtered.isEmpty)

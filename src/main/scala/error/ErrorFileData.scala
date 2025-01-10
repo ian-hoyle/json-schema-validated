@@ -3,7 +3,7 @@ package error
 import cats.data.Validated.*
 import cats.data.{NonEmptyList, Validated}
 import cats.kernel.Monoid
-import csv.RowData
+import datalaoader.RowData
 import error.FileError.FileError
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 

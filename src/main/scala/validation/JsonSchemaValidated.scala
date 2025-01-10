@@ -7,8 +7,7 @@ import cats.implicits.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import config.ValidationConfig
-import csv.CSVUtils.csvFileValidations
-import csv.{CSVUtils, RowData}
+import datalaoader.RowData
 import error.CSVValidationResult.combineCSVValidationResult
 import error.ValidationErrors
 import validation.jsonschema.ValidatedSchema
@@ -31,14 +30,20 @@ object JsonSchemaValidated:
     ) //TODO handle error with raiseError that contains ValidationResult
   }
 
-  def dataValidation(fileValidation: CSVValidationResult[List[RowData]], schema: List[String]): IO[CSVValidationResult[List[RowData]]] = {
+  def validateWithSchema(fileValidation: CSVValidationResult[List[RowData]], schema: String): IO[CSVValidationResult[List[RowData]]] = {
+    fileValidation match {
+      case Valid(value) => IO(ValidatedSchema.schemaValidated(Some(schema))(value))
+      case Invalid(errors) => IO.pure(errors.invalid)
+    }
+  }
+
+  def validateWithMultipleSchema(fileValidation: CSVValidationResult[List[RowData]], schema: List[String]): IO[CSVValidationResult[List[RowData]]] = {
     fileValidation match {
       case Valid(value) =>
         val schemaValidations = schema.map(x => ValidatedSchema.schemaValidated(Some(x)))
         val dataValidations = schemaValidations.map { validation =>
           IO(validation(value))
         }
-        // add other data validations here to dataValidations
         dataValidations.parSequence.map(_.combineAll)
       case Invalid(errors) =>
         IO.pure(errors.invalid)
@@ -62,12 +67,13 @@ object JsonSchemaValidated:
 
 case class ValidatorConfiguration(altToProperty: String => String,
                                   propertyToAlt: String => String,
-                                  valueMapper: (property:String) => Any => Any,
+                                  valueMapper: (property: String) => Any => Any,
                                   fileToValidate: String,
                                   idKey: Option[String],
                                   requiredSchema: Option[String],
                                   schema: List[String]
-                                    )
+                                 )
+
 // Comes from arguments
 case class Parameters(csConfig: String,
                       schema: List[String],
