@@ -11,14 +11,14 @@ class ConfigTest extends AnyFunSuite:
     val idKey = "File path"
     val params = Parameters(jsonConfigFileResources, List.empty[String], Some(altKey), "sample.csv", Some(idKey))
     
-    val propertyToAlternateKey = CSVParserConfig.propertyToAlternateKeyMapper(params)
+    val propertyToAlternateKey = ValidationConfig.propertyToAlternateKeyMapper(params)
     assert(propertyToAlternateKey("date_last_modified") == "Date last modified")
 
-    val alternateKeyToProperty = CSVParserConfig.alternateKeyToPropertyMapper(params)
+    val alternateKeyToProperty = ValidationConfig.alternateKeyToPropertyMapper(params)
 
     assert(alternateKeyToProperty("Date last modified") == "date_last_modified")
 
-    val propertyValueConvertor = CSVParserConfig.csvStringToValueMapper(params)
+    val propertyValueConvertor = ValidationConfig.valueMapper(params)
 
     assert(propertyValueConvertor("description_closed")("YES") == true)
 
@@ -28,14 +28,14 @@ class ConfigTest extends AnyFunSuite:
     val altKey = "tdrFileHeader"
     val params = Parameters(jsonConfigFileName, List.empty[String], Some(altKey), "sample.csv", Some("Filepath"))
 
-    val propertyToAlternateKey = CSVParserConfig.propertyToAlternateKeyMapper(params)
+    val propertyToAlternateKey = ValidationConfig.propertyToAlternateKeyMapper(params)
     assert(propertyToAlternateKey("date_last_modified") == "Date last modified")
 
-    val alternateKeyToProperty = CSVParserConfig.alternateKeyToPropertyMapper(params)
+    val alternateKeyToProperty = ValidationConfig.alternateKeyToPropertyMapper(params)
 
     assert(alternateKeyToProperty("Date last modified") == "date_last_modified")
 
-    val propertyValueConvertor = CSVParserConfig.csvStringToValueMapper(params)
+    val propertyValueConvertor = ValidationConfig.valueMapper(params)
 
     assert(propertyValueConvertor("description_closed")("YES") == true)
 
@@ -46,14 +46,14 @@ class ConfigTest extends AnyFunSuite:
     val altKey = "badKey"
     val params = Parameters(jsonConfigFileName, List.empty[String], Some(altKey), "sample.csv")
 
-    val propertyToAlternateKey = CSVParserConfig.propertyToAlternateKeyMapper(params)
+    val propertyToAlternateKey = ValidationConfig.propertyToAlternateKeyMapper(params)
     assert(propertyToAlternateKey("date_last_modified") == "date_last_modified")
 
-    val alternateKeyToProperty = CSVParserConfig.alternateKeyToPropertyMapper(params)
+    val alternateKeyToProperty = ValidationConfig.alternateKeyToPropertyMapper(params)
 
     assert(alternateKeyToProperty("Date last modified") == "Date last modified")
 
-    val propertyValueConvertor = CSVParserConfig.csvStringToValueMapper(params)
+    val propertyValueConvertor = ValidationConfig.valueMapper(params)
 
     assert(propertyValueConvertor("description_closed")("YES") == true)
 

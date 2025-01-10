@@ -12,7 +12,7 @@ class CSVValidatorTest extends AnyFunSuite:
     val params = Parameters(jsonConfigFileName, List(jsonConfigFileName,jsonConfigFileName), Some(altKey), "sample.csv", Some(idKey),Some(jsonConfigFileName))
 
     import cats.effect.unsafe.implicits.*
-    val runMe = CSVValidator.validationProgram(params).unsafeRunSync()
+    val runMe = JsonSchemaValidated.validationProgram(params).unsafeRunSync()
     runMe match
       case Valid(data) => println(data)
         fail("Should have failed")

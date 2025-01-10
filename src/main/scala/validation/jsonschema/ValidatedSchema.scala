@@ -5,7 +5,7 @@ import cats.data.{NonEmptyList, ValidatedNel}
 import cats.syntax.all.catsSyntaxValidatedId
 import com.networknt.schema.*
 import csv.RowData
-import error.{CSVValidationError, ValidationErrors}
+import error.{JsonSchemaValidationError, ValidationErrors}
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URI
@@ -31,9 +31,9 @@ object ValidatedSchema:
     else
       data
 
-    val errors: Seq[(Option[String], Set[ValidationMessage])] = processData.map(x => (x.assetId, jsonSchema.validate(x.json.get, InputFormat.JSON).asScala.toSet))
-    val conErr: Seq[(Option[String], Set[CSVValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2)))
-    val filtered: Seq[(Option[String], Set[CSVValidationError])] = conErr.filter(x => x._2.nonEmpty).toList
+    val errors: Seq[(Option[String], Set[ValidationMessage], Map[String,Any])] = processData.map(x => (x.assetId, jsonSchema.validate(x.json.get, InputFormat.JSON).asScala.toSet,x.data))
+    val conErr: Seq[(Option[String], Set[JsonSchemaValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2)))
+    val filtered: Seq[(Option[String], Set[JsonSchemaValidationError])] = conErr.filter(x => x._2.nonEmpty).toList
     if (filtered.isEmpty)
       data.valid
     else
@@ -42,12 +42,12 @@ object ValidatedSchema:
   }
 
   // needs fixing up
-  private def convertValidationMessageToError(messages: Set[ValidationMessage]): Set[CSVValidationError] = {
+  private def convertValidationMessageToError(messages: Set[ValidationMessage]): Set[JsonSchemaValidationError] = {
     for {
       message <- messages
       vE = {
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
-        CSVValidationError("jsonValidationErrorReason", propertyName, message.getMessageKey, "no message")
+        JsonSchemaValidationError("jsonValidationErrorReason", propertyName, message.getMessageKey, "no message")
       }
     } yield vE
   }

@@ -17,9 +17,9 @@ object FileError extends Enumeration {
 
 case class Metadata(a: String)
 
-case class CSVValidationError(validationProcess: String, property: String, errorKey: String, message: String)
+case class JsonSchemaValidationError(validationProcess: String, property: String, errorKey: String, message: String)
 
-case class ValidationErrors(assetId: String, errors: Set[CSVValidationError], data: List[Metadata] = List.empty[Metadata])
+case class ValidationErrors(assetId: String, errors: Set[JsonSchemaValidationError], data: List[Metadata] = List.empty[Metadata])
 
 object ValidationErrors {
   implicit val combineValidationErrors: Monoid[List[ValidationErrors]] = new Monoid[List[ValidationErrors]]:

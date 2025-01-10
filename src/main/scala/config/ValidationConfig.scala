@@ -7,7 +7,7 @@ import validation.Parameters
 
 import scala.collection.mutable
 
-object CSVParserConfig:
+object ValidationConfig:
 
   def alternateKeyToPropertyMapper(parameters: validation.Parameters): String => String =
     val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
@@ -36,10 +36,10 @@ object CSVParserConfig:
       (x: String) => r.getOrElse(x, x)
 
 
-  def csvStringToValueMapper(parameters: Parameters)(property: String): String => Any = {
+  def valueMapper(parameters: Parameters)(property: String): Any => Any = {
     val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
-    val propertyToValueConversionMap: mutable.Map[String, String => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj)) }
-    propertyToValueConversionMap.getOrElse(property, (x: String) => x)
+    val propertyToValueConversionMap: mutable.Map[String, Any => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj)) }
+    propertyToValueConversionMap.getOrElse(property, (x:Any) => x)
   }
 
   private def getAlternate(parameters: Parameters, a: String, arr: Arr) = {

@@ -4,7 +4,10 @@ import cats.data.Validated.*
 import cats.data.{NonEmptyList, Reader, Validated}
 import cats.effect.IO
 import cats.implicits.*
-import config.CSVParserConfig
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import config.ValidationConfig
+import csv.CSVUtils.csvFileValidations
 import csv.{CSVUtils, RowData}
 import error.CSVValidationResult.combineCSVValidationResult
 import error.ValidationErrors
@@ -12,39 +15,33 @@ import validation.jsonschema.ValidatedSchema
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
 
-object CSVValidator:
+object JsonSchemaValidated:
 
   def validationProgram(parameters: Parameters): IO[CSVValidationResult[List[RowData]]] = {
     for {
       configuration <- prepareCSVConfiguration(parameters)
-      fileValidation <- fileValidations(configuration)
-      validation <- dataValidation(fileValidation, configuration.schema)
+      data <- csvFileValidations(configuration)
+      validation <- dataValidation(data, configuration.schema)
     } yield validation
   } //TODO handle error with CSVValidationResult[List[RowData]]
 
-  private def fileValidations(csvConfiguration: CSVValidatorConfiguration): IO[CSVValidationResult[List[RowData]]] = {
-    IO({
-      // UTF 8 check to be added first
-      CSVUtils.loadCSVData(csvConfiguration)
-        .andThen(ValidatedSchema.requiredSchemaValidated(csvConfiguration.requiredSchema))
-    })
-  }
+
 
   def prepareCSVConfiguration(parameters: Parameters): IO[CSVValidatorConfiguration] = {
     IO({
       val csvConfigurationReader = for {
-        altHeaderToPropertyMapper <- Reader(CSVParserConfig.alternateKeyToPropertyMapper)
-        propertyToAltHeaderMapper <- Reader(CSVParserConfig.propertyToAlternateKeyMapper)
-        valueMapper <- Reader(CSVParserConfig.csvStringToValueMapper)
+        altHeaderToPropertyMapper <- Reader(ValidationConfig.alternateKeyToPropertyMapper)
+        propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToAlternateKeyMapper)
+        valueMapper <- Reader(ValidationConfig.valueMapper)
       } yield CSVValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
-        valueMapper, parameters.csvFile, parameters.idKey,
+        valueMapper, parameters.fileToValidate, parameters.idKey,
         parameters.requiredSchema, parameters.schema)
       csvConfigurationReader.run(parameters)
     }
     ) //TODO handle error with raiseError that contains ValidationResult
   }
 
-  private def dataValidation(fileValidation: CSVValidationResult[List[RowData]], schema: List[String]): IO[CSVValidationResult[List[RowData]]] = {
+  def dataValidation(fileValidation: CSVValidationResult[List[RowData]], schema: List[String]): IO[CSVValidationResult[List[RowData]]] = {
     fileValidation match {
       case Valid(value) =>
         val schemaValidations = schema.map(x => ValidatedSchema.schemaValidated(Some(x)))
@@ -58,10 +55,24 @@ object CSVValidator:
     }
   }
 
+  def convertToJSONString(data: Map[String, Any], keyMapper: String => String, valueMapper: String => Any => Any): String = {
+    val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
+    val convertedData = data.map {
+      case (header, value) =>
+        val property = keyMapper(header)
+        (property,
+          if (value.toString.isEmpty) null
+          else valueMapper(property)(value)
+        )
+    }
+    val generatedJson = mapper.writeValueAsString(convertedData)
+    generatedJson
+  }
+
 
 case class CSVValidatorConfiguration(altToProperty: String => String,
                                      propertyToAlt: String => String,
-                                     valueMapper: String => String => Any,
+                                     valueMapper: (property:String) => Any => Any,
                                      csvFile: String,
                                      idKey: Option[String],
                                      requiredSchema: Option[String],
@@ -71,6 +82,6 @@ case class CSVValidatorConfiguration(altToProperty: String => String,
 case class Parameters(csConfig: String,
                       schema: List[String],
                       alternates: Option[String],
-                      csvFile: String,
+                      fileToValidate: String,
                       idKey: Option[String] = None,
                       requiredSchema: Option[String] = None)

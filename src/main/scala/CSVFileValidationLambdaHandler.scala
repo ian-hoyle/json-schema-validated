@@ -1,11 +1,14 @@
 import cats.data.Validated.*
+import cats.effect.IO
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
+import csv.CSVUtils.csvFileValidations
 import csv.RowData
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
-import validation.{CSVValidator, Parameters}
+import validation.{JsonSchemaValidated, Parameters}
+import validation.JsonSchemaValidated.*
 
-class MyLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
+class CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
 
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
@@ -17,9 +20,15 @@ class MyLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGat
 
     import cats.effect.unsafe.implicits.*
     
-    val runMe: CSVValidationResult[List[RowData]] = CSVValidator.validationProgram(params).unsafeRunSync()
+    def validationProgram(parameters: Parameters): IO[CSVValidationResult[List[RowData]]] = {
+      for {
+        configuration <- prepareCSVConfiguration(parameters)
+        data <- csvFileValidations(configuration)
+        validation <- dataValidation(data, configuration.schema)
+      } yield validation
+    }
 
-    runMe match
+    validationProgram(params).unsafeRunSync() match
       case Valid(data) =>
         val response = new APIGatewayProxyResponseEvent()
         // TODO Add ValidationResult as JSON to body

@@ -1,12 +1,15 @@
 package csv
 
 import cats.*
+import cats.effect.IO
 import cats.implicits.*
 import cats.syntax.all.catsSyntaxValidatedId
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.tototoshi.csv.CSVReader
 import validation.CSVValidatorConfiguration
+import validation.JsonSchemaValidated.convertToJSONString
+import validation.jsonschema.ValidatedSchema
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
 import java.net.URI
@@ -16,7 +19,7 @@ case class RowData(row_number: Option[Int], assetId: Option[String], data: Map[S
 
 object CSVUtils:
 
-  def loadCSVData(validatorConfiguration: CSVValidatorConfiguration): CSVValidationResult[List[RowData]] = {
+  private def loadCSVData(validatorConfiguration: CSVValidatorConfiguration): CSVValidationResult[List[RowData]] = {
     val loaded = loadCSV(validatorConfiguration)
     loaded.valid
   }
@@ -35,7 +38,7 @@ object CSVUtils:
 
   private def convertToRowData(validatorConfig: CSVValidatorConfiguration)(data: Map[String, String]): RowData = {
     val assetId = getAssetId(validatorConfig.idKey, data)
-    val jsonData = convertToJSONString(validatorConfig, data )
+    val jsonData = convertToJSONString(data,validatorConfig.altToProperty,validatorConfig.valueMapper )
     RowData(None, assetId, data,Some(jsonData))
   }
 
@@ -47,19 +50,14 @@ object CSVUtils:
     } yield value
   }
 
-  private def convertToJSONString(csvConfig: CSVValidatorConfiguration, data: Map[String, String]): String = {
-    val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
-    val convertedData = data.map {
-      case (header, value) =>
-        val property = csvConfig.altToProperty(header)
-        (property,
-          if (value.isEmpty) null
-          else csvConfig.valueMapper(property)(value)
-        )
-    }
-    val generatedJson = mapper.writeValueAsString(convertedData)
-    generatedJson
+  def csvFileValidations(csvConfiguration: CSVValidatorConfiguration): IO[CSVValidationResult[List[RowData]]] = {
+    IO({
+      // UTF 8 check to be added first
+      loadCSVData(csvConfiguration)
+        .andThen(ValidatedSchema.requiredSchemaValidated(csvConfiguration.requiredSchema))
+    })
   }
+
 
 
 
