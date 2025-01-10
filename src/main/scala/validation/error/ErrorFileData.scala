@@ -4,7 +4,7 @@ import cats.data.Validated.*
 import cats.data.{NonEmptyList, Validated}
 import cats.kernel.Monoid
 import FileError.FileError
-import validation.datalaoader.RowData
+import validation.RowData
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
 import java.text.SimpleDateFormat

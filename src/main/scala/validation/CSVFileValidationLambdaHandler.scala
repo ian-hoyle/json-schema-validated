@@ -4,8 +4,7 @@ import cats.data.Validated.*
 import cats.effect.IO
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
-import datalaoader.CSVUtils.csvFileValidations
-import datalaoader.RowData
+import datalaoader.CSVLoader.csvFileValidations
 import validation.config.Parameters
 import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.jsonschema.JsonSchemaValidated.*

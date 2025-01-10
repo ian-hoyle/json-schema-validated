@@ -4,7 +4,7 @@ import cats.*
 import cats.data.{NonEmptyList, ValidatedNel}
 import cats.syntax.all.catsSyntaxValidatedId
 import com.networknt.schema.*
-import validation.datalaoader.RowData
+import validation.RowData
 import validation.error.{JsonSchemaValidationError, ValidationErrors}
 
 import java.io.{ByteArrayInputStream, InputStream}
