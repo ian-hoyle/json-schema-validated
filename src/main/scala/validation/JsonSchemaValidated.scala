@@ -17,16 +17,6 @@ import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
 object JsonSchemaValidated:
 
-  def validationProgram(parameters: Parameters): IO[CSVValidationResult[List[RowData]]] = {
-    for {
-      configuration <- prepareCSVConfiguration(parameters)
-      data <- csvFileValidations(configuration)
-      validation <- dataValidation(data, configuration.schema)
-    } yield validation
-  } //TODO handle error with CSVValidationResult[List[RowData]]
-
-
-
   def prepareCSVConfiguration(parameters: Parameters): IO[CSVValidatorConfiguration] = {
     IO({
       val csvConfigurationReader = for {

@@ -2,6 +2,7 @@ package validation
 
 import org.scalatest.funsuite.AnyFunSuite
 import cats.data.Validated.*
+import validation.CSVFileValidationLambdaHandler.csvFileValidation
 
 class CSVValidatorTest extends AnyFunSuite:
   test("Validate a csv where a row fails schema validation") {
@@ -12,7 +13,7 @@ class CSVValidatorTest extends AnyFunSuite:
     val params = Parameters(jsonConfigFileName, List(jsonConfigFileName,jsonConfigFileName), Some(altKey), "sample.csv", Some(idKey),Some(jsonConfigFileName))
 
     import cats.effect.unsafe.implicits.*
-    val runMe = JsonSchemaValidated.validationProgram(params).unsafeRunSync()
+    val runMe = csvFileValidation(params).unsafeRunSync()
     runMe match
       case Valid(data) => println(data)
         fail("Should have failed")
