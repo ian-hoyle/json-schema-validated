@@ -3,7 +3,8 @@ package validation
 import org.scalatest.funsuite.AnyFunSuite
 import cats.data.Validated.*
 import validation.CSVFileValidationLambdaHandler.csvFileValidation
-import validation.jsonschema.Parameters
+import validation.config.Parameters
+
 
 class CSVValidatorTest extends AnyFunSuite:
   test("Validate a csv where a row fails schema validation") {

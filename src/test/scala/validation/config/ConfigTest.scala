@@ -1,7 +1,7 @@
 package validation.config
 
 import org.scalatest.funsuite.AnyFunSuite
-import validation.jsonschema.Parameters
+
 
 class ConfigTest extends AnyFunSuite:
   test("Load config from Resources") {
@@ -18,7 +18,7 @@ class ConfigTest extends AnyFunSuite:
 
     assert(alternateKeyToProperty("Date last modified") == "date_last_modified")
 
-    val propertyValueConvertor = ValidationConfig.valueMapper(params)
+    val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 
     assert(propertyValueConvertor("description_closed")("YES") == true)
 
@@ -35,7 +35,7 @@ class ConfigTest extends AnyFunSuite:
 
     assert(alternateKeyToProperty("Date last modified") == "date_last_modified")
 
-    val propertyValueConvertor = ValidationConfig.valueMapper(params)
+    val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 
     assert(propertyValueConvertor("description_closed")("YES") == true)
 
@@ -53,7 +53,7 @@ class ConfigTest extends AnyFunSuite:
 
     assert(alternateKeyToProperty("Date last modified") == "Date last modified")
 
-    val propertyValueConvertor = ValidationConfig.valueMapper(params)
+    val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 
     assert(propertyValueConvertor("description_closed")("YES") == true)
 

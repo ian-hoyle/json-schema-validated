@@ -23,18 +23,18 @@ object ConfigUtils:
     }
   }
 
-  def convertValueFunction(propertyType: String): Any => Any = {
+  def convertValueFunction(propertyType: String): String => Any = {
     propertyType match {
-      case "integer" => (str:Any) => Try(str.toString.toInt).getOrElse(str)
-      case "array" => (str: Any) => if (str.toString.isEmpty) "" else str.toString.split("\\|")
+      case "integer" => (str:String) => Try(str.toInt).getOrElse(str)
+      case "array" => (str: String) => if (str.isEmpty) "" else str.split("\\|")
       case "boolean" =>
-        (str: Any) =>
-          str.toString.toUpperCase match {
+        (str: String) =>
+          str.toUpperCase match {
             case "YES" | "true" => true
             case "NO" | "false" => false
-            case _ => str.toString
+            case _ => str
           }
-      case _ => (str:Any) => str
+      case _ => (str:String) => str
     }
   }
 

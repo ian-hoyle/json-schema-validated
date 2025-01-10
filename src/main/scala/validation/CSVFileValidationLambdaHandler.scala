@@ -6,9 +6,11 @@ import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import datalaoader.CSVUtils.csvFileValidations
 import datalaoader.RowData
+import validation.config.Parameters
+import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.jsonschema.JsonSchemaValidated.*
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
-import validation.jsonschema.{JsonSchemaValidated, Parameters}
+import validation.jsonschema.JsonSchemaValidated
 
 object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
 

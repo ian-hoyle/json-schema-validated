@@ -1,9 +1,11 @@
 package validation.config
 
 import ConfigUtils.{convertValueFunction, getPropertyType, loadProperties}
+import cats.data.Reader
+import cats.effect.IO
 import ujson.{Arr, Value}
 import upickle.core.LinkedHashMap
-import validation.jsonschema.Parameters
+
 
 import scala.collection.mutable
 
@@ -36,9 +38,9 @@ object ValidationConfig:
       (x: String) => r.getOrElse(x, x)
 
 
-  def valueMapper(parameters: Parameters)(property: String): Any => Any = {
+  def stringValueMapper(parameters: Parameters)(property: String): String => Any = {
     val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
-    val propertyToValueConversionMap: mutable.Map[String, Any => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj)) }
+    val propertyToValueConversionMap: mutable.Map[String, String => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj)) }
     propertyToValueConversionMap.getOrElse(property, (x:Any) => x)
   }
 
@@ -48,7 +50,36 @@ object ValidationConfig:
       case _ => a
   }
 
+  def prepareValidationConfiguration(parameters: Parameters): IO[ValidatorConfiguration] = {
+    IO({
+      val csvConfigurationReader = for {
+        altHeaderToPropertyMapper <- Reader(ValidationConfig.alternateKeyToPropertyMapper)
+        propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToAlternateKeyMapper)
+        valueMapper <- Reader(ValidationConfig.stringValueMapper)
+      } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
+        valueMapper, parameters.fileToValidate, parameters.idKey,
+        parameters.requiredSchema, parameters.schema)
+      csvConfigurationReader.run(parameters)
+    }
+    ) //TODO handle error with raiseError that contains ValidationResult
+  }
 
+case class ValidatorConfiguration(altToProperty: String => String,
+                                  propertyToAlt: String => String,
+                                  valueMapper: (property: String) => String => Any,
+                                  fileToValidate: String,
+                                  idKey: Option[String],
+                                  requiredSchema: Option[String],
+                                  schema: List[String]
+                                 )
+
+// Comes from arguments
+case class Parameters(csConfig: String,
+                      schema: List[String],
+                      alternates: Option[String],
+                      fileToValidate: String,
+                      idKey: Option[String] = None,
+                      requiredSchema: Option[String] = None)
 
 
 
