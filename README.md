@@ -47,7 +47,7 @@ Here's an example of how to use `mycsvvalidator`:
 
 ```scala
 import validation.JsonSchemaValidated
-import validation.JsonSchemaValidated.Parameters
+import validation.jsonschema.JsonSchemaValidated.Parameters
 
 val parameters = Parameters(
   csConfig = "config/path",

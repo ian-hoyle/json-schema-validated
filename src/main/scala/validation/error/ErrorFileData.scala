@@ -1,10 +1,10 @@
-package error
+package validation.error
 
 import cats.data.Validated.*
 import cats.data.{NonEmptyList, Validated}
 import cats.kernel.Monoid
-import datalaoader.RowData
-import error.FileError.FileError
+import FileError.FileError
+import validation.datalaoader.RowData
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
 import java.text.SimpleDateFormat

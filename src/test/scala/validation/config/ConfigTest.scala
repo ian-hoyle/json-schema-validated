@@ -1,7 +1,7 @@
-package config
+package validation.config
 
 import org.scalatest.funsuite.AnyFunSuite
-import validation.Parameters
+import validation.jsonschema.Parameters
 
 class ConfigTest extends AnyFunSuite:
   test("Load config from Resources") {
@@ -10,7 +10,7 @@ class ConfigTest extends AnyFunSuite:
     val altKey = "tdrFileHeader"
     val idKey = "File path"
     val params = Parameters(jsonConfigFileResources, List.empty[String], Some(altKey), "sample.csv", Some(idKey))
-    
+
     val propertyToAlternateKey = ValidationConfig.propertyToAlternateKeyMapper(params)
     assert(propertyToAlternateKey("date_last_modified") == "Date last modified")
 
@@ -22,7 +22,7 @@ class ConfigTest extends AnyFunSuite:
 
     assert(propertyValueConvertor("description_closed")("YES") == true)
 
- }
+  }
   test("Creates header property convertors") {
     val jsonConfigFileName = "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
     val altKey = "tdrFileHeader"

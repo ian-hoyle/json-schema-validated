@@ -1,15 +1,15 @@
-package config
+package validation.config
 
-import config.ConfigUtils.{convertValueFunction, getPropertyType, loadProperties}
+import ConfigUtils.{convertValueFunction, getPropertyType, loadProperties}
 import ujson.{Arr, Value}
 import upickle.core.LinkedHashMap
-import validation.Parameters
+import validation.jsonschema.Parameters
 
 import scala.collection.mutable
 
 object ValidationConfig:
 
-  def alternateKeyToPropertyMapper(parameters: validation.Parameters): String => String =
+  def alternateKeyToPropertyMapper(parameters: Parameters): String => String =
     val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
     if (parameters.alternates.isEmpty)
       (x: String) => x
@@ -22,7 +22,7 @@ object ValidationConfig:
       })
       (x: String) => r.getOrElse(x, x)
 
-  def propertyToAlternateKeyMapper(parameters: validation.Parameters): String => String =
+  def propertyToAlternateKeyMapper(parameters: Parameters): String => String =
     if (parameters.alternates.isEmpty)
       (x: String) => x
     else

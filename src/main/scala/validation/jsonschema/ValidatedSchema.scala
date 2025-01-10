@@ -4,8 +4,8 @@ import cats.*
 import cats.data.{NonEmptyList, ValidatedNel}
 import cats.syntax.all.catsSyntaxValidatedId
 import com.networknt.schema.*
-import datalaoader.RowData
-import error.{JsonSchemaValidationError, ValidationErrors}
+import validation.datalaoader.RowData
+import validation.error.{JsonSchemaValidationError, ValidationErrors}
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URI
@@ -38,7 +38,7 @@ object ValidatedSchema:
       data.valid
     else
       val r: Seq[ValidationErrors] = filtered.map(x => ValidationErrors(x._1.getOrElse("b"), x._2))
-      NonEmptyList.fromList[error.ValidationErrors](r.toSet.toList).get.invalid
+      NonEmptyList.fromList[ValidationErrors](r.toSet.toList).get.invalid
   }
 
   // needs fixing up

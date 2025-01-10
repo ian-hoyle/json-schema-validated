@@ -1,4 +1,4 @@
-package datalaoader
+package validation.datalaoader
 
 import cats.*
 import cats.effect.IO
@@ -7,9 +7,8 @@ import cats.syntax.all.catsSyntaxValidatedId
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.tototoshi.csv.CSVReader
-import validation.JsonSchemaValidated.convertToJSONString
-import validation.ValidatorConfiguration
-import validation.jsonschema.ValidatedSchema
+import validation.jsonschema.JsonSchemaValidated.convertToJSONString
+import validation.jsonschema.{ValidatedSchema, ValidatorConfiguration}
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
 import java.net.URI

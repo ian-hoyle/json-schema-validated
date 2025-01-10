@@ -1,4 +1,4 @@
-package config
+package validation.config
 
 import ujson.Value
 import upickle.core.LinkedHashMap
