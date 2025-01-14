@@ -24,7 +24,7 @@ object CSVLoader:
     })
   }
 
-  private def loadCSVData(validatorConfiguration: ValidatorConfiguration): CSVValidationResult[List[RowData]] = {
+  def loadCSVData(validatorConfiguration: ValidatorConfiguration): CSVValidationResult[List[RowData]] = {
     val loaded = loadCSV(validatorConfiguration)
     loaded.valid
   }
