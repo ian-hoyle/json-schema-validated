@@ -1,4 +1,4 @@
-# NewRepositoryName
+# json-schmea-validated
 
 ## Table of Contents
 - [Overview](#overview)
@@ -9,11 +9,10 @@
 
 ## Overview
 
-`NewRepositoryName` is a Scala-based library for validating CSV files. It ensures data integrity by performing various checks and validations on CSV data.
+`NewRepositoryName` is a Scala-based library for validating data. It ensures data integrity by performing various checks and validations on the data.
 
 ## Features
 
-- UTF-8 validation
 - Schema validation using JSON schema
 - Customizable configuration for alternate key mappings and value transformations
 
