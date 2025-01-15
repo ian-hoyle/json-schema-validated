@@ -43,7 +43,7 @@ object JsonSchemaValidated:
     validatedData.valid
   }
 
-  def convertToJSONString(data: Map[String, Any], keyMapper: String => String, valueMapper: String => String => Any): String = {
+  private def convertToJSONString(data: Map[String, Any], keyMapper: String => String, valueMapper: String => String => Any): String = {
     val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
     val convertedData = data.map {
       case (header, value: String) =>
