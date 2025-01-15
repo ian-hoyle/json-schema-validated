@@ -4,7 +4,6 @@ import cats.data.Validated.*
 import cats.effect.IO
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
-import validation.config.Parameters
 import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.datalaoader.CSVLoader
 import validation.jsonschema.JsonSchemaValidated
@@ -44,7 +43,5 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
         response.setStatusCode(500)
         response
   }
-
-
 }
 

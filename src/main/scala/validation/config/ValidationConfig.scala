@@ -5,7 +5,7 @@ import cats.data.Reader
 import cats.effect.IO
 import ujson.{Arr, Value}
 import upickle.core.LinkedHashMap
-
+import validation.{Parameters, ValidatorConfiguration}
 
 import scala.collection.mutable
 
@@ -64,22 +64,6 @@ object ValidationConfig:
     ) //TODO handle error with raiseError that contains ValidationResult
   }
 
-case class ValidatorConfiguration(altToProperty: String => String,
-                                  propertyToAlt: String => String,
-                                  valueMapper: (property: String) => String => Any,
-                                  fileToValidate: String,
-                                  idKey: Option[String],
-                                  requiredSchema: Option[String],
-                                  schema: List[String]
-                                 )
-
-// Comes from arguments
-case class Parameters(csConfig: String,
-                      schema: List[String],
-                      alternates: Option[String],
-                      fileToValidate: String,
-                      idKey: Option[String] = None,
-                      requiredSchema: Option[String] = None)
 
 
 

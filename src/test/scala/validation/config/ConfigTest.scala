@@ -1,7 +1,7 @@
 package validation.config
 
 import org.scalatest.funsuite.AnyFunSuite
-
+import validation.Parameters
 
 class ConfigTest extends AnyFunSuite:
   test("Load config from Resources") {

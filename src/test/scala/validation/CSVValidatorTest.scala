@@ -3,7 +3,7 @@ package validation
 import org.scalatest.funsuite.AnyFunSuite
 import cats.data.Validated.*
 import validation.CSVFileValidationLambdaHandler
-import validation.config.Parameters
+
 
 
 class CSVValidatorTest extends AnyFunSuite:

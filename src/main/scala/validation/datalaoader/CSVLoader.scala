@@ -4,8 +4,7 @@ import cats.*
 import cats.effect.IO
 import cats.syntax.all.catsSyntaxValidatedId
 import com.github.tototoshi.csv.CSVReader
-import validation.RowData
-import validation.config.ValidatorConfiguration
+import validation.{RowData, ValidatorConfiguration}
 import validation.jsonschema.ValidatedSchema
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
