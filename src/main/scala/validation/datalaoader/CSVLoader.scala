@@ -6,7 +6,6 @@ import cats.syntax.all.catsSyntaxValidatedId
 import com.github.tototoshi.csv.CSVReader
 import validation.RowData
 import validation.config.ValidatorConfiguration
-import validation.jsonschema.JsonSchemaValidated.convertToJSONString
 import validation.jsonschema.ValidatedSchema
 import validation.jsonschema.ValidatedSchema.CSVValidationResult
 
@@ -43,8 +42,7 @@ object CSVLoader:
 
   private def convertToRowData(validatorConfig: ValidatorConfiguration)(data: Map[String, String]): RowData = {
     val assetId = getAssetId(validatorConfig.idKey, data)
-    val jsonData = convertToJSONString(data, validatorConfig.altToProperty, validatorConfig.valueMapper)
-    RowData(None, assetId, data, Some(jsonData))
+    RowData(None, assetId, data, None)
   }
 
   private def getAssetId(idKey: Option[String], data: Map[String, String]): Option[String] = {

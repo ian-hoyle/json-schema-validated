@@ -34,15 +34,27 @@ object JsonSchemaValidated:
     }
   }
 
-  def convertToJSONString(data: Map[String, String], keyMapper: String => String, valueMapper: String => String => Any): String = {
+
+  def addJsonValidated(keyMapper: String => String, valueMapper: String => String => Any)(data: List[RowData]): CSVValidationResult[List[RowData]] = {
+    val validatedData = data.map { row =>
+      val json = convertToJSONString(row.data, keyMapper, valueMapper)
+      row.copy(json = Some(json))
+    }
+    validatedData.valid
+  }
+
+  def convertToJSONString(data: Map[String, Any], keyMapper: String => String, valueMapper: String => String => Any): String = {
     val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
     val convertedData = data.map {
-      case (header, value) =>
+      case (header, value: String) =>
         val property = keyMapper(header)
         (property,
           if (value.isEmpty) null
           else valueMapper(property)(value)
         )
+      case (header, value) =>
+        val property = keyMapper(header)
+        (property, value)
     }
     val generatedJson = mapper.writeValueAsString(convertedData)
     generatedJson
