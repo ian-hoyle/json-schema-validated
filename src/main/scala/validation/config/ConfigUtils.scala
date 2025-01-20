@@ -18,7 +18,8 @@ object ConfigUtils:
   def getPropertyType(propertyValue: ujson.Obj): String = {
     propertyValue.obj.get("type") match {
       case Some(ujson.Str(singleType)) => singleType
-      case Some(ujson.Arr(types)) if types.nonEmpty => types.head.str // TODO correctly handle arrays. Assuming string before null etc
+      case Some(ujson.Arr(types)) if types.nonEmpty =>
+        types.find(a => a.isInstanceOf[ujson.Str] && a.str != "null").map(_.str).getOrElse("unknown")
       case _ => "unknown"
     }
   }
