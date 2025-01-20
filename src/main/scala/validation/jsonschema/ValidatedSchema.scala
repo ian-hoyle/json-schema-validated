@@ -25,14 +25,14 @@ object ValidatedSchema:
 
   def schemaValidated(schemaFile: Option[String], all: Boolean = true)(data: List[RowData]): CSVValidationResult[List[RowData]] = {
     val jsonSchema = getJsonSchema(schemaFile.get)
-    val messages = "a" -> "b" // TODO get Messages probably by convention properties file same as schema file name but with .properties ext 
+    val messagesProvider:String => String = x => "message" // TODO get Messages probably by convention properties file same as schema file name but with .properties ext
     val processData = if (!all)
       List(data.head)
     else
       data
 
     val errors: Seq[(Option[String], Set[ValidationMessage], Map[String, Any])] = processData.map(x => (x.assetId, jsonSchema.validate(x.json.get, InputFormat.JSON).asScala.toSet, x.data))
-    val conErr: Seq[(Option[String], Set[JsonSchemaValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2)))
+    val conErr: Seq[(Option[String], Set[JsonSchemaValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2,messagesProvider)))
     val filtered: Seq[(Option[String], Set[JsonSchemaValidationError])] = conErr.filter(x => x._2.nonEmpty).toList
     if (filtered.isEmpty)
       data.valid
@@ -42,12 +42,12 @@ object ValidatedSchema:
   }
 
   // needs fixing up
-  private def convertValidationMessageToError(messages: Set[ValidationMessage]): Set[JsonSchemaValidationError] = {
+  private def convertValidationMessageToError(schemaValidationMessages: Set[ValidationMessage], messageProvider:String=>String): Set[JsonSchemaValidationError] = {
     for {
-      message <- messages
+      message <- schemaValidationMessages
       vE = {
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
-        JsonSchemaValidationError("jsonValidationErrorReason", propertyName, message.getMessageKey, "no message")
+        JsonSchemaValidationError("jsonValidationErrorReason", propertyName, message.getMessageKey, messageProvider(s"$propertyName:${message.getMessageKey}"))
       }
     } yield vE
   }
