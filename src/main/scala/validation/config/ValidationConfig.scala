@@ -38,10 +38,10 @@ object ValidationConfig:
       (x: String) => r.getOrElse(x, x)
 
 
-  def stringValueMapper(parameters: Parameters)(property: String): String => Any = {
+  def stringValueMapper(parameters: Parameters):(property: String,value: String) => Any = {
     val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
     val propertyToValueConversionMap: mutable.Map[String, String => Any] = jsonMap.map { case (k, v) => k -> convertValueFunction(getPropertyType(v.obj)) }
-    propertyToValueConversionMap.getOrElse(property, (x:Any) => x)
+    (property: String, value: String) => propertyToValueConversionMap.getOrElse(property, (x:Any) => x)(value)
   }
 
   private def getAlternate(parameters: Parameters, a: String, arr: Arr) = {

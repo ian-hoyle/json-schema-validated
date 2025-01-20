@@ -20,7 +20,7 @@ class ConfigTest extends AnyFunSuite:
 
     val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 
-    assert(propertyValueConvertor("description_closed")("YES") == true)
+    assert(propertyValueConvertor("description_closed","YES") == true)
 
   }
   test("Creates header property convertors") {
@@ -37,7 +37,7 @@ class ConfigTest extends AnyFunSuite:
 
     val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 
-    assert(propertyValueConvertor("description_closed")("YES") == true)
+    assert(propertyValueConvertor("description_closed","YES") == true)
 
   }
 
@@ -55,6 +55,6 @@ class ConfigTest extends AnyFunSuite:
 
     val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 
-    assert(propertyValueConvertor("description_closed")("YES") == true)
+    assert(propertyValueConvertor("description_closed","YES") == true)
 
   }

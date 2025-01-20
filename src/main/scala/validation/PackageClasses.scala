@@ -4,7 +4,7 @@ case class RowData(row_number: Option[Int], assetId: Option[String], data: Map[S
 
 case class ValidatorConfiguration(altToProperty: String => String,
                                   propertyToAlt: String => String,
-                                  valueMapper: (property: String) => String => Any,
+                                  valueMapper: (property: String,value:String) => Any,
                                   fileToValidate: String,
                                   idKey: Option[String],
                                   requiredSchema: Option[String],
