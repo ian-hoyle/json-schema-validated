@@ -18,7 +18,6 @@ object CSVLoader:
     IO({
       // UTF 8 check to be added first
       loadCSVData(csvConfiguration)
-        .andThen(ValidatedSchema.requiredSchemaValidated(csvConfiguration.requiredSchema))
     })
   }
 

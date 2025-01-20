@@ -8,7 +8,7 @@ import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.datalaoader.CSVLoader
 import validation.jsonschema.JsonSchemaValidated
 import validation.jsonschema.JsonSchemaValidated.*
-import validation.jsonschema.ValidatedSchema.CSVValidationResult
+import validation.jsonschema.ValidatedSchema.{CSVValidationResult, requiredSchemaValidated}
 
 object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
 
@@ -16,8 +16,11 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
   def csvFileValidation(parameters: Parameters): IO[CSVValidationResult[List[RowData]]] = {
     for {
       configuration <- prepareValidationConfiguration(parameters)
-      data <- IO(CSVLoader.loadCSVData(configuration)
-        andThen JsonSchemaValidated.addJsonValidated(configuration.altToProperty, configuration.valueMapper))
+      data <- IO(
+        CSVLoader.loadCSVData(configuration)
+        andThen JsonSchemaValidated.addJsonValidated(configuration.altToProperty, configuration.valueMapper)
+        andThen requiredSchemaValidated(configuration.requiredSchema)
+      )
       validation <- validateWithMultipleSchema(data, configuration.schema)
     } yield validation
   }
