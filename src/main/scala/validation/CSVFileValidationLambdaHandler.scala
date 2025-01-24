@@ -35,13 +35,13 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
   def csvFileValidation(parameters: Parameters): IO[CSVValidationResult[List[RowData]]] = {
     for {
-      configuration <- prepareValidationConfiguration(parameters)
+      configuration <- prepareValidationConfiguration(parameters.configFile,parameters.alternateKey)
       data <- IO(
-        loadCSVData(configuration.fileToValidate, configuration.idKey)
+        loadCSVData(parameters.fileToValidate, parameters.idKey)
           andThen addJsonToData(configuration.altToProperty, configuration.valueMapper)
-          andThen validateRequiredSchema(configuration.requiredSchema)
+          andThen validateRequiredSchema(parameters.requiredSchema)
       )
-      validation <- validateWithMultipleSchema(data, configuration.schema)
+      validation <- validateWithMultipleSchema(data, parameters.schema)
     } yield validation
   }
 }
