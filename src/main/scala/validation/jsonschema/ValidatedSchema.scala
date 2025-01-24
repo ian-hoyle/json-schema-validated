@@ -19,7 +19,7 @@ object ValidatedSchema:
 
   import scala.jdk.CollectionConverters.*
 
-  def requiredSchemaValidated(schemaFile: Option[String])(data: List[RowData]): CSVValidationResult[List[RowData]] = {
+  def validateRequiredSchema(schemaFile: Option[String])(data: List[RowData]): CSVValidationResult[List[RowData]] = {
     schemaValidated(schemaFile, false)(data)
   }
 

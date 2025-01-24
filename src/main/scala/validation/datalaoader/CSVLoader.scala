@@ -14,32 +14,25 @@ import scala.io.Source
 
 object CSVLoader:
 
-  def csvFileValidations(csvConfiguration: ValidatorConfiguration): IO[CSVValidationResult[List[RowData]]] = {
-    IO({
-      // UTF 8 check to be added first
-      loadCSVData(csvConfiguration)
-    })
-  }
-
-  def loadCSVData(validatorConfiguration: ValidatorConfiguration): CSVValidationResult[List[RowData]] = {
-    val loaded = loadCSV(validatorConfiguration)
+  def loadCSVData(csvFile:String,idColumn:Option[String]): CSVValidationResult[List[RowData]] = {
+    val loaded = loadCSV(csvFile,idColumn)
     loaded.valid
   }
 
-  private def loadCSV(validatorConfig: ValidatorConfiguration): List[RowData] = {
-    val source = if (validatorConfig.fileToValidate.startsWith("http"))
-      Source.fromURL(URI.create(validatorConfig.fileToValidate).toASCIIString)
+  private def loadCSV(csvFile:String,idColumn:Option[String]): List[RowData] = {
+    val source = if (csvFile.startsWith("http"))
+      Source.fromURL(URI.create(csvFile).toASCIIString)
     else
-      Source.fromResource(validatorConfig.fileToValidate)
+      Source.fromResource(csvFile)
 
     val cSVReader: CSVReader = CSVReader.open(source)
-    cSVReader.allWithHeaders().map(convertToRowData(validatorConfig))
+    cSVReader.allWithHeaders().map(convertToRowData(idColumn))
       .zipWithIndex
       .map((data, index) => data.copy(row_number = Some(index + 1)))
   }
 
-  private def convertToRowData(validatorConfig: ValidatorConfiguration)(data: Map[String, String]): RowData = {
-    val assetId = getAssetId(validatorConfig.idKey, data)
+  private def convertToRowData(idColumn:Option[String])(data: Map[String, String]): RowData = {
+    val assetId = getAssetId(idColumn, data)
     RowData(None, assetId, data, None)
   }
 
