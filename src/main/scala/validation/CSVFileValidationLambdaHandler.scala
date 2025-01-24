@@ -16,9 +16,12 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
     // TODO get parameters from input
     val jsonConfigFileName = "DaBase.json"
-    val altKey = "tdrFileHeader"
-    val idKey = "Filepath"
-    val params = Parameters(jsonConfigFileName, List(jsonConfigFileName, jsonConfigFileName), Some(altKey), "sample.csv", Some(idKey), Some(jsonConfigFileName))
+    val altKey = Some("tdrFileHeader")
+    val idKey = Some("Filepath")
+    val schema = List(jsonConfigFileName, jsonConfigFileName)
+    val requiredSchema = Some(jsonConfigFileName)
+
+    val params = Parameters(jsonConfigFileName, schema, altKey, "sample.csv", idKey, requiredSchema)
 
 
     csvFileValidation(params).unsafeRunSync() match
