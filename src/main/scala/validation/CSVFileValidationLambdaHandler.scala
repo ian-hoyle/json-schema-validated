@@ -2,6 +2,7 @@ package validation
 
 import cats.data.Validated.*
 import cats.effect.IO
+import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import validation.config.ValidationConfig.prepareValidationConfiguration
@@ -20,8 +21,6 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
     val params = Parameters(jsonConfigFileName, List(jsonConfigFileName, jsonConfigFileName), Some(altKey), "sample.csv", Some(idKey), Some(jsonConfigFileName))
 
 
-    import cats.effect.unsafe.implicits.*
-
     csvFileValidation(params).unsafeRunSync() match
       case Valid(data) =>
         val response = new APIGatewayProxyResponseEvent()
@@ -38,7 +37,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
     for {
       configuration <- prepareValidationConfiguration(parameters)
       data <- IO(
-        loadCSVData(configuration.fileToValidate,configuration.idKey)
+        loadCSVData(configuration.fileToValidate, configuration.idKey)
           andThen addJsonToData(configuration.altToProperty, configuration.valueMapper)
           andThen validateRequiredSchema(configuration.requiredSchema)
       )

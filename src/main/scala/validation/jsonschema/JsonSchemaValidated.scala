@@ -41,6 +41,9 @@ object JsonSchemaValidated:
       row.copy(json = Some(json))
     }
     validatedData.valid
+    //    val validationErrors = ValidationErrors("helloFailure", Set.empty)
+    //    NonEmptyList.of(validationErrors).invalid
+
   }
 
   private def convertToJSONString(data: Map[String, Any], keyMapper: String => String, valueMapper: (String, String) => Any) = {

@@ -37,8 +37,8 @@ object ValidatedSchema:
     if (filtered.isEmpty)
       data.valid
     else
-      val r: Seq[ValidationErrors] = filtered.map(x => ValidationErrors(x._1.getOrElse("b"), x._2))
-      NonEmptyList.fromList[ValidationErrors](r.toSet.toList).get.invalid
+      val validationErrorsList: Seq[ValidationErrors] = filtered.map(x => ValidationErrors(x._1.getOrElse("b"), x._2))
+      NonEmptyList.fromList[ValidationErrors](validationErrorsList.toSet.toList).get.invalid
   }
 
   // needs fixing up
