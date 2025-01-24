@@ -8,7 +8,7 @@ import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.datalaoader.CSVLoader.loadCSVData
 import validation.jsonschema.JsonSchemaValidated.*
-import validation.jsonschema.ValidatedSchema.{CSVValidationResult, validateRequiredSchema}
+import validation.jsonschema.ValidatedSchema.{DataValidationResult, validateRequiredSchema}
 
 object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
 
@@ -33,7 +33,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
         response
   }
 
-  def csvFileValidation(parameters: Parameters): IO[CSVValidationResult[List[RowData]]] = {
+  def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
     for {
       configuration <- prepareValidationConfiguration(parameters.configFile,parameters.alternateKey)
       data <- IO(

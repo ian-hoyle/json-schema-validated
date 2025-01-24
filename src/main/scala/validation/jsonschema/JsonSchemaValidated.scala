@@ -9,19 +9,19 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import validation.RowData
 import validation.error.CSVValidationResult.combineCSVValidationResult
 import validation.error.ValidationErrors
-import validation.jsonschema.ValidatedSchema.CSVValidationResult
+import validation.jsonschema.ValidatedSchema.DataValidationResult
 
 
 object JsonSchemaValidated:
 
-  def validateWithSchema(fileValidation: CSVValidationResult[List[RowData]], schema: String): IO[CSVValidationResult[List[RowData]]] = {
+  def validateWithSchema(fileValidation: DataValidationResult[List[RowData]], schema: String): IO[DataValidationResult[List[RowData]]] = {
     fileValidation match {
       case Valid(value) => IO(ValidatedSchema.schemaValidated(Some(schema))(value))
       case Invalid(errors) => IO.pure(errors.invalid)
     }
   }
 
-  def validateWithMultipleSchema(fileValidation: CSVValidationResult[List[RowData]], schema: List[String]): IO[CSVValidationResult[List[RowData]]] = {
+  def validateWithMultipleSchema(fileValidation: DataValidationResult[List[RowData]], schema: List[String]): IO[DataValidationResult[List[RowData]]] = {
     fileValidation match {
       case Valid(value) =>
         val schemaValidations = schema.map(x => ValidatedSchema.schemaValidated(Some(x)))
@@ -35,7 +35,7 @@ object JsonSchemaValidated:
   }
 
 
-  def addJsonToData(keyMapper: String => String, valueMapper: (String,String) => Any)(data: List[RowData]): CSVValidationResult[List[RowData]] = {
+  def addJsonToData(keyMapper: String => String, valueMapper: (String,String) => Any)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     val validatedData = data.map { row =>
       val json = convertToJSONString(row.data, keyMapper, valueMapper)
       row.copy(json = Some(json))

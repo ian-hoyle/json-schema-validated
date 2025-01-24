@@ -6,7 +6,7 @@ import cats.syntax.all.catsSyntaxValidatedId
 import com.github.tototoshi.csv.CSVReader
 import validation.{RowData, ValidatorConfiguration}
 import validation.jsonschema.ValidatedSchema
-import validation.jsonschema.ValidatedSchema.CSVValidationResult
+import validation.jsonschema.ValidatedSchema.DataValidationResult
 
 import java.net.URI
 import scala.io.Source
@@ -14,7 +14,7 @@ import scala.io.Source
 
 object CSVLoader:
 
-  def loadCSVData(csvFile:String,idColumn:Option[String]): CSVValidationResult[List[RowData]] = {
+  def loadCSVData(csvFile:String,idColumn:Option[String]): DataValidationResult[List[RowData]] = {
     val loaded = loadCSV(csvFile,idColumn)
     loaded.valid
   }

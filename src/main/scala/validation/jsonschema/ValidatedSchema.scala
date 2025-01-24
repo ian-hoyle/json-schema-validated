@@ -15,15 +15,15 @@ import scala.util.{Try, Using}
 
 object ValidatedSchema:
 
-  type CSVValidationResult[A] = ValidatedNel[ValidationErrors, A]
+  type DataValidationResult[A] = ValidatedNel[ValidationErrors, A]
 
   import scala.jdk.CollectionConverters.*
 
-  def validateRequiredSchema(schemaFile: Option[String])(data: List[RowData]): CSVValidationResult[List[RowData]] = {
+  def validateRequiredSchema(schemaFile: Option[String])(data: List[RowData]): DataValidationResult[List[RowData]] = {
     schemaValidated(schemaFile, false)(data)
   }
 
-  def schemaValidated(schemaFile: Option[String], all: Boolean = true)(data: List[RowData]): CSVValidationResult[List[RowData]] = {
+  def schemaValidated(schemaFile: Option[String], all: Boolean = true)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     val jsonSchema = getJsonSchema(schemaFile.get)
     val messagesProvider:String => String = x => "message" // TODO get Messages probably by convention properties file same as schema file name but with .properties ext
     val processData = if (!all)
