@@ -19,11 +19,11 @@ object ValidatedSchema:
 
   import scala.jdk.CollectionConverters.*
 
-  def validateRequiredSchema(schemaFile: Option[String])(data: List[RowData]): DataValidationResult[List[RowData]] = {
-    schemaValidated(schemaFile, false)(data)
+  def validateRequiredSchema(schemaFile: Option[String],propertyToAlt:String=>String)(data: List[RowData]): DataValidationResult[List[RowData]] = {
+    schemaValidated(schemaFile, false,propertyToAlt)(data)
   }
 
-  def schemaValidated(schemaFile: Option[String], all: Boolean = true)(data: List[RowData]): DataValidationResult[List[RowData]] = {
+  def schemaValidated(schemaFile: Option[String], all: Boolean = true,propertyToAlt:String=>String=(x:String)=> x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     val jsonSchema = getJsonSchema(schemaFile.get)
     val messagesProvider:String => String = x => "message" // TODO get Messages probably by convention properties file same as schema file name but with .properties ext
     val processData = if (!all)
@@ -32,7 +32,7 @@ object ValidatedSchema:
       data
 
     val errors: Seq[(Option[String], Set[ValidationMessage], Map[String, Any])] = processData.map(x => (x.assetId, jsonSchema.validate(x.json.get, InputFormat.JSON).asScala.toSet, x.data))
-    val conErr: Seq[(Option[String], Set[JsonSchemaValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2,messagesProvider)))
+    val conErr: Seq[(Option[String], Set[JsonSchemaValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2,messagesProvider, x._3,propertyToAlt)))
     val filtered: Seq[(Option[String], Set[JsonSchemaValidationError])] = conErr.filter(x => x._2.nonEmpty).toList
     if (filtered.isEmpty)
       data.valid
@@ -42,12 +42,14 @@ object ValidatedSchema:
   }
 
   // needs fixing up
-  private def convertValidationMessageToError(schemaValidationMessages: Set[ValidationMessage], messageProvider:String=>String): Set[JsonSchemaValidationError] = {
+  private def convertValidationMessageToError(schemaValidationMessages: Set[ValidationMessage], messageProvider:String=>String, originalData:Map[String,Any],propertyToAlt:String=>String): Set[JsonSchemaValidationError] = {
     for {
       message <- schemaValidationMessages
       vE = {
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
-        JsonSchemaValidationError("jsonValidationErrorReason", propertyName, message.getMessageKey, messageProvider(s"$propertyName:${message.getMessageKey}"))
+        val originalProperty = propertyToAlt(propertyName)
+        val originalValue = originalData.getOrElse(originalProperty, "")
+        JsonSchemaValidationError("jsonValidationErrorReason", originalProperty, message.getMessageKey, messageProvider(s"$propertyName:${message.getMessageKey}") , originalValue.toString)
       }
     } yield vE
   }
