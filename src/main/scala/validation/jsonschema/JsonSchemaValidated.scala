@@ -24,7 +24,7 @@ object JsonSchemaValidated:
   def validateWithMultipleSchema(fileValidation: DataValidationResult[List[RowData]], schema: List[String],propertyToAll:String=>String): IO[DataValidationResult[List[RowData]]] = {
     fileValidation match {
       case Valid(value) =>
-        val schemaValidations = schema.map(x => ValidatedSchema.schemaValidated(x, true, propertyToAll))
+        val schemaValidations = schema.map(x => ValidatedSchema.schemaValidated(schemaFile = x, propertyToAlt = propertyToAll))
         val dataValidations = schemaValidations.map { validation =>
           IO(validation(value))
         }
