@@ -19,12 +19,15 @@ object ValidatedSchema:
 
   import scala.jdk.CollectionConverters.*
 
-  def validateRequiredSchema(schemaFile: Option[String],propertyToAlt:String=>String)(data: List[RowData]): DataValidationResult[List[RowData]] = {
-    schemaValidated(schemaFile, false,propertyToAlt)(data)
-  }
+  def validateRequiredSchema(schemaFile:Option[String],propertyToAlt:String=>String)(data: List[RowData]): DataValidationResult[List[RowData]] = 
+    schemaFile match {
+      case Some(schema) => schemaValidated(schema, false,propertyToAlt)(data)
+      case None => data.valid
+    }
+  
 
-  def schemaValidated(schemaFile: Option[String], all: Boolean = true,propertyToAlt:String=>String=(x:String)=> x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
-    val jsonSchema = getJsonSchema(schemaFile.get)
+  def schemaValidated(schemaFile: String, all: Boolean = true,propertyToAlt:String=>String=(x:String)=> x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
+    val jsonSchema = getJsonSchema(schemaFile)
     val messagesProvider:String => String = x => "message" // TODO get Messages probably by convention properties file same as schema file name but with .properties ext
     val processData = if (!all)
       List(data.head)
