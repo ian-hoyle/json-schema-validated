@@ -18,8 +18,8 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
     val jsonConfigFileName = "DaBase.json"
     val altKey = Some("tdrFileHeader")
     val idKey = Some("Filepath")
-    val listOfValidationSchema = List(jsonConfigFileName, jsonConfigFileName)
-    val requiredSchema = Some(jsonConfigFileName)
+    val listOfValidationSchema = List(jsonConfigFileName, "open.json")
+    val requiredSchema = Some("required.json")
 
     val params = Parameters(jsonConfigFileName, listOfValidationSchema, altKey, "sample.csv", idKey, requiredSchema)
 

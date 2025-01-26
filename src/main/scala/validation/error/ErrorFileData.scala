@@ -19,7 +19,7 @@ case class Metadata(a: String)
 
 case class JsonSchemaValidationError(validationProcess: String, property: String, errorKey: String, message: String, value: String = "")
 
-case class ValidationErrors(assetId: String, errors: Set[JsonSchemaValidationError], data: List[Metadata] = List.empty[Metadata])
+case class ValidationErrors(assetId: String, errors: Set[JsonSchemaValidationError])
 
 object ValidationErrors {
   implicit val combineValidationErrors: Monoid[List[ValidationErrors]] = new Monoid[List[ValidationErrors]]:
@@ -31,8 +31,7 @@ object ValidationErrors {
         .map { case (id, validationErrors) =>
           ValidationErrors(
             assetId = id,
-            errors = validationErrors.flatMap(_.errors).toSet,
-            data = validationErrors.flatMap(_.data).distinct
+            errors = validationErrors.flatMap(_.errors).toSet
           )
         }
         .toList

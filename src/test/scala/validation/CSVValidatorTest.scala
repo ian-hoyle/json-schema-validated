@@ -12,7 +12,7 @@ class CSVValidatorTest extends AnyFunSuite:
     val jsonConfigFileName = "DaBase.json"
     val altKey = "tdrFileHeader"
     val idKey = "Filepath"
-    val params = Parameters(jsonConfigFileName, List(jsonConfigFileName,jsonConfigFileName), Some(altKey), "sample.csv", Some(idKey),Some(jsonConfigFileName))
+    val params = Parameters(jsonConfigFileName, List(jsonConfigFileName,"open.json"), Some(altKey), "sample.csv", Some(idKey),Some(jsonConfigFileName))
 
     import cats.effect.unsafe.implicits.*
     val runMe = CSVFileValidationLambdaHandler.csvFileValidation(params).unsafeRunSync()
@@ -20,6 +20,7 @@ class CSVValidatorTest extends AnyFunSuite:
       case Valid(data) => println(data)
         fail("Should have failed")
       case Invalid(error) =>
-        assert(error.toList.size == 1)
+        println(error)
+        assert(error.toList.size == 2)
 
   }

@@ -35,7 +35,7 @@ object ValidatedSchema:
       data
 
     val errors: Seq[(Option[String], Set[ValidationMessage], Map[String, Any])] = processData.map(x => (x.assetId, jsonSchema.validate(x.json.get, InputFormat.JSON).asScala.toSet, x.data))
-    val conErr: Seq[(Option[String], Set[JsonSchemaValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2,messagesProvider, x._3,propertyToAlt)))
+    val conErr: Seq[(Option[String], Set[JsonSchemaValidationError])] = errors.map(x => (x._1, convertValidationMessageToError(x._2,schemaFile,messagesProvider, x._3,propertyToAlt)))
     val filtered: Seq[(Option[String], Set[JsonSchemaValidationError])] = conErr.filter(x => x._2.nonEmpty).toList
     if (filtered.isEmpty)
       data.valid
@@ -45,14 +45,18 @@ object ValidatedSchema:
   }
 
   // needs fixing up
-  private def convertValidationMessageToError(schemaValidationMessages: Set[ValidationMessage], messageProvider:String=>String, originalData:Map[String,Any],propertyToAlt:String=>String): Set[JsonSchemaValidationError] = {
+  private def convertValidationMessageToError(schemaValidationMessages: Set[ValidationMessage],
+                                              schemaFile:String,
+                                              messageProvider:String=>String,
+                                              originalData:Map[String,Any],
+                                              propertyToAlt:String=>String): Set[JsonSchemaValidationError] = {
     for {
       message <- schemaValidationMessages
       vE = {
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
         val originalProperty = propertyToAlt(propertyName)
         val originalValue = originalData.getOrElse(originalProperty, "")
-        JsonSchemaValidationError("jsonValidationErrorReason", originalProperty, message.getMessageKey, messageProvider(s"$propertyName:${message.getMessageKey}") , originalValue.toString)
+        JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(s"$propertyName:${message.getMessageKey}") , originalValue.toString)
       }
     } yield vE
   }
