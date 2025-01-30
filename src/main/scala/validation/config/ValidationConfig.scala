@@ -50,7 +50,7 @@ object ValidationConfig:
       case _ => a
   }
 
-  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
+  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String],keyToOutAlternate:Option[String]): IO[ValidatorConfiguration] = {
     IO({
       val csvConfigurationReader = for {
         altHeaderToPropertyMapper <- Reader(ValidationConfig.alternateKeyToPropertyMapper)
@@ -58,7 +58,7 @@ object ValidationConfig:
         valueMapper <- Reader(ValidationConfig.stringValueMapper)
       } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
         valueMapper)
-      csvConfigurationReader.run(ConfigParameters(configFile,alternateKey,alternateKey))
+      csvConfigurationReader.run(ConfigParameters(configFile,alternateKey,keyToOutAlternate))
     }
     ) //TODO handle error with raiseError that contains ValidationResult
   }

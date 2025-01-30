@@ -10,7 +10,7 @@ class CSVValidatorTest extends AnyFunSuite:
     val jsonConfigFileName = "DaBase.json"
     val altKey = "tdrFileHeader"
     val idKey = "Filepath"
-    val params = Parameters(jsonConfigFileName, List(jsonConfigFileName, "open.json"), Some(altKey), "sample.csv", Some(idKey), Some(jsonConfigFileName))
+    val params = Parameters(jsonConfigFileName, List(jsonConfigFileName, "open.json"), Some(altKey), "sample.csv", Some(idKey), Some(jsonConfigFileName),Some(altKey))
 
     import cats.effect.unsafe.implicits.*
     val runMe = CSVFileValidationLambdaHandler.csvFileValidation(params).unsafeRunSync()

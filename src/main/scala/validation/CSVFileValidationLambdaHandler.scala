@@ -21,7 +21,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
     val listOfValidationSchema = List(jsonConfigFileName, "open.json")
     val requiredSchema = Some("required.json")
 
-    val params = Parameters(jsonConfigFileName, listOfValidationSchema, altKey, "sample.csv", idKey, requiredSchema)
+    val params = Parameters(jsonConfigFileName, listOfValidationSchema, altKey, "sample.csv", idKey, requiredSchema,altKey)
 
 
     csvFileValidation(params).unsafeRunSync() match
@@ -38,7 +38,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
   def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
     for {
-      configuration <- prepareValidationConfiguration(parameters.configFile,parameters.alternateKey)
+      configuration <- prepareValidationConfiguration(parameters.configFile,parameters.alternateKey,parameters.alternateKey)
       data <- IO(
         loadCSVData(parameters.fileToValidate, parameters.idKey)
           andThen addJsonToData(configuration.altToProperty, configuration.valueMapper)
