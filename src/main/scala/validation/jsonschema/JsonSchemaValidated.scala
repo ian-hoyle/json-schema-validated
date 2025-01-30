@@ -35,7 +35,7 @@ object JsonSchemaValidated:
   }
 
 
-  def addJsonToData(keyMapper: String => String, valueMapper: (String,String) => Any)(data: List[RowData]): DataValidationResult[List[RowData]] = {
+  def addJsonForValidation(keyMapper: String => String, valueMapper: (String,String) => Any)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     val validatedData = data.map { row =>
       val json = convertToJSONString(row.data, keyMapper, valueMapper)
       row.copy(json = Some(json))
