@@ -18,20 +18,20 @@ object ValidationConfig:
     else
       val r: Map[String, String] = jsonMap.toMap.map({
         case (a, c) => (c.obj.get("alternateKeys") match {
-          case Some(arr: Arr) => getAlternate(parameters, a, arr)
+          case Some(arr: Arr) => getAlternate(parameters.alternates.get, a, arr)
           case _ => a
         }, a)
       })
       (x: String) => r.getOrElse(x, x)
 
   def propertyToAlternateKeyMapper(parameters: ConfigParameters): String => String =
-    if (parameters.alternates.isEmpty)
+    if (parameters.keyToOutAlternate.isEmpty)
       (x: String) => x
     else
       val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
       val r: Map[String, String] = jsonMap.toMap.map({
         case (a, c) => (a, c.obj.get("alternateKeys") match {
-          case Some(arr: ujson.Arr) => getAlternate(parameters, a, arr)
+          case Some(arr: ujson.Arr) => getAlternate(parameters.keyToOutAlternate.get, a, arr)
           case _ => a
         })
       })
@@ -44,8 +44,8 @@ object ValidationConfig:
     (property: String, value: String) => propertyToValueConversionMap.getOrElse(property, (x:Any) => x)(value)
   }
 
-  private def getAlternate(parameters: ConfigParameters, a: String, arr: Arr) = {
-    arr.value.head.obj.get(parameters.alternates.get) match
+  private def getAlternate(alternate: String, a: String, arr: Arr) = {
+    arr.value.head.obj.get(alternate) match
       case Some(v) => v.str
       case _ => a
   }
@@ -58,7 +58,7 @@ object ValidationConfig:
         valueMapper <- Reader(ValidationConfig.stringValueMapper)
       } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
         valueMapper)
-      csvConfigurationReader.run(ConfigParameters(configFile,alternateKey))
+      csvConfigurationReader.run(ConfigParameters(configFile,alternateKey,alternateKey))
     }
     ) //TODO handle error with raiseError that contains ValidationResult
   }

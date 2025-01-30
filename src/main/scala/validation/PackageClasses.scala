@@ -11,6 +11,6 @@ case class Parameters(configFile: String,
                       fileToValidate: String,
                       idKey: Option[String] = None,
                       requiredSchema: Option[String] = None)
-case class ConfigParameters(csConfig: String, alternates: Option[String])
+case class ConfigParameters(csConfig: String, alternates: Option[String],keyToOutAlternate: Option[String] = None)
 
 
