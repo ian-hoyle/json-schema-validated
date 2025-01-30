@@ -24,14 +24,14 @@ object ValidationConfig:
       })
       (x: String) => r.getOrElse(x, x)
 
-  def propertyToAlternateKeyMapper(parameters: ConfigParameters): String => String =
-    if (parameters.keyToOutAlternate.isEmpty)
+  def propertyToInAlternateKeyMapper(parameters: ConfigParameters): String => String =
+    if (parameters.alternates.isEmpty)
       (x: String) => x
     else
       val jsonMap: LinkedHashMap[String, Value] = loadProperties(parameters.csConfig)
       val r: Map[String, String] = jsonMap.toMap.map({
         case (a, c) => (a, c.obj.get("alternateKeys") match {
-          case Some(arr: ujson.Arr) => getAlternate(parameters.keyToOutAlternate.get, a, arr)
+          case Some(arr: ujson.Arr) => getAlternate(parameters.alternates.get, a, arr)
           case _ => a
         })
       })
@@ -50,15 +50,15 @@ object ValidationConfig:
       case _ => a
   }
 
-  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String],keyToOutAlternate:Option[String]): IO[ValidatorConfiguration] = {
+  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
     IO({
       val csvConfigurationReader = for {
         altHeaderToPropertyMapper <- Reader(ValidationConfig.alternateKeyToPropertyMapper)
-        propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToAlternateKeyMapper)
+        propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToInAlternateKeyMapper)
         valueMapper <- Reader(ValidationConfig.stringValueMapper)
       } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
         valueMapper)
-      csvConfigurationReader.run(ConfigParameters(configFile,alternateKey,keyToOutAlternate))
+      csvConfigurationReader.run(ConfigParameters(configFile, alternateKey))
     }
     ) //TODO handle error with raiseError that contains ValidationResult
   }

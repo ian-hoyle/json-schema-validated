@@ -43,7 +43,7 @@ object ValidatedSchema:
     case class ConvertedErrors(assetId: Option[String], errors: Set[JsonSchemaValidationError])
     val convertedErrors: List[ConvertedErrors] = errors.map(validationError =>
       ConvertedErrors(validationError.assetId,
-      convertSchmeaValidationErrorToJSValidationError(validationError.errors,
+      convertSchemaValidationErrorToJSValidationError(validationError.errors,
         schemaFile,
         messagesProvider,
         validationError.data,
@@ -59,7 +59,7 @@ object ValidatedSchema:
   }
 
   // needs fixing up
-  private def convertSchmeaValidationErrorToJSValidationError(schemaValidationMessages: Set[ValidationMessage],
+  private def convertSchemaValidationErrorToJSValidationError(schemaValidationMessages: Set[ValidationMessage],
                                               schemaFile: String,
                                               messageProvider: String => String,
                                               originalData: Map[String, Any],
