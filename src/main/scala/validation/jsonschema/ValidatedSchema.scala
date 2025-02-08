@@ -69,7 +69,7 @@ object ValidatedSchema:
       vE = {
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
         val originalProperty = propertyToAlt(propertyName)
-        val originalValue = originalData.getOrElse(originalProperty, "")
+        val originalValue = originalData.getOrElse(propertyName, "")
         JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(s"$propertyName:${message.getMessageKey}"), originalValue.toString)
       }
     } yield vE

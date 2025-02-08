@@ -21,7 +21,7 @@ object JsonSchemaValidated:
     }
   }
 
-  def validateWithMultipleSchema(fileValidation: DataValidationResult[List[RowData]], schema: List[String],propertyToAll:String=>String): IO[DataValidationResult[List[RowData]]] = {
+  def validateWithMultipleSchema(fileValidation: DataValidationResult[List[RowData]], schema: List[String], propertyToAll: String => String): IO[DataValidationResult[List[RowData]]] = {
     fileValidation match {
       case Valid(value) =>
         val schemaValidations = schema.map(x => ValidatedSchema.schemaValidated(schemaFile = x, propertyToAlt = propertyToAll))
@@ -35,9 +35,14 @@ object JsonSchemaValidated:
   }
 
 
-  def addJsonForValidation(keyMapper: String => String, valueMapper: (String,String) => Any)(data: List[RowData]): DataValidationResult[List[RowData]] = {
+  def mapKeys(keyMapper: String => String)(inputData: List[RowData]): DataValidationResult[List[RowData]] = {
+    val validatedData = inputData.map { row => row.copy(data = row.data.map { case (k, v) => keyMapper(k) -> v }) }
+    validatedData.valid
+  }
+
+  def addJsonForValidation(valueMapper: (String, String) => Any)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     val validatedData = data.map { row =>
-      val json = convertToJSONString(row.data, keyMapper, valueMapper)
+      val json = convertToJSONString(row.data, valueMapper)
       row.copy(json = Some(json))
     }
     validatedData.valid
@@ -46,18 +51,16 @@ object JsonSchemaValidated:
 
   }
 
-  private def convertToJSONString(data: Map[String, Any], keyMapper: String => String, valueMapper: (String, String) => Any) = {
+  private def convertToJSONString(data: Map[String, Any], valueMapper: (String, String) => Any) = {
     val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
     val convertedData = data.map {
       case (header, value: String) =>
-        val property = keyMapper(header)
-        (property,
+        (header,
           if (value.isEmpty) null
-          else valueMapper(property,value)
+          else valueMapper(header, value)
         )
       case (header, value) =>
-        val property = keyMapper(header)
-        (property, value)
+        (header, value)
     }
     val generatedJson = mapper.writeValueAsString(convertedData)
     generatedJson
