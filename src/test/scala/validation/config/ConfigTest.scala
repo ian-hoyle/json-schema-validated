@@ -6,7 +6,7 @@ import validation.{ConfigParameters, Parameters}
 class ConfigTest extends AnyFunSuite:
   test("Load config from Resources") {
     val jsonConfigFileName = "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
-    val jsonConfigFileResources = "DaBase.json"
+    val jsonConfigFileResources = "organisationBase.json"
     val altKey = "tdrFileHeader"
     val idKey = "File path"
     val params = ConfigParameters(jsonConfigFileResources, Some(altKey))
