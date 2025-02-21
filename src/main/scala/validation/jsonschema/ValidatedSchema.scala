@@ -9,6 +9,7 @@ import validation.error.{JsonSchemaValidationError, ValidationErrors}
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URI
+import java.util.Properties
 import scala.io.Source
 import scala.util.{Try, Using}
 
@@ -28,7 +29,7 @@ object ValidatedSchema:
 
   def schemaValidated(schemaFile: String, all: Boolean = true, propertyToAlt: String => String = (x: String) => x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     val jsonSchema = getJsonSchema(schemaFile)
-    val messagesProvider: String => String = x => "message" // TODO get Messages probably by convention properties file same as schema file name but with .properties ext
+    val messagesProvider: String => String = loadProperties(schemaFile)
     val processData = if (!all)
       List(data.head)
     else
@@ -37,17 +38,17 @@ object ValidatedSchema:
     case class SchemaValidationErrors(assetId: Option[String], errors: Set[ValidationMessage], data: Map[String, Any])
     val errors: List[SchemaValidationErrors] = processData.map(data =>
       SchemaValidationErrors(data.assetId,
-      jsonSchema.validate(data.json.get, InputFormat.JSON).asScala.toSet,
-      data.data))
+        jsonSchema.validate(data.json.get, InputFormat.JSON).asScala.toSet,
+        data.data))
 
     case class ConvertedErrors(assetId: Option[String], errors: Set[JsonSchemaValidationError])
     val convertedErrors: List[ConvertedErrors] = errors.map(validationError =>
       ConvertedErrors(validationError.assetId,
-      convertSchemaValidationErrorToJSValidationError(validationError.errors,
-        schemaFile,
-        messagesProvider,
-        validationError.data,
-        propertyToAlt)))
+        convertSchemaValidationErrorToJSValidationError(validationError.errors,
+          schemaFile,
+          messagesProvider,
+          validationError.data,
+          propertyToAlt)))
 
     val filtered: List[ConvertedErrors] = convertedErrors.filter(x => x.errors.nonEmpty)
 
@@ -60,17 +61,17 @@ object ValidatedSchema:
 
   // needs fixing up
   private def convertSchemaValidationErrorToJSValidationError(schemaValidationMessages: Set[ValidationMessage],
-                                              schemaFile: String,
-                                              messageProvider: String => String,
-                                              originalData: Map[String, Any],
-                                              propertyToAlt: String => String): Set[JsonSchemaValidationError] = {
+                                                              schemaFile: String,
+                                                              messageProvider: String => String,
+                                                              originalData: Map[String, Any],
+                                                              propertyToAlt: String => String): Set[JsonSchemaValidationError] = {
     for {
       message <- schemaValidationMessages
       vE = {
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
         val originalProperty = propertyToAlt(propertyName)
         val originalValue = originalData.getOrElse(propertyName, "")
-        JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(s"$propertyName:${message.getMessageKey}"), originalValue.toString)
+        JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(s"$propertyName.${message.getMessageKey}"), originalValue.toString)
       }
     } yield vE
   }
@@ -88,6 +89,16 @@ object ValidatedSchema:
 
     val schemaValidatorsConfig = SchemaValidatorsConfig.builder().formatAssertionsEnabled(true).build()
     jsonSchemaFactory.getSchema(inputStream, schemaValidatorsConfig)
+  }
+
+  def loadProperties(jsonFileName: String)(key: String): String = {
+    val propertiesFileName = jsonFileName.replace(".json", ".properties")
+    val properties = new Properties()
+
+    Using(Source.fromResource(propertiesFileName)) { source =>
+      properties.load(source.bufferedReader())
+    }
+    properties.getProperty(key, key)
   }
 
   private case class ValidationError(reason: String, propertyName: String, key: String)
