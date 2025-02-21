@@ -2,6 +2,8 @@ package validation
 
 import cats.data.Validated.*
 import org.scalatest.funsuite.AnyFunSuite
+import io.circe.syntax._
+import io.circe.generic.auto._
 
 
 class CSVValidatorTest extends AnyFunSuite:
@@ -17,6 +19,7 @@ class CSVValidatorTest extends AnyFunSuite:
     runMe match
       case Valid(data) => fail("Should have failed")
       case Invalid(error) =>
+        println(error.asJson)
         assert(error.head.assetId equals "test/test2.txt")
         assert(error.head.errors.toList.head.errorKey equals "enum")
         assert(error.head.errors.toList.head.value equals "OpenX")

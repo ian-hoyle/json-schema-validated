@@ -5,6 +5,9 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.*
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import io.circe.generic.auto.*
+import io.circe.parser.decode
+import io.circe.syntax.*
 import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.datalaoader.CSVLoader.loadCSVData
 import validation.jsonschema.JsonSchemaValidated.*
@@ -14,26 +17,27 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    // TODO get parameters from input
-    val jsonConfigFileName = "organisationBase.json"
-    val altKey = Some("tdrFileHeader")
-    val idKey = Some("Filepath")
-    val listOfValidationSchema = List(jsonConfigFileName, "openRecord.json")
-    val requiredSchema = Some("myRequiredFields.json")
 
-    val params = Parameters(jsonConfigFileName, listOfValidationSchema, altKey, "sample.csv", idKey, requiredSchema)
+    val requestBody = input.getBody
 
-
-    csvFileValidation(params).unsafeRunSync() match
-      case Valid(data) =>
+    decode[Parameters](requestBody) match {
+      case Right(params) =>
+        csvFileValidation(params).unsafeRunSync() match
+          case Valid(data) =>
+            val response = new APIGatewayProxyResponseEvent()
+            response.setStatusCode(200)
+            response
+          case Invalid(error) =>
+            val response = new APIGatewayProxyResponseEvent()
+            response.setBody(error.toList.asJson.noSpaces)
+            response.setStatusCode(400)
+            response
+      case Left(error) =>
         val response = new APIGatewayProxyResponseEvent()
-        // TODO Add ValidationResult as JSON to body
-        response.setStatusCode(200)
+        response.setBody(s"Invalid input: ${error.getMessage}")
+        response.setStatusCode(400)
         response
-      case Invalid(error) =>
-        val response = new APIGatewayProxyResponseEvent()
-        response.setStatusCode(500)
-        response
+    }
   }
 
   def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
@@ -43,9 +47,9 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
         loadCSVData(parameters.fileToValidate, parameters.idKey)
           andThen mapKeys(configuration.altInToKey)
           andThen addJsonForValidation(configuration.valueMapper)
-          andThen validateRequiredSchema(parameters.requiredSchema,configuration.keyToAltIn)
+          andThen validateRequiredSchema(parameters.requiredSchema, configuration.keyToAltIn)
       )
-      validation <- validateWithMultipleSchema(data, parameters.schema,configuration.keyToAltIn)
+      validation <- validateWithMultipleSchema(data, parameters.schema, configuration.keyToAltIn)
     } yield validation
   }
 }
