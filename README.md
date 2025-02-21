@@ -15,6 +15,10 @@
 - Written in Scala using Cats data types and IO
 - Unit tests using ScalaTest
 
+## Example usage
+
+### CSV Validation
+
 The `csvFileValidation` method in the `CSVFileValidationLambdaHandler` class is responsible for validating CSV data against multiple JSON schemas. Here is the method with a brief explanation:
 
 ```scala
@@ -45,6 +49,9 @@ def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowD
 - **validateWithMultipleSchema**: Validates the transformed data against multiple JSON schemas.
 
 The method returns an `IO` containing the result of the data validation.
+
+### Configuration Loading
+
 The `prepareValidationConfiguration` method in the `ValidationConfig` class is responsible for preparing the validation configuration using the provided config file and alternate key. Here is the method with a brief explanation:
 
 ```scala
