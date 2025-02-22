@@ -52,7 +52,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
           val response = new APIGatewayProxyResponseEvent()
           response.setBody(s"Invalid input: ${error.getMessage}")
           response.setHeaders(headers.asJava)
-          response.setStatusCode(200)
+          response.setStatusCode(400)
           response
       }
   }
