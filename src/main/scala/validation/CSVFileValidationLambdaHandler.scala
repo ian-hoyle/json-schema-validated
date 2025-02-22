@@ -21,33 +21,27 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
     val requestBody = input.getBody
 
-    val response = new APIGatewayProxyResponseEvent()
-   // response.setBody(s"Invalid input: ${error.getMessage}")
-    response.setHeaders(headers.asJava)
-    response.setStatusCode(200)
-    response
-
-//    decode[Parameters](requestBody) match {
-//      case Right(params) =>
-//        csvFileValidation(params).unsafeRunSync() match
-//          case Valid(data) =>
-//            val response = new APIGatewayProxyResponseEvent()
-//            response.setHeaders(headers.asJava)
-//            response.setStatusCode(200)
-//            response
-//          case Invalid(error) =>
-//            val response = new APIGatewayProxyResponseEvent()
-//            response.setBody(error.toList.asJson.noSpaces)
-//            response.setHeaders(headers.asJava)
-//            response.setStatusCode(400)
-//            response
-//      case Left(error) =>
-//        val response = new APIGatewayProxyResponseEvent()
-//        response.setBody(s"Invalid input: ${error.getMessage}")
-//        response.setHeaders(headers.asJava)
-//        response.setStatusCode(400)
-//        response
- //   }
+    decode[Parameters](requestBody) match {
+      case Right(params) =>
+        csvFileValidation(params).unsafeRunSync() match
+          case Valid(data) =>
+            val response = new APIGatewayProxyResponseEvent()
+            response.setHeaders(headers.asJava)
+            response.setStatusCode(200)
+            response
+          case Invalid(error) =>
+            val response = new APIGatewayProxyResponseEvent()
+            response.setBody(error.toList.asJson.noSpaces)
+            response.setHeaders(headers.asJava)
+            response.setStatusCode(400)
+            response
+      case Left(error) =>
+        val response = new APIGatewayProxyResponseEvent()
+        response.setBody(s"Invalid input: ${error.getMessage}")
+        response.setHeaders(headers.asJava)
+        response.setStatusCode(400)
+        response
+    }
   }
 
   def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
