@@ -21,26 +21,33 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
     val requestBody = input.getBody
 
-    decode[Parameters](requestBody) match {
-      case Right(params) =>
-        csvFileValidation(params).unsafeRunSync() match
-          case Valid(data) =>
-            val response = new APIGatewayProxyResponseEvent()
-            response.setStatusCode(200)
-            response
-          case Invalid(error) =>
-            val response = new APIGatewayProxyResponseEvent()
-            response.setBody(error.toList.asJson.noSpaces)
-            response.setHeaders(headers.asJava)
-            response.setStatusCode(400)
-            response
-      case Left(error) =>
-        val response = new APIGatewayProxyResponseEvent()
-        response.setBody(s"Invalid input: ${error.getMessage}")
-        response.setHeaders(headers.asJava)
-        response.setStatusCode(400)
-        response
-    }
+    val response = new APIGatewayProxyResponseEvent()
+   // response.setBody(s"Invalid input: ${error.getMessage}")
+    response.setHeaders(headers.asJava)
+    response.setStatusCode(200)
+    response
+
+//    decode[Parameters](requestBody) match {
+//      case Right(params) =>
+//        csvFileValidation(params).unsafeRunSync() match
+//          case Valid(data) =>
+//            val response = new APIGatewayProxyResponseEvent()
+//            response.setHeaders(headers.asJava)
+//            response.setStatusCode(200)
+//            response
+//          case Invalid(error) =>
+//            val response = new APIGatewayProxyResponseEvent()
+//            response.setBody(error.toList.asJson.noSpaces)
+//            response.setHeaders(headers.asJava)
+//            response.setStatusCode(400)
+//            response
+//      case Left(error) =>
+//        val response = new APIGatewayProxyResponseEvent()
+//        response.setBody(s"Invalid input: ${error.getMessage}")
+//        response.setHeaders(headers.asJava)
+//        response.setStatusCode(400)
+//        response
+ //   }
   }
 
   def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
@@ -57,10 +64,9 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
   }
 
   private val headers = Map[String, String](
-    "Access-Control-Allow-Origin" -> "https://ian-hoyle.github.io",
+    "Access-Control-Allow-Origin" -> "*",
     "Access-Control-Allow-Methods" -> "OPTIONS, POST",
-    "Access-Control-Allow-Headers" -> "Content-Type, Authorization",
-    "Access-Control-Allow-Credentials" -> "true"
+    "Access-Control-Allow-Headers" -> "Content-Type, Authorization"
   )
 }
 
