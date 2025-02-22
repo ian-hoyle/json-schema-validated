@@ -1,3 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" class="govuk-template">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validate CSV File</title>
+    <!-- GOV.UK Frontend -->
+    <link rel="stylesheet" href="https://cdn.ons.gov.uk/sdc/design-system/48.0.0/css/main.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+        .govuk-main-wrapper {
+            padding-top: 20px;
+        }
+        .form-container {
+            display: flex;
+            justify-content: center;
+        }
+        .form-content {
+            width: 100%;
+            max-width: 600px;
+        }
+        .govuk-form-group {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body class="govuk-template__body">
+<script>
+    document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
+</script>
+<!-- Header -->
+<header class="govuk-header" role="banner" data-module="govuk-header">
+    <div class="govuk-header__container govuk-width-container">
+        <div class="govuk-header__logo">
+                <span class="govuk-header__logotype">
+                    <span class="govuk-header__logotype-text">
+                    </span>
+                </span>
+        </div>
+    </div>
+</header>
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper" id="main-content" role="main">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full form-container">
+                <div class="form-content">
+                    <h1 class="govuk-heading-xl">Validate CSV File</h1>
+                    <!-- Error Summary -->
+                    <div class="govuk-error-summary hidden" id="error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
+                        <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
+                        <div class="govuk-error-summary__body" id="error-list"></div>
+                    </div>
+                    <!-- Success Banner -->
+                    <div class="govuk-notification-banner hidden" id="success-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+                        <div class="govuk-notification-banner__header">
+                            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">Success</h2>
+                        </div>
+                        <div class="govuk-notification-banner__content" id="success-content"></div>
+                    </div>
+                    <!-- Form -->
+                    <form id="lambdaForm" novalidate>
+                        <table>
+                            <tr class="govuk-form-group">
+                                <td><label class="govuk-label" for="configFile">JSON Config File Name</label></td>
+                                <td><input class="govuk-input" id="configFile" name="configFile" type="text" required value="organisationBase.json"></td>
+                                <td>organisationBase.json</td>
+                            </tr>
+                            <tr class="govuk-form-group">
+                                <td><label class="govuk-label" for="schema">List of Validation Schema (comma-separated)</label></td>
+                                <td><input class="govuk-input" id="schema" name="schema" type="text" required value="closedRecord.json, openRecord.json"></td>
+                                <td>closedRecord.json, openRecord.json</td>
+                            </tr>
+                            <tr class="govuk-form-group">
+                                <td><label class="govuk-label" for="alternateKey">Alt Key</label></td>
+                                <td><input class="govuk-input" id="alternateKey" name="alternateKey" type="text" value="tdrFileHeader"></td>
+                                <td>tdrFileHeader</td>
+                            </tr>
+                            <tr class="govuk-form-group">
+                                <td><label class="govuk-label" for="fileToValidate">File to Validate</label></td>
+                                <td><input class="govuk-input" id="fileToValidate" name="fileToValidate" type="text" required value="sample.csv"></td>
+                                <td>sample.csv</td>
+                            </tr>
+                            <tr class="govuk-form-group">
+                                <td><label class="govuk-label" for="idKey">ID Key</label></td>
+                                <td><input class="govuk-input" id="idKey" name="idKey" type="text" value="Filepath"></td>
+                                <td>Filepath</td>
+                            </tr>
+                            <tr class="govuk-form-group">
+                                <td><label class="govuk-label" for="requiredSchema">Required Schema</label></td>
+                                <td><input class="govuk-input" id="requiredSchema" name="requiredSchema" type="text" value="myRequiredSchema.json"></td>
+                                <td>myRequiredSchema.json</td>
+                            </tr>
+                        </table>
+                        <button class="govuk-button" type="submit">Send to Lambda</button>
+                        <button class="govuk-button" type="button" id="testButton">Test</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('lambdaForm');
@@ -35,7 +145,7 @@
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(JSON.stringify(errorData, null, 2));
+                    throw new Error(errorData.message || 'An error occurred');
                 }
                 const responseData = await response.json();
                 showSuccess(responseData);
@@ -98,3 +208,5 @@
         }
     });
 </script>
+</body>
+</html>
