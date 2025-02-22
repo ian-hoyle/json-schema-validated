@@ -12,6 +12,7 @@ import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.datalaoader.CSVLoader.loadCSVData
 import validation.jsonschema.JsonSchemaValidated.*
 import validation.jsonschema.ValidatedSchema.{DataValidationResult, validateRequiredSchema}
+import scala.jdk.CollectionConverters.*
 
 object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
 
@@ -30,11 +31,13 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
           case Invalid(error) =>
             val response = new APIGatewayProxyResponseEvent()
             response.setBody(error.toList.asJson.noSpaces)
+            response.setHeaders(headers.asJava)
             response.setStatusCode(400)
             response
       case Left(error) =>
         val response = new APIGatewayProxyResponseEvent()
         response.setBody(s"Invalid input: ${error.getMessage}")
+        response.setHeaders(headers.asJava)
         response.setStatusCode(400)
         response
     }
@@ -52,5 +55,12 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       validation <- validateWithMultipleSchema(data, parameters.schema, configuration.keyToAltIn)
     } yield validation
   }
+
+  private val headers = Map[String, String](
+    "Access-Control-Allow-Origin" -> "https://ian-hoyle.github.io",
+    "Access-Control-Allow-Methods" -> "OPTIONS, POST",
+    "Access-Control-Allow-Headers" -> "Content-Type, Authorization",
+    "Access-Control-Allow-Credentials" -> "true"
+  )
 }
 
