@@ -69,6 +69,11 @@
                     <!-- Form -->
                     <form id="lambdaForm" novalidate>
                         <table>
+                             <tr class="govuk-form-group">
+                                <td><label class="govuk-label" for="fileToValidate">File to Validate</label></td>
+                                <td><input class="govuk-input" id="fileToValidate" name="fileToValidate" type="text" required value="sample.csv"></td>
+                                <td>sample.csv</td>
+                            </tr>
                             <tr class="govuk-form-group">
                                 <td><label class="govuk-label" for="configFile">JSON Config File Name</label></td>
                                 <td><input class="govuk-input" id="configFile" name="configFile" type="text" required value="config.json"></td>
@@ -83,11 +88,6 @@
                                 <td><label class="govuk-label" for="alternateKey">Alt Key</label></td>
                                 <td><input class="govuk-input" id="alternateKey" name="alternateKey" type="text" value="TDRMetadataUpload"></td>
                                 <td>TDRMetadataUpload</td>
-                            </tr>
-                            <tr class="govuk-form-group">
-                                <td><label class="govuk-label" for="fileToValidate">File to Validate</label></td>
-                                <td><input class="govuk-input" id="fileToValidate" name="fileToValidate" type="text" required value="sample.csv"></td>
-                                <td>sample.csv</td>
                             </tr>
                             <tr class="govuk-form-group">
                                 <td><label class="govuk-label" for="idKey">ID Key</label></td>
