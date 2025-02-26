@@ -31,8 +31,8 @@ object ConfigUtils:
       case "boolean" =>
         (str: String) =>
           str.toUpperCase match {
-            case "YES" | "true" => true
-            case "NO" | "false" => false
+            case "YES" | "TRUE" => true
+            case "NO" | "FALSE" => false
             case _ => str
           }
       case _ => (str:String) => str
