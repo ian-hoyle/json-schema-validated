@@ -149,7 +149,7 @@
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'An error occurred');
                 }
-                const responseData = await response.json();
+                const responseData = await response;
                 showSuccess(responseData);
                 form.reset();
             } catch (error) {
@@ -205,7 +205,7 @@
             const successContent = document.getElementById('success-content');
             successContent.innerHTML = `
                 <p class="govuk-body">Data sent successfully</p>
-                <pre class="govuk-body">${JSON.stringify(responseData, null, 2)}</pre>
+
             `;
         }
     });
