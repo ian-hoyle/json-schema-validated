@@ -147,7 +147,7 @@
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || 'An error occurred');
+                    throw new Error(errorData.message || 'Validation failed');
                 }
                 const responseData = await response;
                 showSuccess(responseData);
