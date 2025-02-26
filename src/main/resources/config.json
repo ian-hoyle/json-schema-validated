@@ -72,7 +72,7 @@
       "domainKeys": [
         {
           "domain": "TDRMetadataUpload",
-          "domainKey": "Is the description sensitive for the public"
+          "domainKey": "Is the description sensitive for the public?"
         }
       ]
     },
