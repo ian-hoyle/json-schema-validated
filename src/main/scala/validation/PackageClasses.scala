@@ -6,6 +6,11 @@ case class ValidatorConfiguration(altInToKey: String => String, keyToAltIn: Stri
 
 // Comes from arguments
 case class Parameters(configFile: String, schema: List[String], alternateKey: Option[String], fileToValidate: String, idKey: Option[String] = None, requiredSchema: Option[String] = None, keyToOutAlternate: Option[String]=None)
-case class ConfigParameters(csConfig: String, alternates: Option[String])
+case class ConfigParameters(csConfig: String, alternates: Option[String], baseSchema: String)
+case class JsonConfig(configItems:List[ConfigItem])
+case class ConfigItem(key:String,domainKeys:Option[List[DomainKey]], tdrMetadataDownloadIndex:Option[Int], domainValidations:Option[List[DomainValidation]])
+case class DomainKey(domain:String,domainKey:String)
+case class DomainValidation(domain:String,domainValidation:String)
+
 
 

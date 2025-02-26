@@ -26,35 +26,28 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
 
-    if (input.getHttpMethod == "OPTIONS")
-      val responsea = new APIGatewayProxyResponseEvent()
-      responsea.setHeaders(headers.asJava)
-      responsea.setStatusCode(200)
-      responsea
-
-    else
-      val requestBody = input.getBody
-      decode[Parameters](requestBody) match {
-        case Right(params) =>
-          csvFileValidation(params).unsafeRunSync() match
-            case Valid(data) =>
-              val response = new APIGatewayProxyResponseEvent()
-              response.setHeaders(headers.asJava)
-              response.setStatusCode(200)
-              response
-            case Invalid(error) =>
-              val response = new APIGatewayProxyResponseEvent()
-              response.setBody(error.toList.asJson.noSpaces)
-              response.setHeaders(headers.asJava)
-              response.setStatusCode(400)
-              response
-        case Left(error) =>
-          val response = new APIGatewayProxyResponseEvent()
-          response.setBody(s"Invalid input: ${error.getMessage}")
-          response.setHeaders(headers.asJava)
-          response.setStatusCode(400)
-          response
-      }
+    val requestBody = input.getBody
+    decode[Parameters](requestBody) match {
+      case Right(params) =>
+        csvFileValidation(params).unsafeRunSync() match
+          case Valid(data) =>
+            val response = new APIGatewayProxyResponseEvent()
+            response.setHeaders(headers.asJava)
+            response.setStatusCode(200)
+            response
+          case Invalid(error) =>
+            val response = new APIGatewayProxyResponseEvent()
+            response.setBody(error.toList.asJson.noSpaces)
+            response.setHeaders(headers.asJava)
+            response.setStatusCode(400)
+            response
+      case Left(error) =>
+        val response = new APIGatewayProxyResponseEvent()
+        response.setBody(s"Invalid input: ${error.getMessage}")
+        response.setHeaders(headers.asJava)
+        response.setStatusCode(400)
+        response
+    }
   }
 
   def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {

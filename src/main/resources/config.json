@@ -1,0 +1,143 @@
+{
+  "$id": "/schema/baseSchema",
+  "type": "object",
+  "configItems": [
+    {
+      "key": "file_path",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Filepath"
+        },
+        {
+          "domain": "TDRDataLoad",
+          "domainKey": "Filepath"
+        }
+      ],
+      "tdrDownloadIndex": 1,
+      "domainValidations": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainValidation": "MUST_EXIST"
+        }
+      ]
+    },
+    {
+      "key": "date_last_modified",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Date last modified"
+        }
+      ]
+    },
+    {
+      "key": "description",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Description"
+        }
+      ]
+    },
+    {
+      "key": "end_date",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Date of the record"
+        }
+      ]
+    },
+    {
+      "key": "file_name_translation",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Translated title of record"
+        }
+      ]
+    },
+    {
+      "key": "description_alternate",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Alternative description"
+        }
+      ]
+    },
+    {
+      "key": "description_closed",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Is the description sensitive for the public"
+        }
+      ]
+    },
+    {
+    "key": "foi_exemption_asserted",
+    "domainKeys": [
+      {
+        "domain": "TDRMetadataUpload",
+        "domainKey": "FOI decision asserted"
+      }
+    ]
+    },
+    {
+    "key": "foi_exemption_code",
+    "domainKeys": [
+      {
+        "domain": "TDRMetadataUpload",
+        "domainKey": "FOI exemption code"
+      }
+    ]
+    },
+    {
+      "key": "closure_type",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Closure status"
+        }
+      ]
+    },
+    {
+      "key": "closure_start_date",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Closure Start Date"
+        }
+      ]
+    },
+    {
+      "key": "closure_period",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Closure Period"
+        }
+      ]
+   },
+    {
+      "key": "title_closed",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Is the title sensitive for the public?"
+        }
+      ]
+    },
+   {
+      "key": "title_alternate",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Add alternative title without the file extension"
+        }
+      ]
+    }
+  ]
+}

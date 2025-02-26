@@ -133,12 +133,14 @@
             }
             try {
                 // Replace with your AWS API Gateway endpoint URL
-                const lambdaEndpoint = 'https://nzpqqttih0.execute-api.eu-west-2.amazonaws.com/mytest/validate-csv';
+                const lambdaEndpoint = 'https://pkxkkgybh7.execute-api.eu-west-2.amazonaws.com/hello';
                 const response = await fetch(lambdaEndpoint, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:8080',
+                        //'Access-Control-Allow-Origin': 'http://localhost:8080',
                         // 'x-api-key': 'YOUR_API_KEY_HERE'
                     },
                     body: JSON.stringify(payload)

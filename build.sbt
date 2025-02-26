@@ -27,7 +27,8 @@ libraryDependencies ++= Seq(
   catsEffect,
   awsLambda,
   awsLambdaJavaEvents,
-  nscalaTime
+  nscalaTime,
+  awsS3
 )
 
 scalacOptions ++= Seq("-Xmax-inlines", "50")
