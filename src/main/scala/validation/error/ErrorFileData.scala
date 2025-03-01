@@ -3,7 +3,8 @@ package validation.error
 import cats.data.Validated.*
 import cats.data.{NonEmptyList, Validated}
 import cats.kernel.Monoid
-import FileError.FileError
+import validation.error.FileError.FileError
+import validation.error.ValidationErrors.combineValidationErrors
 import validation.{DataValidationResult, RowData}
 
 import java.text.SimpleDateFormat
@@ -13,8 +14,6 @@ object FileError extends Enumeration {
   type FileError = Value
   val UTF_8, INVALID_CSV, ROW_VALIDATION, SCHEMA_REQUIRED, DUPLICATE_HEADER, SCHEMA_VALIDATION, UNKNOWN, None = Value
 }
-
-case class Metadata(a: String)
 
 case class JsonSchemaValidationError(validationProcess: String, property: String, errorKey: String, message: String, value: String = "")
 
@@ -43,17 +42,12 @@ object CSVValidationResult {
     override def empty: DataValidationResult[List[RowData]] =
       Validated.valid(List.empty[RowData]) // Empty list of RowData is the valid default
 
-    override def combine(x: DataValidationResult[List[RowData]], y: DataValidationResult[List[RowData]] ): DataValidationResult[List[RowData]] =
+    override def combine(x: DataValidationResult[List[RowData]], y: DataValidationResult[List[RowData]]): DataValidationResult[List[RowData]] =
       (x, y) match {
-        case (Valid(valueX), Valid(valueY)) =>
-             Valid(valueY)
-        case (Invalid(errorsX), Invalid(errorsY)) =>
-          import ValidationErrors.combineValidationErrors
-          Invalid(NonEmptyList.fromList(errorsX.toList |+| errorsY.toList).get)
-        case (Valid(valueX), Invalid(errorsY)) =>
-          Invalid(errorsY)
-        case (Invalid(errorsX), Valid(valueY)) =>
-          Invalid(errorsX)
+        case (Valid(valueX), Valid(valueY)) => Valid(valueY)
+        case (Invalid(errorsX), Invalid(errorsY)) => Invalid(NonEmptyList.fromList(errorsX.toList |+| errorsY.toList).get)
+        case (Valid(valueX), Invalid(errorsY)) => Invalid(errorsY)
+        case (Invalid(errorsX), Valid(valueY)) => Invalid(errorsX)
       }
   }
 }

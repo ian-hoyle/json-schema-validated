@@ -20,10 +20,10 @@ object JsonSchemaValidated:
     }
   }
 
-  def validateWithMultipleSchema(fileValidation: DataValidationResult[List[RowData]], schema: List[String], propertyToAll: String => String): IO[DataValidationResult[List[RowData]]] = {
+  def validateWithMultipleSchema(fileValidation: DataValidationResult[List[RowData]], schemas: List[String], propertyToAll: String => String): IO[DataValidationResult[List[RowData]]] = {
     fileValidation match {
       case Valid(value) =>
-        val schemaValidations = schema.map(x => ValidatedSchema.schemaValidated(schemaFile = x, propertyToAlt = propertyToAll))
+        val schemaValidations = schemas.map(schema => ValidatedSchema.schemaValidated(schemaFile = schema, propertyToAlt = propertyToAll))
         val dataValidations = schemaValidations.map { validation =>
           IO(validation(value))
         }
@@ -61,8 +61,5 @@ object JsonSchemaValidated:
       case (header, value) =>
         (header, value)
     }
-    val generatedJson = mapper.writeValueAsString(convertedData)
-    generatedJson
+    mapper.writeValueAsString(convertedData)
   }
-
-
