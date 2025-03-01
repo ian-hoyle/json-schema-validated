@@ -12,6 +12,7 @@ import validation.jsonschema.loadData
 import io.circe.generic.auto.*
 import io.circe.parser.decode
 import io.circe.syntax.*
+import cats.implicits._
 
 import scala.util.{Failure, Success, Try}
 
@@ -20,7 +21,7 @@ object ValidationConfig:
   def domainKeyToPropertyMapper(parameters: ConfigParameters): String => String =
     val configMap: Map[String, String] = parameters.jsonConfig.configItems.foldLeft(Map[String, String]())((acc, item) => {
       item.domainKeys match
-        case Some(domainKeys) => domainKeys.find(_.domain == parameters.alternates.getOrElse("")) match
+        case Some(domainKeys) => domainKeys.find(x => Option(x.domain) === parameters.alternates) match
           case Some(domainKey) => acc + (domainKey.domainKey -> item.key)
           case None => acc + (item.key -> item.key)
         case None => acc + (item.key -> item.key)
@@ -31,7 +32,7 @@ object ValidationConfig:
   def propertyToDomainKeyMapper(parameters: ConfigParameters): String => String =
     val configMap: Map[String, String] = parameters.jsonConfig.configItems.foldLeft(Map[String, String]())((acc, item) => {
       item.domainKeys match
-        case Some(domainKeys) => domainKeys.find(_.domain == parameters.alternates.getOrElse("")) match
+        case Some(domainKeys) => domainKeys.find(x => Option(x.domain) === parameters.alternates) match
           case Some(domainKey) => acc + (item.key -> domainKey.domainKey)
           case None => acc + (item.key -> item.key)
         case None => acc + (item.key -> item.key)
@@ -45,7 +46,7 @@ object ValidationConfig:
   }
 
 
-  def decodeConfig(csConfig: String) = {
+  def decodeConfig(csConfig: String): JsonConfig = {
     val configFile: Try[String] = loadData(csConfig)
     val config = configFile.map(decode[JsonConfig])
 
