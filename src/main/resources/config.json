@@ -1,5 +1,5 @@
 {
-  "$id": "/schema/baseSchema",
+  "$id": "/schema/config",
   "type": "object",
   "configItems": [
     {
