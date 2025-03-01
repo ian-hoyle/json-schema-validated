@@ -4,192 +4,87 @@
   "properties": {
     "client_side_checksum": {
       "type": "string",
-      "propertyType": "System",
       "minLength": 64,
-      "maximum": 64,
-      "alternateKeys": [
-        {
-          "tdrDataLoadHeader": "SHA256ClientSideChecksum"
-        }
-      ]
+      "maximum": 64
     },
     "file_size": {
-      "propertyType": "System",
       "type": "integer",
-      "minimum": 0,
-      "alternateKeys": [
-        {
-          "tdrDataLoadHeader": "ClientSideFileSize"
-        }
-      ]
+      "minimum": 1
     },
     "UUID": {
       "type": "string",
-      "format": "uuid",
-      "propertyType": "System",
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "UUID",
-          "tdrDataLoadHeader": "UUID"
-        }
-      ]
+      "format": "uuid"
     },
     "file_path": {
       "type": "string",
-      "propertyType": "System",
-      "minLength": 1,
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Filepath",
-          "tdrDataLoadHeader": "ClientSideOriginalFilepath"
-        }
-      ]
+      "minLength": 1
     },
     "date_last_modified": {
       "type": "string",
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$",
-      "propertyType": "System",
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Date last modified",
-          "tdrDataLoadHeader": "ClientSideFileLastModifiedDate"
-        }
-      ]
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
     },
     "description": {
       "type": [
         "string",
         "null"
       ],
-      "propertyType": "Supplied",
-      "maxLength": 8000,
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Description",
-          "tdrDataLoadHeader": "description"
-        }
-      ]
+      "maxLength": 8000
     },
     "end_date": {
       "type": [
         "string",
         "null"
       ],
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$",
-      "propertyType": "Supplied",
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Date of the record",
-          "tdrDataLoadHeader": "end_date"
-        }
-      ],
-      "daBeforeToday": "Validates that end date is earlier than today's date"
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
     },
     "file_name_translation": {
       "type": [
         "string",
         "null"
       ],
-      "propertyType": "Supplied",
-      "maxLength": 8000,
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Translated title of record",
-          "tdrDataLoadHeader": "file_name_translation"
-        }
-      ]
+      "maxLength": 8000
     },
     "file_name": {
       "type": "string",
-      "propertyType": "System",
-      "minLength": 1,
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Filename",
-          "tdrDataLoadHeader": "Filename"
-        }
-      ]
+      "minLength": 1
     },
     "language": {
       "type": "array",
-      "propertyType": "Supplied",
-      "items": {
+       "items": {
         "type": "string",
-        "$ref": "classpath:/definitionsSchema.schema.json#/definitions/languages"
-      },
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Language",
-          "tdrDataLoadHeader": "Language"
-        }
-      ]
+        "$ref": "classpath:/definitions.json#/definitions/languages"
+      }
     },
     "description_alternate": {
       "type": [
         "string",
         "null"
       ],
-      "propertyType": "Supplied",
-      "maxLength": 8000,
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Alternative description",
-          "tdrDataLoadHeader": "DescriptionAlternate"
-        }
-      ]
+      "maxLength": 8000
     },
     "description_closed": {
-      "type": "boolean",
-      "propertyType": "Supplied",
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Is the description sensitive for the public?",
-          "tdrDataLoadHeader": "DescriptionClosed"
-        }
-      ]
+      "type": "boolean"
     },
     "foi_exemption_asserted": {
       "type": [
         "string",
         "null"
       ],
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$",
-      "propertyType": "Supplied",
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "FOI decision asserted",
-          "tdrDataLoadHeader": "FoiExemptionAsserted"
-        }
-      ],
-      "daBeforeToday": "Validates that FOI Exemption Asserted Date is before today's date"
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
     },
     "foi_exemption_code": {
       "type": [
         "array",
         "null"
       ],
-      "propertyType": "Supplied",
       "items": {
         "type": "string",
-        "$ref": "classpath:/definitionsSchema.schema.json#/definitions/foi_codes"
-      },
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "FOI exemption code",
-          "tdrDataLoadHeader": "FoiExemptionCode"
-        }
-      ]
+        "$ref": "classpath:/definitions.json#/definitions/foi_codes"
+      }
     },
     "closure_type": {
       "type": "string",
-      "propertyType": "Supplied",
-      "$ref": "classpath:/definitionsSchema.schema.json#/definitions/closure_types",
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Closure status",
-          "tdrDataLoadHeader": "ClosureType"
-        }
-      ]
+      "$ref": "classpath:/definitions.json#/definitions/closure_types"
     },
     "closure_period": {
       "type": [
@@ -211,53 +106,24 @@
         "string",
         "null"
       ],
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$",
-      "propertyType": "Supplied",
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Closure Start Date",
-          "tdrDataLoadHeader": "ClosureStartDate"
-        }
-      ],
-      "daBeforeToday": "Validates that Closure start date is earlier than today's date"
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
     },
     "title_closed": {
-      "type": "boolean",
-      "propertyType": "Supplied",
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Is the title sensitive for the public?",
-          "tdrDataLoadHeader": "TitleClosed"
-        }
-      ]
+      "type": "boolean"
     },
     "title_alternate": {
       "type": [
         "string",
         "null"
       ],
-      "propertyType": "Supplied",
-      "maxLength": 8000,
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Add alternative title without the file extension",
-          "tdrDataLoadHeader": "TitleAlternate"
-        }
-      ]
+      "maxLength": 8000
     },
     "former_reference_department": {
       "type": [
         "string",
         "null"
       ],
-      "propertyType": "Supplied",
-      "maxLength": 255,
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Former reference",
-          "tdrDataLoadHeader": "former_reference_department"
-        }
-      ]
+      "maxLength": 255
     }
   }
 }
