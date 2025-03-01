@@ -48,8 +48,6 @@ object ValidationConfig:
 
   def decodeConfig(csConfig: String): JsonConfig = {
     val configFile: Try[String] = loadData(csConfig)
-    val config = configFile.map(decode[JsonConfig])
-
     val configData = configFile match
       case Success(data) => decode[JsonConfig](data).getOrElse(JsonConfig(List.empty[ConfigItem]))
       case Failure(exception) => JsonConfig(configItems = List.empty[ConfigItem])

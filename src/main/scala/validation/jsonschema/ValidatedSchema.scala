@@ -103,7 +103,7 @@ object ValidatedSchema:
 
   private case class ValidationError(reason: String, propertyName: String, key: String)
 
-def loadData(mySchema: String) = {
+def loadData(mySchema: String): Try[String] = {
   val data: Try[String] = {
     if (mySchema.startsWith("http"))
       Using(Source.fromURL(URI.create(mySchema).toASCIIString))(_.mkString)
