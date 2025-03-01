@@ -18,6 +18,19 @@ import scala.util.{Failure, Success, Try}
 
 object ValidationConfig:
 
+  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
+    IO({
+      val csvConfigurationReader = for {
+        altHeaderToPropertyMapper <- Reader(ValidationConfig.domainKeyToPropertyMapper)
+        propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToDomainKeyMapper)
+        valueMapper <- Reader(ValidationConfig.stringValueMapper)
+      } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
+        valueMapper)
+      csvConfigurationReader.run(ConfigParameters(configFile, alternateKey, "organisationBase.json", decodeConfig(configFile)))
+    }
+    ) //TODO handle error with raiseError that contains ValidationResult
+  }
+
   def domainKeyToPropertyMapper(parameters: ConfigParameters): String => String =
     val configMap: Map[String, String] = parameters.jsonConfig.configItems.foldLeft(Map[String, String]())((acc, item) => {
       item.domainKeys match
@@ -27,7 +40,6 @@ object ValidationConfig:
         case None => acc + (item.key -> item.key)
     })
     (x: String) => configMap.getOrElse(x, x)
-
 
   def propertyToDomainKeyMapper(parameters: ConfigParameters): String => String =
     val configMap: Map[String, String] = parameters.jsonConfig.configItems.foldLeft(Map[String, String]())((acc, item) => {
@@ -59,25 +71,3 @@ object ValidationConfig:
       case Some(v) => v.str
       case _ => a
   }
-
-  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
-    IO({
-      val csvConfigurationReader = for {
-        altHeaderToPropertyMapper <- Reader(ValidationConfig.domainKeyToPropertyMapper)
-        propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToDomainKeyMapper)
-        valueMapper <- Reader(ValidationConfig.stringValueMapper)
-      } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
-        valueMapper)
-      csvConfigurationReader.run(ConfigParameters(configFile, alternateKey, "organisationBase.json", decodeConfig(configFile)))
-    }
-    ) //TODO handle error with raiseError that contains ValidationResult
-  }
-
-
-
-
-
-
-
-
-
