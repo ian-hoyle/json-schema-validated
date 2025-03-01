@@ -1,4 +1,4 @@
-# json-schmea-validated
+# json-schema-validated
 
 ## Table of Contents
 - [Overview](#overview)
@@ -12,8 +12,6 @@
 
 - Schema validation using JSON schema
 - Customizable configuration for alternate key mappings and value transformations
-- Written in Scala using Cats data types and IO
-- Unit tests using ScalaTest
 
 ## Example usage
 
@@ -58,12 +56,14 @@ The `prepareValidationConfiguration` method in the `ValidationConfig` class is r
 def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
   IO({
     val csvConfigurationReader = for {
-      altHeaderToPropertyMapper <- Reader(ValidationConfig.alternateKeyToPropertyMapper)
-      propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToInAlternateKeyMapper)
+      altHeaderToPropertyMapper <- Reader(ValidationConfig.domainKeyToPropertyMapper)
+      propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToDomainKeyMapper)
       valueMapper <- Reader(ValidationConfig.stringValueMapper)
-    } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper, valueMapper)
-    csvConfigurationReader.run(ConfigParameters(configFile, alternateKey))
-  })
+    } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
+      valueMapper)
+    csvConfigurationReader.run(ConfigParameters(configFile, alternateKey, "organisationBase.json", decodeConfig(configFile)))
+  }
+  ) 
 }
 ```
 
