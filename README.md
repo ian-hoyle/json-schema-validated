@@ -55,7 +55,7 @@ The method returns an `IO` containing the result of the data validation.
 
 ### Configuration Loading
 
-The `prepareValidationConfiguration` method in the `ValidationConfig` class is responsible for preparing the validation configuration using the provided config file and alternate key. Here is the method with a brief explanation:
+The `prepareValidationConfiguration` method in the [ValidationConfig](src/main/scala/validation/config/ValidationConfig.scala) class is responsible for preparing the validation configuration using the provided config file and alternate key. Here is the method with a brief explanation:
 
 ```scala
 def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
