@@ -20,13 +20,12 @@ object CSVLoader:
   }
 
   private def loadCSV(csvFile: String, idColumn: Option[String]): List[RowData] = {
-    val source = if (csvFile.startsWith("http"))
-      Source.fromURL(URI.create(csvFile).toASCIIString)
-    else if (csvFile.startsWith("s3://"))
-      Source.fromInputStream(getS3ObjectInputStream(csvFile))
-    else
-      Source.fromResource(csvFile)
-
+    val source = csvFile match {
+      case _ if csvFile.startsWith("http") => Source.fromURL(URI.create(csvFile).toASCIIString)
+      case _ if csvFile.startsWith("s3://") => Source.fromInputStream(getS3ObjectInputStream(csvFile))
+      case _ => Source.fromResource(csvFile)
+    }
+    
     val cSVReader: CSVReader = CSVReader.open(source)
     cSVReader.allWithHeaders().map(convertToRowData(idColumn))
       .zipWithIndex
