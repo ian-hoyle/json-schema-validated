@@ -5,8 +5,7 @@ import cats.syntax.all.catsSyntaxValidatedId
 import com.amazonaws.services.s3.model.S3ObjectInputStream
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.github.tototoshi.csv.CSVReader
-import validation.RowData
-import validation.jsonschema.ValidatedSchema.DataValidationResult
+import validation.{DataValidationResult, RowData}
 
 import java.net.URI
 import scala.io.Source

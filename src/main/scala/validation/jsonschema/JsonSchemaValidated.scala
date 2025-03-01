@@ -6,10 +6,9 @@ import cats.effect.IO
 import cats.implicits.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import validation.RowData
+import validation.{DataValidationResult, RowData}
 import validation.error.CSVValidationResult.combineCSVValidationResult
 import validation.error.ValidationErrors
-import validation.jsonschema.ValidatedSchema.DataValidationResult
 
 
 object JsonSchemaValidated:

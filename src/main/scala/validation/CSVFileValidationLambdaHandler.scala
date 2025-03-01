@@ -11,7 +11,7 @@ import io.circe.syntax.*
 import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.datalaoader.CSVLoader.loadCSVData
 import validation.jsonschema.JsonSchemaValidated.*
-import validation.jsonschema.ValidatedSchema.{DataValidationResult, validateRequiredSchema}
+import validation.jsonschema.ValidatedSchema.validateRequiredSchema
 
 import scala.jdk.CollectionConverters.*
 
