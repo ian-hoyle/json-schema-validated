@@ -2,17 +2,22 @@
 
 ## Table of Contents
 - [Overview](#overview)
-- [Features](#features)
+- [Schema](#schema)
 
 ## Overview
 
-`json-schema-validated` is a Scala-based project for validating data using JSON schema language. The data can be loaded as key-value pairs, where the keys can vary between users. The schema has been extended to define alternate keys, allowing the actual validation requirements to be written only once.
+`json-schema-validated` is a Scala-based project for validating data using JSON schema language. The data is loaded as key-value pairs, where the keys can vary between domains and then validated against JSON schema:  
 
-## Features
+The JSON schema validation is performed using [NetowrkNT JSON Schema Validator](http://github.com/networknt/json-schema-validator)
 
-- Schema validation using JSON schema
-- Customizable configuration for alternate key mappings and value transformations
+## Schema
+Two fundamental schema are used in the validation process 
+- [The base JSON schema](src/main/resources/organisationBase.json) defining all data and their types.
+- [Configuration JSON schema](src/main/resources/organisationBase.json) that can be used to define
+  - Alternate keys for mapping between domains
+  - Domain specific validations that can't be defined using JSON schema
 
+One or many JSON schema can be used to validate the data with error messages defined for each schema
 ## Example usage
 
 ### CSV Validation
@@ -69,7 +74,7 @@ def prepareValidationConfiguration(configFile: String, alternateKey: Option[Stri
 
 - **alternateKeyToPropertyMapper**: Creates a function to map alternate keys to properties.
 - **propertyToInAlternateKeyMapper**: Creates a function to map properties to alternate keys.
-- **stringValueMapper**: Creates a function to convert string values to their respective types based on the property type.
+- **stringValueMapper**: Creates a function to convert string values to their respective types based on the property type. Especially useful for CSV validation
 - **ValidatorConfiguration**: Combines the above functions into a `ValidatorConfiguration` object.
 
 The method returns an `IO` containing the `ValidatorConfiguration` object.
