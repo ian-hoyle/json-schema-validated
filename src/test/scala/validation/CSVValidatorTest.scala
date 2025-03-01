@@ -2,8 +2,9 @@ package validation
 
 import cats.data.Validated.*
 import org.scalatest.funsuite.AnyFunSuite
-import io.circe.syntax._
-import io.circe.generic.auto._
+import io.circe.syntax.*
+import io.circe.generic.auto.*
+import validation.examples.CSVFileValidationLambdaHandler
 
 
 class CSVValidatorTest extends AnyFunSuite:

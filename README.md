@@ -22,7 +22,7 @@ One or many JSON schema can be used to validate the data with error messages def
 
 ### CSV Validation
 
-The `csvFileValidation` method in the `CSVFileValidationLambdaHandler` class is responsible for validating CSV data against multiple JSON schemas. Here is the method with a brief explanation:
+The `csvFileValidation` method in the [CSVFileValidationLambdaHandler](src/main/scala/validation/examples/CSVFileValidationLambdaHandler.scala) class is responsible for validating CSV data against multiple JSON schemas. Here is the method with a brief explanation:
 
 ```scala
 def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {

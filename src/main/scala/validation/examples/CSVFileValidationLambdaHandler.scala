@@ -1,4 +1,4 @@
-package validation
+package validation.examples
 
 import cats.data.Validated.*
 import cats.effect.IO
@@ -12,6 +12,7 @@ import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.datalaoader.CSVLoader.loadCSVData
 import validation.jsonschema.JsonSchemaValidated.*
 import validation.jsonschema.ValidatedSchema.validateRequiredSchema
+import validation.{DataValidationResult, Parameters, RowData}
 
 import scala.jdk.CollectionConverters.*
 
