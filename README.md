@@ -13,7 +13,7 @@ The JSON schema validation is performed using [NetowrkNT JSON Schema Validator](
 ## Schema
 Two fundamental schema are used in the validation process 
 - [The base JSON schema](src/main/resources/organisationBase.json) defining all data and their types.
-- [Configuration JSON schema](src/main/resources/organisationBase.json) that can be used to define
+- [Configuration JSON schema](src/main/resources/config.json) that can be used to [define](src/main/scala/validation/PackageClasses.scala#L15)
   - Alternate keys for mapping between domains
   - Domain specific validations that can't be defined using JSON schema
 
@@ -61,8 +61,8 @@ The `prepareValidationConfiguration` method in the [ValidationConfig](src/main/s
 def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
   IO({
     val csvConfigurationReader = for {
-      altHeaderToPropertyMapper <- Reader(ValidationConfig.domainKeyToPropertyMapper)
-      propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToDomainKeyMapper)
+      domainKeyToPropertyMapper <- Reader(ValidationConfig.domainKeyToPropertyMapper)
+      propertyToDomainKeyMapper <- Reader(ValidationConfig.propertyToDomainKeyMapper)
       valueMapper <- Reader(ValidationConfig.stringValueMapper)
     } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
       valueMapper)
@@ -72,9 +72,10 @@ def prepareValidationConfiguration(configFile: String, alternateKey: Option[Stri
 }
 ```
 
-- **alternateKeyToPropertyMapper**: Creates a function to map alternate keys to properties.
-- **propertyToInAlternateKeyMapper**: Creates a function to map properties to alternate keys.
+- **domainKeyToPropertyMapper**: Creates a [function](main/src/main/scala/validation/config/ValidationConfig.scala#L34C3-L42C45) to map alternate keys to properties.
+- **propertyToDomainKeyMapper**: Creates a function to map properties to alternate keys.
 - **stringValueMapper**: Creates a function to convert string values to their respective types based on the property type. Especially useful for CSV validation
 - **ValidatorConfiguration**: Combines the above functions into a `ValidatorConfiguration` object.
+ 
 
 The method returns an `IO` containing the `ValidatorConfiguration` object.
