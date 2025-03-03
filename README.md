@@ -72,7 +72,7 @@ def prepareValidationConfiguration(configFile: String, alternateKey: Option[Stri
 }
 ```
 
-- **domainKeyToPropertyMapper**: Creates a [function](main/src/main/scala/validation/config/ValidationConfig.scala#L34C3-L42C45) to map alternate keys to properties.
+- **domainKeyToPropertyMapper**: Creates a [function](src/main/scala/validation/config/ValidationConfig.scala#L34C3-L42C45) to map alternate keys to properties.
 - **propertyToDomainKeyMapper**: Creates a function to map properties to alternate keys.
 - **stringValueMapper**: Creates a function to convert string values to their respective types based on the property type. Especially useful for CSV validation
 - **ValidatorConfiguration**: Combines the above functions into a `ValidatorConfiguration` object.
