@@ -1,5 +1,10 @@
 import Dependencies.*
 import sbtassembly.AssemblyPlugin.autoImport.*
+import sbt.Keys.{name, scalaVersion, version}
+
+
+
+CustomTasks.myCustomTaskSetting
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
