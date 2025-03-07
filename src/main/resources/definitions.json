@@ -4,6 +4,7 @@
   "definitions": {
     "foi_codes": {
       "enum": [
+        "open",
         "23",
         "24",
         "26",
@@ -49,7 +50,9 @@
     "closure_types": {
       "enum": [
         "Closed",
-        "Open"
+        "Open",
+        "open_on_transfer",
+        "closed_for"
       ]
     },
     "languages" : {
