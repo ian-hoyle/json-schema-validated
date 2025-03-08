@@ -2,18 +2,17 @@ import Dependencies.*
 import sbtassembly.AssemblyPlugin.autoImport.*
 import sbt.Keys.{name, scalaVersion, version}
 
-
-
-CustomTasks.myCustomTaskSetting
+CustomTasks.duplications
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
-
 ThisBuild / scalaVersion := "3.3.4"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "mycsvvalidator"
+    name := "json-schema-validated",
+    CustomTasks.fileNames := Seq("organisationBase.json", "closedRecord.json", "openRecord.json") // Add your file names here
   )
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Test
 
 assemblyMergeStrategy := {

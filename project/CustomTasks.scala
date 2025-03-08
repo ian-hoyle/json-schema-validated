@@ -8,10 +8,11 @@ import java.nio.file.Paths
 import scala.io.Source
 import scala.util.{Failure, Success, Try, Using}
 
-
 object CustomTasks {
 
-  val myCustomTask = taskKey[Unit]("My custom task")
+  val generateSchema = taskKey[Unit]("My custom task")
+  val fileNames = settingKey[Seq[String]]("List of file names")
+
   case class JsonConfig(configItems: List[ConfigItem])
   case class ConfigItem(key: String, domainKeys: Option[List[DomainKey]], tdrMetadataDownloadIndex: Option[Int], domainValidations: Option[List[DomainValidation]])
   case class DomainKey(domain: String, domainKey: String)
@@ -21,26 +22,36 @@ object CustomTasks {
     Using(Source.fromURL(Paths.get(mySchema).toUri.toURL))(_.mkString)
   }
 
-   val myCustomTaskSetting: Seq[Def.Setting[Task[Unit]]] = Seq(myCustomTask := {
-    val baseFile: File = baseDirectory.value / "src" / "main" / "resources" / "organisationBase.json"
-    val alternateDomain = "TDRMetadataUpload" // Replace with your actual alternate domain
-    val outputFile = baseDirectory.value / "src" / "main" / "resources" / s"${alternateDomain}Base.json"
+  val duplications: Seq[Def.Setting[Task[Unit]]] = Seq(
+    generateSchema := {
+      val baseDir = baseDirectory.value
+      val files = fileNames.value
 
-    val json = ujson.read(baseFile)
-    val out: String = ujson.write(replaceKeys(json.obj, propertyKeyToDomainKey), indent = 2)
-    import java.io.*
-    val pw = new PrintWriter(outputFile)
-    pw.write(out)
-    pw.close
-  })
+      files.foreach { fileName =>
+        val baseFile: File = baseDir / "src" / "main" / "resources" / fileName
+        val alternateDomain = "TDRMetadataUpload" // Replace with your actual alternate domain
+        val outputFile = baseDir / "src" / "main" / "resources" / s"$alternateDomain$fileName"
 
+        val json = ujson.read(baseFile)
+        val out: String = ujson.write(replaceKeys(json.obj, propertyKeyToDomainKey), indent = 2)
+        import java.io.*
+        val pw = new PrintWriter(outputFile)
+        pw.write(out)
+        pw.close()
+      }
+    }
+  )
 
-  def replaceKeys(obj: Obj, mapper:String => String): Obj = {
+  def replaceKeys(obj: Obj, mapper: String => String): Obj = {
     val newObj = obj.value.map {
       case (key, value) =>
         val newKey = mapper(key)
         newKey -> (value match {
           case o: Obj => replaceKeys(o, mapper)
+          case arr: ujson.Arr => ujson.Arr(arr.value.map {
+            case o: Obj => replaceKeys(o, mapper)
+            case other => other
+          })
           case other => other
         })
     }
@@ -56,7 +67,6 @@ object CustomTasks {
     configData
   }
 
-
   def propertyKeyToDomainKey: String => String = {
     val configMap: Map[String, String] = decodeConfig("src/main/resources/config.json").configItems.foldLeft(Map[String, String]())((acc, item) => {
       item.domainKeys match {
@@ -69,7 +79,4 @@ object CustomTasks {
     })
     (x: String) => configMap.getOrElse(x, x)
   }
-
 }
-
-

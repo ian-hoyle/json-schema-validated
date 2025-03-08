@@ -79,3 +79,23 @@ def prepareValidationConfiguration(configFile: String, alternateKey: Option[Stri
  
 
 The method returns an `IO` containing the `ValidatorConfiguration` object.
+
+### generateSchema Task
+
+The `generateSchema` task is an SBT custom task designed to generate JSON schemas based on provided configurations. This task reads a list of JSON files, processes them, and outputs the modified schemas.
+
+The schema generated are copies with the original property names replaced with the alternate keys defined in the configuration file. 
+
+The task is defined in the [GenerateSchema](project/GenerateSchema.scala) object.
+
+```scala
+
+### Usage
+
+To use the `generateSchema` task, follow these steps:
+
+1. **Configure the list of file names**:
+   Set the list of JSON file names that you want to process using the `fileNames` setting key.
+
+2. **Run the task**:
+   Execute the `sbt generateSchema` task from the console.

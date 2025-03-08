@@ -1,0 +1,117 @@
+{
+  "type": "object",
+  "$id": "/schema/closed-closure",
+  "allOf": [
+    {
+      "then": {
+        "properties": {
+          "Is the title sensitive for the public?": {
+            "type": "boolean"
+          },
+          "Closure Start Date": {
+            "type": "string"
+          },
+          "Is the description sensitive for the public?": {
+            "type": "boolean"
+          },
+          "FOI exemption code": {
+            "type": "array"
+          },
+          "FOI decision asserted": {
+            "type": "string"
+          },
+          "Closure Period": {
+            "type": "integer"
+          }
+        },
+        "allOf": [
+          {
+            "then": {
+              "required": [
+                "title_alternate"
+              ],
+              "properties": {
+                "Add alternative title without the file extension": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "title_closed"
+            ],
+            "if": {
+              "properties": {
+                "Is the title sensitive for the public?": {
+                  "const": true
+                }
+              }
+            }
+          },
+          {
+            "then": {
+              "required": [
+                "description_alternate"
+              ],
+              "properties": {
+                "Alternative description": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "description_closed"
+            ],
+            "if": {
+              "properties": {
+                "Is the description sensitive for the public?": {
+                  "const": true
+                }
+              }
+            }
+          },
+          {
+            "then": {
+              "properties": {
+                "Is the description sensitive for the public?": {
+                  "const": true
+                }
+              }
+            },
+            "if": {
+              "properties": {
+                "Alternative description": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          {
+            "then": {
+              "properties": {
+                "Is the title sensitive for the public?": {
+                  "const": true
+                }
+              }
+            },
+            "if": {
+              "properties": {
+                "Add alternative title without the file extension": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "if": {
+        "properties": {
+          "Closure status": {
+            "const": "Closed"
+          }
+        }
+      }
+    }
+  ]
+}
