@@ -10,7 +10,7 @@ ThisBuild / scalaVersion := "3.3.4"
 lazy val root = (project in file("."))
   .settings(
     name := "json-schema-validated",
-    CustomTasks.fileNames := Seq("organisationBase.json", "closedRecord.json", "openRecord.json") // Add your file names here
+    CustomTasks.fileNames := Seq("organisationBase.json", "closedRecord.json", "openRecord.json", "myRequiredFields.json") // Add your file names here
   )
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Test

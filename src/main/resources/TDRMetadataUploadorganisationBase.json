@@ -1,83 +1,23 @@
 {
+  "$id": "/schema/baseSchema",
   "type": "object",
   "properties": {
-    "Alternative description": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "maxLength": 8000
-    },
-    "Is the title sensitive for the public?": {
-      "type": "boolean"
-    },
-    "Closure status": {
+    "client_side_checksum": {
       "type": "string",
-      "$ref": "classpath:/definitions.json#/definitions/closure_types"
-    },
-    "Date of the record": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
-    },
-    "Closure Start Date": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
+      "minLength": 64,
+      "maximum": 64
     },
     "file_size": {
       "type": "integer",
       "minimum": 1
     },
-    "Is the description sensitive for the public?": {
-      "type": "boolean"
-    },
-    "FOI exemption code": {
-      "items": {
-        "type": "string",
-        "$ref": "classpath:/definitions.json#/definitions/foi_codes"
-      },
-      "type": [
-        "array",
-        "null"
-      ]
-    },
     "UUID": {
       "type": "string",
       "format": "uuid"
     },
-    "Translated title of record": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "maxLength": 8000
-    },
-    "file_name": {
-      "type": "string",
-      "minLength": 1
-    },
-    "former_reference_department": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "maxLength": 255
-    },
     "Filepath": {
       "type": "string",
       "minLength": 1
-    },
-    "Add alternative title without the file extension": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "maxLength": 8000
     },
     "Date last modified": {
       "type": "string",
@@ -90,6 +30,41 @@
       ],
       "maxLength": 8000
     },
+    "Date of the record": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
+    },
+    "Translated title of record": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 8000
+    },
+    "file_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "language": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "$ref": "classpath:/definitions.json#/definitions/languages"
+      }
+    },
+    "Alternative description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 8000
+    },
+    "Is the description sensitive for the public?": {
+      "type": "boolean"
+    },
     "FOI decision asserted": {
       "type": [
         "string",
@@ -97,33 +72,58 @@
       ],
       "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
     },
-    "client_side_checksum": {
+    "FOI exemption code": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "$ref": "classpath:/definitions.json#/definitions/foi_codes"
+      }
+    },
+    "Closure status": {
       "type": "string",
-      "maximum": 64,
-      "minLength": 64
+      "$ref": "classpath:/definitions.json#/definitions/closure_types"
     },
     "Closure Period": {
-      "propertyType": "Supplied",
       "type": [
         "integer",
         "null"
       ],
+      "propertyType": "Supplied",
       "minimum": 1,
       "maximum": 150,
       "alternateKeys": [
         {
-          "tdrDataLoadHeader": "ClosurePeriod",
-          "tdrFileHeader": "Closure Period"
+          "tdrFileHeader": "Closure Period",
+          "tdrDataLoadHeader": "ClosurePeriod"
         }
       ]
     },
-    "language": {
-      "items": {
-        "type": "string",
-        "$ref": "classpath:/definitions.json#/definitions/languages"
-      },
-      "type": "array"
+    "Closure Start Date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
+    },
+    "Is the title sensitive for the public?": {
+      "type": "boolean"
+    },
+    "Add alternative title without the file extension": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 8000
+    },
+    "former_reference_department": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
     }
-  },
-  "$id": "/schema/baseSchema"
+  }
 }

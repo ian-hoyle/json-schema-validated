@@ -56,6 +56,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       configuration <- prepareValidationConfiguration(parameters.configFile, parameters.alternateKey)
       data <- IO(
         loadCSVData(parameters.fileToValidate, parameters.idKey)
+          // generating domain specific on build removes this requirement 
           andThen mapKeys(configuration.altInToKey)
           andThen addJsonForValidation(configuration.valueMapper)
           andThen validateRequiredSchema(parameters.requiredSchema, configuration.keyToAltIn)

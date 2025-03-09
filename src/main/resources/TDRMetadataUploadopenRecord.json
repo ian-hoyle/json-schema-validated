@@ -1,40 +1,40 @@
 {
-  "type": "object",
   "$id": "/schema/open-closure",
+  "type": "object",
   "allOf": [
     {
+      "if": {
+        "properties": {
+          "Closure status": {
+            "const": "Open"
+          }
+        }
+      },
       "then": {
         "properties": {
+          "Closure Start Date": {
+            "type": "null"
+          },
+          "Closure Period": {
+            "type": "null"
+          },
+          "FOI exemption code": {
+            "type": "null"
+          },
+          "FOI decision asserted": {
+            "type": "null"
+          },
+          "Add alternative title without the file extension": {
+            "type": "null"
+          },
           "Alternative description": {
             "type": "null"
           },
           "Is the title sensitive for the public?": {
             "const": false
           },
-          "Closure Start Date": {
-            "type": "null"
-          },
           "Is the description sensitive for the public?": {
             "const": false
-          },
-          "FOI exemption code": {
-            "type": "null"
-          },
-          "Add alternative title without the file extension": {
-            "type": "null"
-          },
-          "FOI decision asserted": {
-            "type": "null"
-          },
-          "Closure Period": {
-            "type": "null"
-          }
-        }
-      },
-      "if": {
-        "properties": {
-          "Closure status": {
-            "const": "Open"
           }
         }
       }

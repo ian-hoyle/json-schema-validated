@@ -43,19 +43,19 @@ object CustomTasks {
   )
 
   def replaceKeys(obj: Obj, mapper: String => String): Obj = {
-    val newObj = obj.value.map {
-      case (key, value) =>
+    val newObj = obj.value.foldLeft(collection.mutable.LinkedHashMap[String, ujson.Value]()) {
+      case (acc, (key, value)) =>
         val newKey = mapper(key)
-        newKey -> (value match {
+        acc += (newKey -> (value match {
           case o: Obj => replaceKeys(o, mapper)
           case arr: ujson.Arr => ujson.Arr(arr.value.map {
             case o: Obj => replaceKeys(o, mapper)
             case other => other
           })
           case other => other
-        })
+        }))
     }
-    newObj
+    ujson.Obj.from(newObj)
   }
 
   def decodeConfig(csConfig: String): JsonConfig = {
