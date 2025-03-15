@@ -3,6 +3,7 @@ import sbtassembly.AssemblyPlugin.autoImport.*
 import sbt.Keys.{name, scalaVersion, version}
 
 CustomTasks.duplications
+GenerateScalaCaseClasses.caseClasses
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.4"
