@@ -2,9 +2,10 @@ name: Generate Schema
 
 on:
   workflow_dispatch:
-  
+
 permissions:
-  contents: write  
+  contents: write
+  pull-requests: write
 
 jobs:
   generate-schema:
@@ -37,3 +38,11 @@ jobs:
           git add src/main/scala/schema
           git commit -m "Generated JSON schemas"
           git push origin schema-update
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: schema-update
+          title: 'Update JSON Schema and case classes'
+          body: 'This PR updates the JSON schema files and case classes.'
