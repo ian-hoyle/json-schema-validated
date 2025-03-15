@@ -2,81 +2,106 @@ import _root_.io.circe.generic.auto.*
 import _root_.io.circe.parser.decode
 import sbt.Keys.*
 import sbt.{Def, *}
-import ujson.Obj
+import ujson.{Obj, Value}
 
 import java.nio.file.Paths
 import scala.io.Source
 import scala.util.{Failure, Success, Try, Using}
 
 object CustomTasks {
+  // Task and Setting Keys
+  val generateSchema = taskKey[Unit]("Generate domain-specific JSON schemas")
+  val fileNames = settingKey[Seq[String]]("List of JSON schema file names")
 
-  val generateSchema = taskKey[Unit]("My custom task")
-  val fileNames = settingKey[Seq[String]]("List of file names")
-
+  // Case Classes
   case class JsonConfig(configItems: List[ConfigItem])
-  case class ConfigItem(key: String, domainKeys: Option[List[DomainKey]], tdrMetadataDownloadIndex: Option[Int], domainValidations: Option[List[DomainValidation]])
+
+  case class ConfigItem(
+                         key: String,
+                         domainKeys: Option[List[DomainKey]],
+                         tdrMetadataDownloadIndex: Option[Int],
+                         domainValidations: Option[List[DomainValidation]]
+                       )
+
   case class DomainKey(domain: String, domainKey: String)
+
   case class DomainValidation(domain: String, domainValidation: String)
 
-  def loadData(mySchema: String): Try[String] = {
-    Using(Source.fromURL(Paths.get(mySchema).toUri.toURL))(_.mkString)
-  }
+  // Constants
+  private val AlternateDomain = "TDRMetadataUpload"
+  private val ConfigPath = "src/main/resources/config.json"
 
   val duplications: Seq[Def.Setting[Task[Unit]]] = Seq(
     generateSchema := {
+      val log = streams.value.log
       val baseDir = baseDirectory.value
-      val files = fileNames.value
 
-      files.foreach { fileName =>
-        val baseFile: File = baseDir / "src" / "main" / "resources" / fileName
-        val alternateDomain = "TDRMetadataUpload" // Replace with your actual alternate domain
-        val outputFile = baseDir / "src" / "main" / "resources" / s"$alternateDomain$fileName"
-
-        val json = ujson.read(baseFile)
-        val out: String = ujson.write(replaceKeys(json.obj, propertyKeyToDomainKey), indent = 2)
-        import java.io.*
-        val pw = new PrintWriter(outputFile)
-        pw.write(out)
-        pw.close()
+      fileNames.value.foreach { fileName =>
+        Try {
+          processSchemaFile(baseDir, fileName, log)
+        } match {
+          case Success(_) =>
+          case Failure(e) =>
+            log.error(s"Failed to process schema file $fileName: ${e.getMessage}")
+        }
       }
     }
   )
 
-  def replaceKeys(obj: Obj, mapper: String => String): Obj = {
-    val newObj = obj.value.foldLeft(collection.mutable.LinkedHashMap[String, ujson.Value]()) {
-      case (acc, (key, value)) =>
-        val newKey = mapper(key)
-        acc += (newKey -> (value match {
-          case o: Obj => replaceKeys(o, mapper)
-          case arr: ujson.Arr => ujson.Arr(arr.value.map {
-            case o: Obj => replaceKeys(o, mapper)
-            case other => other
-          })
-          case other => other
-        }))
+  private def processSchemaFile(baseDir: File, fileName: String, log: Logger): Unit = {
+    val inputPath = baseDir / "src" / "main" / "resources" / fileName
+    val outputPath = baseDir / "src" / "main" / "resources" / s"$AlternateDomain$fileName"
+
+    log.info(s"Processing schema file: $fileName")
+
+    val json = ujson.read(inputPath)
+    val transformedJson = replaceKeys(json.obj, propertyKeyToDomainKey)
+    val output = ujson.write(transformedJson, indent = 2)
+
+    Using(new java.io.PrintWriter(outputPath)) { writer =>
+      writer.write(output)
+    }.fold(
+      ex => log.error(s"Failed to write output file: ${ex.getMessage}"),
+      _ => log.success(s"Successfully generated: ${outputPath.getName}")
+    )
+  }
+
+  private def replaceKeys(obj: Obj, mapper: String => String): Obj = {
+    def transformValue(value: Value): Value = value match {
+      case o: Obj => replaceKeys(o, mapper)
+      case arr: ujson.Arr => ujson.Arr(arr.value.map(transformValue))
+      case other => other
     }
+
+    val newObj = obj.value.map { case (key, value) =>
+      mapper(key) -> transformValue(value)
+    }
+
     ujson.Obj.from(newObj)
   }
 
-  def decodeConfig(csConfig: String): JsonConfig = {
-    val configFile: Try[String] = loadData(csConfig)
-    val configData = configFile match {
-      case Success(data) => decode[JsonConfig](data).getOrElse(JsonConfig(List.empty[ConfigItem]))
-      case Failure(exception) => JsonConfig(configItems = List.empty[ConfigItem])
+  private def loadData(path: String): Try[String] = {
+    Try {
+      val filePath = Paths.get(path).toUri.toURL
+      Using.resource(Source.fromURL(filePath))(_.mkString)
     }
-    configData
   }
 
-  def propertyKeyToDomainKey: String => String = {
-    val configMap: Map[String, String] = decodeConfig("src/main/resources/config.json").configItems.foldLeft(Map[String, String]())((acc, item) => {
-      item.domainKeys match {
-        case Some(domainKeys) => domainKeys.find(x => x.domain == "TDRMetadataUpload") match {
-          case Some(domainKey) => acc + (item.key -> domainKey.domainKey)
-          case None => acc + (item.key -> item.key)
-        }
-        case None => acc + (item.key -> item.key)
-      }
-    })
-    (x: String) => configMap.getOrElse(x, x)
+  private def decodeConfig(configPath: String): JsonConfig = {
+    loadData(configPath).flatMap { data =>
+      decode[JsonConfig](data).toTry
+    }.getOrElse(JsonConfig(List.empty))
+  }
+
+  private def propertyKeyToDomainKey: String => String = {
+    val configMap = decodeConfig(ConfigPath).configItems.flatMap { item =>
+      item.domainKeys
+        .getOrElse(List.empty)
+        .find(_.domain == AlternateDomain)
+        .map(dk => item.key -> dk.domainKey)
+        .orElse(Some(item.key -> item.key))
+    }.toMap
+
+    (key: String) => configMap.getOrElse(key, key)
   }
 }
