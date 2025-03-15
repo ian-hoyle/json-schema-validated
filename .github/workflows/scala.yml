@@ -44,5 +44,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: schema-update
+          base: main
           title: 'Update JSON Schema and case classes'
           body: 'This PR updates the JSON schema files and case classes.'
