@@ -2,6 +2,9 @@ name: Generate Schema
 
 on:
   workflow_dispatch:
+  
+ permissions:
+  contents: write  
 
 jobs:
   generate-schema:
