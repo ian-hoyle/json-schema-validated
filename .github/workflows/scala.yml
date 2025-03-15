@@ -24,3 +24,12 @@ jobs:
 
       - name: Run generateSchema task
         run: sbt generateSchema
+
+      - name: Create branch and commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -b schema-update
+          git add src/main/resources/schemas/*.json
+          git commit -m "Generated JSON schemas"
+          git push origin schema-update
