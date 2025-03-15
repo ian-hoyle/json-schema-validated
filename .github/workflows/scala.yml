@@ -16,7 +16,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'sbt'
+
+      - name: Setup sbt
+        uses: sbt/setup-sbt@v1
+        with:
+          version: '1.9.9'
 
       - name: Run generateSchema task
         run: sbt generateSchema
