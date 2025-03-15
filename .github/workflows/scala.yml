@@ -3,7 +3,7 @@ name: Generate Schema
 on:
   workflow_dispatch:
   
- permissions:
+permissions:
   contents: write  
 
 jobs:
