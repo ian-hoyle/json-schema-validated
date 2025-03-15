@@ -16,9 +16,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'sbt'
 
-      - name: Install sbt
-        uses: coursier/cache-action@v6
-      
       - name: Run generateSchema task
         run: sbt generateSchema
