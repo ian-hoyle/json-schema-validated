@@ -26,7 +26,7 @@ jobs:
           version: '1.9.9'
 
       - name: Run generateSchema task
-        run: sbt generateSchema
+        run: sbt generateSchema generateCaseClasses
 
       - name: Create branch and commit changes
         run: |
