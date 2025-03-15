@@ -34,5 +34,6 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git checkout -b schema-update
           git add src/main/resources/*.json
+          git add src/main/scala/schema
           git commit -m "Generated JSON schemas"
           git push origin schema-update
