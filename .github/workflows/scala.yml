@@ -37,11 +37,4 @@ jobs:
           git add .
           git commit -m "Generated JSON schemas"
           git push origin "${BRANCH_NAME}"
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: "${BRANCH_NAME}"
-          title: "Update JSON Schema and case classes"
-          body: "This PR updates the JSON schema files and case classes."
+     
