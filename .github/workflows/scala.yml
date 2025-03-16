@@ -1,37 +1,47 @@
-  name: Generate Schema and Case class
+name: Generate Schema and Case class
 
-  on:
-    workflow_dispatch:
+on:
+  workflow_dispatch:
 
-  permissions:
-    contents: write
-    pull-requests: write
+permissions:
+  contents: write
+  pull-requests: write
 
-  jobs:
-    generate-schema:
-      runs-on: ubuntu-latest
-      env:
-        BRANCH_NAME: "schema-update"
+jobs:
+  generate-schema:
+    runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: "schema-update"
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v3
-          with:
-            ref: main
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
 
-        - name: Create branch
-          run: |
-            git config --global user.name 'github-actions\[bot\]'
-            git config --global user.email 'github-actions\[bot\]@users.noreply.github.com'
-            git checkout -b $BRANCH_NAME
-            git add .
-            git commit -m "Generated JSON schemas"
-            git push origin $BRANCH_NAME
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-        - name: Create Pull Request
-          uses: peter-evans/create-pull-request@v5
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            branch: $BRANCH_NAME
-            title: 'Update JSON Schema and case classes'
-            body: 'This PR updates the JSON schema files and case classes.'
+      - name: Setup sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Create branch, generate and commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.no-reply.github.com'
+          git checkout -b $BRANCH_NAME
+          sbt generateSchema generateCaseClasses
+          git add .
+          git commit -m "Generated JSON schemas"
+          git push origin $BRANCH_NAME
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: $BRANCH_NAME
+          title: "Update JSON Schema and case classes"
+          body: "This PR updates the JSON schema files and case classes."
