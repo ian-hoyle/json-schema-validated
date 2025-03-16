@@ -24,10 +24,10 @@ object ValidatedSchema:
     }
 
 
-  def schemaValidated(schemaFile: String, all: Boolean = true, propertyToAlt: String => String = (x: String) => x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
+  def schemaValidated(schemaFile: String, allRows: Boolean = true, propertyToAlt: String => String = (x: String) => x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     val jsonSchema = getJsonSchema(schemaFile)
     val messagesProvider: String => String = loadProperties(schemaFile)
-    val processData = if (!all)
+    val processData = if (!allRows)
       List(data.head)
     else
       data
