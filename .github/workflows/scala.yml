@@ -11,7 +11,7 @@
     generate-schema:
       runs-on: ubuntu-latest
       env:
-        BRANCH_NAME: "schema-update-$(date +%s)"
+        BRANCH_NAME: "schema-update"
 
       steps:
         - name: Checkout repository
