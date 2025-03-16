@@ -11,7 +11,7 @@ jobs:
   generate-schema:
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: "schema-update"
+      BRANCH_NAME: "schema-update-$(date +%s)"  # Use a unique branch name based on the current timestamp
 
     steps:
       - name: Checkout repository
@@ -32,16 +32,16 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.no-reply.github.com'
-          git checkout -b "BRANCH_NAME"
+          git checkout -b "${BRANCH_NAME}"
           sbt generateSchema generateCaseClasses
           git add .
           git commit -m "Generated JSON schemas"
-          git push origin "BRANCH_NAME"
+          git push origin "${BRANCH_NAME}"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: "BRANCH_NAME"
+          branch: "${BRANCH_NAME}"
           title: "Update JSON Schema and case classes"
           body: "This PR updates the JSON schema files and case classes."
