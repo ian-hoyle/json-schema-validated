@@ -11,7 +11,7 @@ jobs:
   generate-schema:
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: "schema-update-$(date +%s)"  # Use a unique branch name based on the current timestamp
+      BRANCH_NAME: "schema-update-${{ github.run_id }}"  # Use a unique branch name based on the GitHub run ID
 
     steps:
       - name: Checkout repository
