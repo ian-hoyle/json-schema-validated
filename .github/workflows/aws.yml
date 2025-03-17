@@ -34,19 +34,19 @@ jobs:
             echo "Changed files:"
             echo "$changedFiles"
             if echo "$changedFiles" | grep -q "aws.yml"; then
-              echo "::set-output name=ts-only::true"
+              echo "TESTING_ENVIRONMENT=1" >> $GITHUB_ENV
               echo "ts-only=true" 
               echo "ts-only=true" >> $GITHUB_ENV
             else
               echo "ts-only=false"
-              echo "::set-output name=ts-only::false"
+              echo "TESTING_ENVIRONMENT=2" >> $GITHUB_ENV
               echo "ts-only=false" >> $GITHUB_ENV
             fi
           else
+            echo "TESTING_ENVIRONMENT=3" >> $GITHUB_ENV
             echo "ts-only=false" >> $GITHUB_ENV
           fi  
-          printenv
-          echo "working ${{ env.ts-only }}"
+           echo "working ${{ env.TESTING_ENVIRONMENT }}"
   print: 
     needs: get_files
     runs-on: ubuntu-latest
