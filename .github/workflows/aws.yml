@@ -33,19 +33,26 @@ jobs:
             echo "Changed files:"
             echo "$changedFiles"
             if echo "$changedFiles" | grep -q "aws.yml"; then
+              echo "TESTING_ENVIRONMENT=1" >> $GITHUB_ENV
+              echo "TESTING_ENVIRONMENT=1"
               echo "ts-only=true" >> $GITHUB_ENV
             else
+              echo "TESTING_ENVIRONMENT=2" >> $GITHUB_ENV
+              echo "TESTING_ENVIRONMENT=2"
               echo "ts-only=false" >> $GITHUB_ENV
             fi
           else
+            echo "TESTING_ENVIRONMENT=3" >> $GITHUB_ENV
+            echo "TESTING_ENVIRONMENT=3"
             echo "ts-only=false" >> $GITHUB_ENV
           fi  
+          printenv
           
   print: 
     needs: get_files
-    if: ${{ github.event.pull_request.merged == true) }}
     runs-on: ubuntu-latest
     steps:
       - name: print
         run: |
-          echo "${{ env.ts-only }}"
+          printenv
+          echo "${{ env.TESTING_ENVIRONMENT }}"
