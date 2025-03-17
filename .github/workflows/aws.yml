@@ -42,6 +42,7 @@ jobs:
           else
             echo "ts-only=false" >> $GITHUB_ENV
           fi  
+          printenv
           echo "working ${{ env.ts-only }}"
   print: 
     needs: get_files
@@ -49,4 +50,5 @@ jobs:
     steps:
       - name: print
         run: |
+          printenv
           echo "${{ env.ts-only }}"
