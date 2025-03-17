@@ -99,3 +99,4 @@ To use the `generateSchema` task, follow these steps:
 
 2. **Run the task**:
    Execute the `sbt generateSchema` task from the console.
+
