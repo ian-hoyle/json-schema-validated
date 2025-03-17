@@ -16,6 +16,7 @@ jobs:
 
       - name: Modified files
         run: |
+          echo "Checking"
           if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
             firstCommit="${{ github.event.pull_request.base.sha }}"
             lastCommit="${{ github.event.pull_request.head.sha }}"
