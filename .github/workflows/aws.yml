@@ -40,10 +40,9 @@ jobs:
           else
             echo "ts-only=false" >> $GITHUB_ENV
           fi  
-          
+          echo: "working ${{ env.ts-only }}"
   print: 
     needs: get_files
-    if: ${{ github.event.pull_request.merged == true) }}
     runs-on: ubuntu-latest
     steps:
       - name: print
