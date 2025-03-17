@@ -5,7 +5,7 @@ on:
 
 jobs:
   get_files:
-    name: run_on_pr_or_push
+    name: mwrged
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
