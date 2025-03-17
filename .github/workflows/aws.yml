@@ -35,3 +35,8 @@ jobs:
           changedFiles=$(git diff --name-only --diff-filter=d "$firstCommit" "$lastCommit")
           echo "Changed files:"
           echo "$changedFiles"
+          if echo "$changedFiles" | grep -q "aws.yml"; then
+          echo "The file 'aws.yml' has been modified."
+          else
+            echo "The file 'aws.yml' has not been modified."
+          fi
