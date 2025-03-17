@@ -5,6 +5,7 @@ on:
 
 jobs:
   get_files:
+    
     name: merged
     runs-on: ubuntu-latest
     steps:
@@ -14,6 +15,7 @@ jobs:
           fetch-depth: 0
 
       - name: Modified files
+        id: set-env
         run: |
           echo "Checking"
           if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
@@ -34,19 +36,20 @@ jobs:
             echo "$changedFiles"
             if echo "$changedFiles" | grep -q "aws.yml"; then
               echo "TESTING_ENVIRONMENT=1" >> $GITHUB_ENV
+              echo "::set-output name=TESTING_ENVIRONMENT::1"
               echo "TESTING_ENVIRONMENT=1"
               echo "ts-only=true" >> $GITHUB_ENV
             else
-              echo "TESTING_ENVIRONMENT=2" >> $GITHUB_ENV
+              echo "::set-output name=TESTING_ENVIRONMENT::2"
               echo "TESTING_ENVIRONMENT=2"
               echo "ts-only=false" >> $GITHUB_ENV
             fi
           else
-            echo "TESTING_ENVIRONMENT=3" >> $GITHUB_ENV
+            echo "::set-output name=TESTING_ENVIRONMENT::3"
             echo "TESTING_ENVIRONMENT=3"
             echo "ts-only=false" >> $GITHUB_ENV
           fi  
-          printenv
+          echo "TESTING_ENVIRONMENT=${{ steps.set-env.outputs.TESTING_ENVIRONMENT }}"
           
   print: 
     needs: get_files
@@ -54,5 +57,5 @@ jobs:
     steps:
       - name: print
         run: |
-          printenv
+          echo "TESTING_ENVIRONMENT=${{ steps.set-env.outputs.TESTING_ENVIRONMENT }}"
           echo "${{ env.TESTING_ENVIRONMENT }}"
