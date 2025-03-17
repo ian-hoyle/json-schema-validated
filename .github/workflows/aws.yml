@@ -14,7 +14,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Modified files
+      - name: Modified file
         run: |
           echo "Checking"
           if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
