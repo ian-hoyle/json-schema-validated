@@ -23,7 +23,7 @@ jobs:
             firstCommit="${{ github.event.pull_request.base.sha }}"
             lastCommit="${{ github.event.pull_request.head.sha }}"
                  
-            echo "First Commit: $firstCommit"
+            echo "First Commits: $firstCommit"
             echo "Last Commit: $lastCommit"
         
             if [ -z "$firstCommit" ] || [ -z "$lastCommit" ]; then
