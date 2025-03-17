@@ -33,8 +33,10 @@ jobs:
             echo "Changed files:"
             echo "$changedFiles"
             if echo "$changedFiles" | grep -q "aws.yml"; then
+              echo "ts-only=true" 
               echo "ts-only=true" >> $GITHUB_ENV
             else
+              echo "ts-only=false"
               echo "ts-only=false" >> $GITHUB_ENV
             fi
           else
