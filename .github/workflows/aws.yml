@@ -5,7 +5,7 @@ on:
 
 jobs:
   get_files:
-    name: mwrged
+    name: merged
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
