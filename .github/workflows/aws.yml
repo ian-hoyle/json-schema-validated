@@ -40,7 +40,7 @@ jobs:
           else
             echo "ts-only=false" >> $GITHUB_ENV
           fi  
-          echo: "working ${{ env.ts-only }}"
+          echo "working ${{ env.ts-only }}"
   print: 
     needs: get_files
     runs-on: ubuntu-latest
