@@ -26,6 +26,6 @@ jobs:
               lastCommit='${{ github.event.head_ref }}'
               ;;
           esac
-          changedFiles=$(git diff --name-only --diff-filter=d "${firstCommit}~1" "${lastCommit}"
+          changedFiles=$(git diff --name-only --diff-filter=d "${firstCommit}~1" "${lastCommit})"
           echo "Changed files:"
           echo "$changedFiles"
