@@ -14,6 +14,7 @@ jobs:
           fetch-depth: 0
 
       - name: Modified files
+        id: set-ts-only
         run: |
           echo "Checking"
           if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
@@ -33,10 +34,12 @@ jobs:
             echo "Changed files:"
             echo "$changedFiles"
             if echo "$changedFiles" | grep -q "aws.yml"; then
+              echo "::set-output name=ts-only::true"
               echo "ts-only=true" 
               echo "ts-only=true" >> $GITHUB_ENV
             else
               echo "ts-only=false"
+              echo "::set-output name=ts-only::false"
               echo "ts-only=false" >> $GITHUB_ENV
             fi
           else
@@ -50,5 +53,5 @@ jobs:
     steps:
       - name: print
         run: |
-          printenv
+          echo "yo "${{ steps.set-ts-only.outputs.ts-only }}"
           echo "${{ env.ts-only }}"
