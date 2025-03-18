@@ -5,7 +5,6 @@ on:
 
 jobs:
   get_files:
-    
     name: merged
     runs-on: ubuntu-latest
     steps:
@@ -13,8 +12,7 @@ jobs:
         uses: actions/checkout@master
         with:
           fetch-depth: 0
-
-      - name: Modified files
+      - name: Modified_files
         id: set-env
         run: |
           echo "Checking"
@@ -35,27 +33,18 @@ jobs:
             echo "Changed files:"
             echo "$changedFiles"
             if echo "$changedFiles" | grep -q "aws.yml"; then
-              echo "TESTING_ENVIRONMENT=1" >> $GITHUB_ENV
-              echo "::set-output name=TESTING_ENVIRONMENT::1"
               echo "TESTING_ENVIRONMENT=1"
-              echo "ts-only=true" >> $GITHUB_ENV
+              echo "ts-only=true" >> $GITHUB_OUTPUT
             else
-              echo "::set-output name=TESTING_ENVIRONMENT::2"
               echo "TESTING_ENVIRONMENT=2"
-              echo "ts-only=false" >> $GITHUB_ENV
+              echo "ts-only=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "::set-output name=TESTING_ENVIRONMENT::3"
             echo "TESTING_ENVIRONMENT=3"
-            echo "ts-only=false" >> $GITHUB_ENV
+            echo "ts-only=false" >> $GITHUB_OUTPUT
           fi  
-          echo "TESTING_ENVIRONMENT=${{ steps.set-env.outputs.TESTING_ENVIRONMENT }}"
-          
-  print: 
-    needs: get_files
-    runs-on: ubuntu-latest
-    steps:
+         
       - name: print
         run: |
-          echo "TESTING_ENVIRONMENT=${{ steps.set-env.outputs.TESTING_ENVIRONMENT }}"
-          echo "${{ env.TESTING_ENVIRONMENT }}"
+          echo "TESTING_ENVIRONMENT=${{ steps.set-env.outputs.ts-only }}"
+          echo "Finished"
