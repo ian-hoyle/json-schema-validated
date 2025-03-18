@@ -47,4 +47,4 @@ jobs:
       - name: print
         run: |
           echo "TESTING_ENVIRONMENT=${{ steps.set-env.outputs.ts-only }}"
-          echo "Finished working"
+          echo "Finished hopefully working"
