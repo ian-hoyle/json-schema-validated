@@ -5,7 +5,8 @@
     "client_side_checksum": {
       "type": "string",
       "minLength": 64,
-      "maximum": 64
+      "maximum": 64,
+      "description" : "checksum"
     },
     "file_size": {
       "type": "integer",
