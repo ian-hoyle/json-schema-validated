@@ -6,7 +6,7 @@
       "type": "string",
       "minLength": 64,
       "maximum": 64,
-      "description" : "checksum calculated"
+      "description" : "checksum"
     },
     "file_size": {
       "type": "integer",
