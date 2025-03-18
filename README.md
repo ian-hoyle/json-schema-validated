@@ -6,7 +6,7 @@
 
 ## Overview
 
-`json-schema-validated` is a Scala-based project for validating data using JSON schema language. The data is loaded as key-value pairs, where the keys can vary between domains and then validated against JSON schema.    
+`json-schema-validated` is a Scala-based project for validating data using JSON schema language. The data is loaded as key-value pairs, where the keys can vary between domains and then validated against JSON schema.      
 
 The JSON schema validation is performed using [NetowrkNT JSON Schema Validator](http://github.com/networknt/json-schema-validator)
 
