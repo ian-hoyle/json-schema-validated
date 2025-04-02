@@ -30,8 +30,8 @@ jobs:
 
       - name: Create branch, generate and commit changes
         run: |
-          printf "${BRANCH_NAME}"
-          printf "${B}"
+          printf 'hello%s\n' "${BRANCH_NAME}"
+          printf 'bye%s\n' "${B}"
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.no-reply.github.com'
           git checkout -b "${BRANCH_NAME}"
