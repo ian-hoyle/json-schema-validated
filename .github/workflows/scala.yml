@@ -32,7 +32,7 @@ jobs:
         env:
           A: 'blah/'
         run: |
-          echo {{A}}
+          printf ${A}
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.no-reply.github.com'
           git checkout -b "${BRANCH_NAME}"
