@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: "schema-update-${{ github.run_id }}"  # Use a unique branch name based on the GitHub run ID
-      B: "blah/"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -30,8 +29,6 @@ jobs:
 
       - name: Create branch, generate and commit changes
         run: |
-          printf 'hello%s\n' "${BRANCH_NAME}"
-          printf 'bye%s\n' "${B}"
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.no-reply.github.com'
           git checkout -b "${BRANCH_NAME}"
