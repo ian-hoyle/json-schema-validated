@@ -29,7 +29,10 @@ jobs:
         uses: sbt/setup-sbt@v1
 
       - name: Create branch, generate and commit changes
+        env:
+          A: 'blah/'
         run: |
+          echo {{A}}
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.no-reply.github.com'
           git checkout -b "${BRANCH_NAME}"
