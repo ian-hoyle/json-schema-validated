@@ -13,13 +13,6 @@ import validation.error.ValidationErrors
 
 object JsonSchemaValidated:
 
-  def validateWithSchema(fileValidation: DataValidationResult[List[RowData]], schema: String): IO[DataValidationResult[List[RowData]]] = {
-    fileValidation match {
-      case Valid(value) => IO(ValidatedSchema.schemaValidated(schema)(value))
-      case Invalid(errors) => IO.pure(errors.invalid)
-    }
-  }
-
   def validateWithMultipleSchema(fileValidation: DataValidationResult[List[RowData]], schemas: List[String], propertyToAll: String => String): IO[DataValidationResult[List[RowData]]] = {
     fileValidation match {
       case Valid(value) =>

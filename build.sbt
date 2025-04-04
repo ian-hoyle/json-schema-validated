@@ -1,6 +1,7 @@
 import Dependencies.*
 import sbtassembly.AssemblyPlugin.autoImport.*
 import sbt.Keys.{name, scalaVersion, version}
+//imp
 
 CustomTasks.duplications
 GenerateScalaCaseClasses.caseClasses
@@ -20,6 +21,8 @@ assemblyMergeStrategy := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case x => MergeStrategy.first
 }
+
+
 
 val circeVersion = "0.14.9"
 

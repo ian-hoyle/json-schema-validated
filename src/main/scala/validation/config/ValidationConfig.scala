@@ -5,14 +5,13 @@ import cats.data.Reader
 import cats.effect.IO
 import ujson.{Arr, Value}
 import upickle.core.LinkedHashMap
-import validation.{ConfigItem, ConfigParameters, JsonConfig, Parameters, ValidatorConfiguration}
+import validation.{ConfigItem, ConfigParameters, JsonConfig, ValidatorConfiguration}
 
 import scala.collection.mutable
-import validation.jsonschema.loadData
 import io.circe.generic.auto.*
 import io.circe.parser.decode
-import io.circe.syntax.*
-import cats.implicits._
+import cats.implicits.*
+import validation.jsonschema.ValidatedSchema.loadData
 
 import scala.util.{Failure, Success, Try}
 

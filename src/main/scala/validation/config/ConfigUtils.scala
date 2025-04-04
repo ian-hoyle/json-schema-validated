@@ -2,7 +2,8 @@ package validation.config
 
 import ujson.Value
 import upickle.core.LinkedHashMap
-import validation.jsonschema.loadData
+import validation.jsonschema
+import validation.jsonschema.ValidatedSchema.loadData
 
 import scala.util.Try
 
