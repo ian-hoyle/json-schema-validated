@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: "schema-update-${{ github.run_id }}"  # Use a unique branch name based on the GitHub run ID
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
