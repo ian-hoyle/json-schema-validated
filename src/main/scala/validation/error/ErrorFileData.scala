@@ -38,7 +38,7 @@ object ValidationErrors {
 import cats.implicits.*
 
 object CSVValidationResult {
-  implicit val combineCSVValidationResult: Monoid[DataValidationResult[List[RowData]]] = new Monoid[DataValidationResult[List[RowData]]] {
+  implicit val dataValidationResultMonoid: Monoid[DataValidationResult[List[RowData]]] = new Monoid[DataValidationResult[List[RowData]]] {
     override def empty: DataValidationResult[List[RowData]] =
       Validated.valid(List.empty[RowData]) // Empty list of RowData is the valid default
 

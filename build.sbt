@@ -1,7 +1,7 @@
 import Dependencies.*
 import sbtassembly.AssemblyPlugin.autoImport.*
 import sbt.Keys.{name, scalaVersion, version}
-//imp
+
 
 CustomTasks.duplications
 GenerateScalaCaseClasses.caseClasses
@@ -36,6 +36,7 @@ libraryDependencies ++= Seq(
   awsLambda,
   awsLambdaJavaEvents,
   nscalaTime,
+  pekkoStream,
   awsS3
 )
 

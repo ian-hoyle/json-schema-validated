@@ -21,22 +21,19 @@ object ValidatedSchema:
   private lazy val loadedSchema = mutable.Map.empty[String, JsonSchema]
 
 
-  def validateRequiredSchema(schemaFile: Option[String], propertyToAlt: String => String)(data: List[RowData]): DataValidationResult[List[RowData]] =
+  def validateSchemaSingleRow(schemaFile: Option[String], propertyToAlt: String => String)(data: List[RowData]): DataValidationResult[List[RowData]] =
     schemaFile match {
-      case Some(schema) => schemaValidated(schema, false, propertyToAlt)(data)
+      case Some(schema) => schemaValidated(schema, propertyToAlt)(List(data.head)).map(_ => data)
       case None => data.valid
     }
 
+  // ToDo: Should return Invalid if no JSON in RowData
+  def schemaValidated(schemaFile: String, propertyToAlt: String => String = (x: String) => x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
 
-  def schemaValidated(schemaFile: String, allRows: Boolean = true, propertyToAlt: String => String = (x: String) => x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     val jsonSchema = getLoadedSchema(schemaFile)
-    val messagesProvider: String => String = loadMessages(schemaFile.replace(".json", ".properties"))
-    val processData = if (!allRows)
-      List(data.head)
-    else
-      data
+    val messagesProvider: MessageOption => String = loadMessages(schemaFile.replace(".json", ".properties"))
 
-    val errors: List[SchemaValidationErrors] = processData.map(data =>
+    val errors: List[SchemaValidationErrors] = data.map(data =>
       SchemaValidationErrors(data.assetId,
         jsonSchema.validate(data.json.get, InputFormat.JSON).asScala.toSet,
         data.data))
@@ -57,10 +54,9 @@ object ValidatedSchema:
       NonEmptyList.fromList[ValidationErrors](validationErrorsList.toSet.toList).get.invalid
   }
 
-  // needs fixing up
   private def convertSchemaValidationErrorToJSValidationError(schemaValidationMessages: Set[ValidationMessage],
                                                               schemaFile: String,
-                                                              messageProvider: String => String,
+                                                              messageProvider: MessageOption => String,
                                                               originalData: Map[String, Any],
                                                               propertyToAlt: String => String): Set[JsonSchemaValidationError] = {
     for {
@@ -68,10 +64,34 @@ object ValidatedSchema:
       validationError = {
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
         val originalProperty = propertyToAlt(propertyName)
-        val originalValue = originalData.getOrElse(propertyName, "")
-        JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(s"$propertyName.${message.getMessageKey}"), originalValue.toString)
+        val originalValue = originalData.getOrElse(propertyName, message.getInstanceNode.asText)
+        JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(MessageOption(s"$propertyName.${message.getMessageKey}",Some(message.getMessage))), originalValue.toString)
       }
     } yield validationError
+  }
+
+  private case class MessageOption(key:String, alternateMessage:Option[String])
+  private def loadMessages(propertiesFileName: String)(messageOption: MessageOption): String = {
+    val properties = new Properties()
+
+    val alternative = messageOption.alternateMessage match {
+      case Some(message) => message
+      case None => messageOption.key
+    }
+    Using(Source.fromResource(propertiesFileName)) { source =>
+      properties.load(source.bufferedReader())
+    }
+    properties.getProperty(messageOption.key, alternative)
+  }
+
+  private def getLoadedSchema(schemaFile: String): JsonSchema = {
+    loadedSchema.get(schemaFile) match {
+      case Some(schema) => schema
+      case None =>
+        val jsonSchema = getJsonSchema(schemaFile)
+        loadedSchema.put(schemaFile, jsonSchema)
+        jsonSchema
+    }
   }
 
   private def getJsonSchema(mySchema: String): JsonSchema = {
@@ -98,25 +118,6 @@ object ValidatedSchema:
         Using(Source.fromResource(mySchema))(_.mkString)
     }
     data
-  }
-
-  private def loadMessages(propertiesFileName: String)(key: String): String = {
-    val properties = new Properties()
-
-    Using(Source.fromResource(propertiesFileName)) { source =>
-      properties.load(source.bufferedReader())
-    }
-    properties.getProperty(key, key)
-  }
-
-  private def getLoadedSchema(schemaFile: String): JsonSchema = {
-    loadedSchema.get(schemaFile) match {
-      case Some(schema) => schema
-      case None =>
-        val jsonSchema = getJsonSchema(schemaFile)
-        loadedSchema.put(schemaFile, jsonSchema)
-        jsonSchema
-    }
   }
 
   private case class ValidationError(reason: String, propertyName: String, key: String)

@@ -19,7 +19,7 @@ object CSVLoader:
     loaded.valid
   }
 
-  private def loadCSV(csvFile: String, idColumn: Option[String]): List[RowData] = {
+  def loadCSV(csvFile: String, idColumn: Option[String]): List[RowData] = {
     val data: Try[List[RowData]] = Using {
       csvFile match {
         case _ if csvFile.startsWith("http") => Source.fromURL(URI.create(csvFile).toASCIIString)

@@ -11,7 +11,7 @@ import io.circe.syntax.*
 import validation.config.ValidationConfig.prepareValidationConfiguration
 import validation.datalaoader.CSVLoader.loadCSVData
 import validation.jsonschema.JsonSchemaValidated.*
-import validation.jsonschema.ValidatedSchema.validateRequiredSchema
+import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
 import validation.{DataValidationResult, Parameters, RowData}
 
 import scala.jdk.CollectionConverters.*
@@ -53,15 +53,15 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
   def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
     for {
-      configuration <- prepareValidationConfiguration(parameters.configFile, parameters.alternateKey)
+      configuration <- IO(prepareValidationConfiguration(parameters.configFile, parameters.alternateKey))
       data <- IO(
         loadCSVData(parameters.fileToValidate, parameters.idKey)
           // generating domain specific on build removes this requirement 
           andThen mapKeys(configuration.altInToKey)
           andThen addJsonForValidation(configuration.valueMapper)
-          andThen validateRequiredSchema(parameters.requiredSchema, configuration.keyToAltIn)
+          andThen validateSchemaSingleRow(parameters.requiredSchema, configuration.keyToAltIn)
       )
-      validation <- validateWithMultipleSchema(data, parameters.schema, configuration.keyToAltIn)
+      validation <- validateWithMultipleSchemaInParallel(data, parameters.schema, configuration.keyToAltIn)
     } yield validation
   }
 }

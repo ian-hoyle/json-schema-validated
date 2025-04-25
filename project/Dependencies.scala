@@ -14,6 +14,8 @@ object Dependencies {
   lazy val awsLambda = "com.amazonaws" % "aws-lambda-java-core" % "1.2.3"
   lazy val awsLambdaJavaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.15.0"
   lazy val awsS3 = "com.amazonaws" % "aws-java-sdk-s3" % "1.12.782"
+  lazy val pekkoTestKit = "org.apache.pekko" %% "pekko-testkit" % "1.0.0" % Test
+  lazy val pekkoStream = "org.apache.pekko" %% "pekko-stream" % "1.0.0"
   lazy val circeCore = "io.circe" %% "circe-core" % "0.14.10"
   val circeGeneric = "io.circe" %% "circe-generic" % "0.14.10"
   val circeParser = "io.circe" %% "circe-parser" % "0.14.10"

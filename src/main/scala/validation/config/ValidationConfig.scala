@@ -1,8 +1,6 @@
 package validation.config
 
-import ConfigUtils.{convertValueFunction, getPropertyType, loadProperties}
 import cats.data.Reader
-import cats.effect.IO
 import ujson.{Arr, Value}
 import upickle.core.LinkedHashMap
 import validation.{ConfigItem, ConfigParameters, JsonConfig, ValidatorConfiguration}
@@ -17,8 +15,8 @@ import scala.util.{Failure, Success, Try}
 
 object ValidationConfig:
 
-  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
-    IO({
+  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): ValidatorConfiguration = {
+
       val csvConfigurationReader = for {
         altHeaderToPropertyMapper <- Reader(ValidationConfig.domainKeyToPropertyMapper)
         propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToDomainKeyMapper)
@@ -26,8 +24,6 @@ object ValidationConfig:
       } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
         valueMapper)
       csvConfigurationReader.run(ConfigParameters(configFile, alternateKey, "organisationBase.json", decodeConfig(configFile)))
-    }
-    ) //TODO handle error with raiseError that contains ValidationResult
   }
 
   def domainKeyToPropertyMapper(parameters: ConfigParameters): String => String =
@@ -69,4 +65,35 @@ object ValidationConfig:
     arr.value.head.obj.get(alternate) match
       case Some(v) => v.str
       case _ => a
+  }
+
+  private def loadProperties(file: String): LinkedHashMap[String, Value] = {
+    val data = loadData(file)
+    val json = ujson.read(data.getOrElse(""))
+    val jsonMap: LinkedHashMap[String, Value] = json("properties").obj
+    jsonMap
+  }
+
+  private def getPropertyType(propertyValue: ujson.Obj): String = {
+    propertyValue.obj.get("type") match {
+      case Some(ujson.Str(singleType)) => singleType
+      case Some(ujson.Arr(types)) if types.nonEmpty =>
+        types.find(a => a.isInstanceOf[ujson.Str] && a.str != "null").map(_.str).getOrElse("unknown")
+      case _ => "unknown"
+    }
+  }
+
+  private def convertValueFunction(propertyType: String): String => Any = {
+    propertyType match {
+      case "integer" => (str: String) => Try(str.toInt).getOrElse(str)
+      case "array" => (str: String) => if (str.isEmpty) "" else str.split("\\|")
+      case "boolean" =>
+        (str: String) =>
+          str.toUpperCase match {
+            case "YES" | "TRUE" => true
+            case "NO" | "FALSE" => false
+            case _ => str
+          }
+      case _ => (str: String) => str
+    }
   }
