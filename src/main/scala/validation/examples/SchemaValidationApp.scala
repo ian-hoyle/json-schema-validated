@@ -62,12 +62,4 @@ object SchemaValidationApp {
       .andThen(validateSchemaSingleRow(parameters.requiredSchema, (x: String) => x))
       .andThen(composeMultipleValidated(parameters.schema, (x: String) => x))
   }
-  
-//  private def streamValidation(parameters: Parameters): DataValidationResult[List[RowData]] = {
-//    val configuration = prepareValidationConfiguration(parameters.configFile, parameters.alternateKey)
-//    val stream:List[RowData] = loadCSV(parameters.fileToValidate, parameters.idKey)
-//    val rowDataSource = 
-//    
-//   
-//  }
 }
