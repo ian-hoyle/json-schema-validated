@@ -3,6 +3,8 @@
 ## Table of Contents
 - [Overview](#overview)
 - [Schema](#schema)
+- [Example usage](#example-usage)
+
 
 ## Overview
 
@@ -19,8 +21,7 @@ Two fundamental schema are used in the validation process
 
 One or many JSON schema can be used to validate the data with error messages defined for each schema
 ## Example usage
-
-### CSV Validation
+Example usage of the project is provided in the [examples](src/main/scala/validation/examples) directory. The examples include:
 
 The `csvFileValidation` method in the [CSVFileValidationLambdaHandler](src/main/scala/validation/examples/CSVFileValidationLambdaHandler.scala) class is responsible for validating CSV data against multiple JSON schemas. Here is the method with a brief explanation:
 
