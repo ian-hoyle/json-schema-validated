@@ -13,7 +13,7 @@ import validation.{Parameters, RowData}
 import scala.concurrent.{ExecutionContext, Future}
 
 
-object PekoStreamExample {
+object PekkoStreamExample {
 
   /**
    * Example usage with some sample validations
