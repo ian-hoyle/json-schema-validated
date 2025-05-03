@@ -19,6 +19,7 @@ import scala.util.{Try, Using}
 object ValidatedSchema:
 
   private lazy val loadedSchema = mutable.Map.empty[String, JsonSchema]
+  private val propertiesMap = mutable.Map.empty[String, Properties]
 
 
   def validateSchemaSingleRow(schemaFile: Option[String], propertyToAlt: String => String)(data: List[RowData]): DataValidationResult[List[RowData]] =
@@ -65,22 +66,25 @@ object ValidatedSchema:
         val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
         val originalProperty = propertyToAlt(propertyName)
         val originalValue = originalData.getOrElse(propertyName, message.getInstanceNode.asText)
-        JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(MessageOption(s"$propertyName.${message.getMessageKey}",Some(message.getMessage))), originalValue.toString)
+        JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(MessageOption(s"$propertyName.${message.getMessageKey}", Some(message.getMessage))), originalValue.toString)
       }
     } yield validationError
   }
 
-  private case class MessageOption(key:String, alternateMessage:Option[String])
   private def loadMessages(propertiesFileName: String)(messageOption: MessageOption): String = {
-    val properties = new Properties()
 
     val alternative = messageOption.alternateMessage match {
       case Some(message) => message
       case None => messageOption.key
     }
-    Using(Source.fromResource(propertiesFileName)) { source =>
-      properties.load(source.bufferedReader())
-    }
+    val properties = propertiesMap.getOrElseUpdate(propertiesFileName, {
+      val newProperties = new Properties()
+      Using(Source.fromResource(propertiesFileName)) { source =>
+        newProperties.load(source.bufferedReader())
+      }
+      newProperties
+    })
+
     properties.getProperty(messageOption.key, alternative)
   }
 
@@ -119,5 +123,7 @@ object ValidatedSchema:
     }
     data
   }
+
+  private case class MessageOption(key: String, alternateMessage: Option[String])
 
   private case class ValidationError(reason: String, propertyName: String, key: String)
