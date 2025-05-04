@@ -30,7 +30,7 @@ object PekkoStreamExample {
     val configuration = prepareValidationConfiguration(parameters.configFile, parameters.alternateKey)
     // Load the CSV data and generate 10,000 rows for each row in the CSV to simulate a large dataset
     val data: List[RowData] = loadCSV(parameters.fileToValidate, parameters.idKey).zipWithIndex.flatMap { case (row, index) =>
-      (1 to 10000).map(i => row.copy(assetId = Some(s"${index * 10000 + i}_${row.assetId.getOrElse("")}")))
+      (1 to 1000).map(i => row.copy(assetId = Some(s"${index * 1000 + i}_${row.assetId.getOrElse("")}")))
     }
 
 
@@ -53,7 +53,9 @@ object PekkoStreamExample {
 
     processedData.map {
         case Validated.Valid(data) => //println(data)
-        case Validated.Invalid(errors) => println(s"${System.currentTimeMillis() - startTime}") //errors.toList.foreach(println)
+        case Validated.Invalid(errors) =>
+          errors.toList.foreach(println)
+          println(s"${System.currentTimeMillis() - startTime}")
       }
       .onComplete(_ => system.terminate())(system.dispatcher)
   }

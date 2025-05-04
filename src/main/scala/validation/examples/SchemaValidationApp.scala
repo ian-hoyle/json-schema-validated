@@ -29,11 +29,11 @@ object SchemaValidationApp {
         result match {
           case cats.data.Validated.Valid(data) =>
             println("Validation successful")
-            data.foreach(row => println(row))
+            //data.foreach(row => println(row))
           case cats.data.Validated.Invalid(errors) =>
             println("Validation failed with errors:")
-            println(errors.asJson)
-            errors.toList.foreach(error => println(error))
+            //println(errors.asJson)
+            //errors.toList.foreach(error => println(error))
         }
       case Left(error) =>
         println(s"Invalid input: ${error.getMessage}")
