@@ -9,6 +9,7 @@ import validation.error.ValidationErrors
 import validation.jsonschema.JsonSchemaValidated.{addJsonForValidation, composeMultipleValidated, mapKeys}
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
 import validation.{Parameters, RowData}
+import org.apache.pekko.stream.Materializer
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -19,6 +20,9 @@ object PekkoStreamExample {
    * Example usage with some sample validations
    */
   def main(args: Array[String]): Unit = {
+    implicit val system: ActorSystem = ActorSystem("CsvStreamSystem")
+    implicit val executionContext: ExecutionContext = system.dispatcher
+    implicit val materializer: Materializer = Materializer(system)
 
     val parameters = Parameters("config.json",
       List("organisationBase.json",
@@ -29,17 +33,13 @@ object PekkoStreamExample {
 
     val configuration = prepareValidationConfiguration(parameters.configFile, parameters.alternateKey)
     // Load the CSV data and generate 10,000 rows for each row in the CSV to simulate a large dataset
-    val data: List[RowData] = loadCSV(parameters.fileToValidate, parameters.idKey).zipWithIndex.flatMap { case (row, index) =>
+    val smallDataSet: List[RowData] = loadCSV(parameters.fileToValidate, parameters.idKey)
+    val largeDataSet: List[RowData] = smallDataSet.zipWithIndex.flatMap { case (row, index) =>
       (1 to 1000).map(i => row.copy(assetId = Some(s"${index * 1000 + i}_${row.assetId.getOrElse("")}")))
     }
 
-
-    // Create the source
+    val data =  largeDataSet
     val csvSource = Source(data)
-    implicit val system: ActorSystem = ActorSystem("CsvStreamSystem")
-    implicit val executionContext: ExecutionContext = system.dispatcher
-    import org.apache.pekko.stream.Materializer
-    implicit val materializer: Materializer = Materializer(system)
 
     val startTime = System.currentTimeMillis
     val processedData: Future[Validated[NonEmptyList[ValidationErrors], List[RowData]]] = csvSource
@@ -52,19 +52,12 @@ object PekkoStreamExample {
       }
 
     processedData.map {
-        case Validated.Valid(data) => //println(data)
+        case Validated.Valid(data) =>
+          println(s"Valid in ${System.currentTimeMillis() - startTime} milliseconds")
         case Validated.Invalid(errors) =>
-          errors.toList.foreach(println)
-          println(s"${System.currentTimeMillis() - startTime}")
+          println(s"Invalid in ${System.currentTimeMillis() - startTime} milliseconds with ${errors.length} errors")
       }
       .onComplete(_ => system.terminate())(system.dispatcher)
   }
-
-  /**
-   * Creates a Peko Source from a List of CSVDataRow objects
-   */
-  //  def createSourceFromList(data: List[RowData]): Source[RowData, NotUsed] = {
-  //    Source(data)
-  //  }
 
 }
