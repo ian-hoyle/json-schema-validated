@@ -1,10 +1,10 @@
-package validation.examples
+package examples
 
 import cats.data.{NonEmptyList, Validated}
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.*
-import validation.config.ValidationConfig.prepareValidationConfiguration
-import validation.datalaoader.CSVLoader.loadCSV
+import config.ValidationConfig.prepareValidationConfiguration
+import datalaoader.CSVLoader.loadCSV
 import validation.error.ValidationErrors
 import validation.jsonschema.JsonSchemaValidated.{addJsonForValidation, composeMultipleValidated, mapKeys}
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 object PekkoStreamExample {
 
   /**
-   * Example usage with some sample validations
+   * Streaming with Validated
    */
   def main(args: Array[String]): Unit = {
     implicit val system: ActorSystem = ActorSystem("CsvStreamSystem")

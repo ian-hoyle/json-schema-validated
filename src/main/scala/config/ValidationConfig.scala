@@ -1,4 +1,4 @@
-package validation.config
+package config
 
 import cats.data.Reader
 import ujson.{Arr, Obj, Value}

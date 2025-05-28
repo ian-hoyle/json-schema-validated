@@ -1,4 +1,4 @@
-package validation.examples
+package examples
 
 import cats.data.Validated.*
 import cats.effect.IO
@@ -8,8 +8,8 @@ import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import io.circe.generic.auto.*
 import io.circe.parser.decode
 import io.circe.syntax.*
-import validation.config.ValidationConfig.prepareValidationConfiguration
-import validation.datalaoader.CSVLoader.loadCSVData
+import config.ValidationConfig.prepareValidationConfiguration
+import datalaoader.CSVLoader.loadCSVData
 import validation.jsonschema.JsonSchemaValidated.*
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
 import validation.{DataValidationResult, Parameters, RowData}

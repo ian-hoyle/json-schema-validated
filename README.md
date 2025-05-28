@@ -1,11 +1,28 @@
 # json-schema-validated
 
 ## Table of Contents
+- [Reason for the project](#reason-for-the-project)
 - [Overview](#overview)
 - [Schema](#schema)
 - [Example usage](#example-usage)
 
 
+## Reason for the project
+Needed to support the transfer of data to The National Archives (TNA)
+  - The data could be in different formats (CSV, JSON, etc.)
+  - The date must be validated so that it can be used in the TNA system
+  - The data schema must be defined in a central location 
+  - The schema should be defined once but should be allowed to be used for different domains 
+  - Multiple schemas should be allowed to be used for the same data
+  - Error messages should be user-friendly and easy to understand
+  - The schema and mapping to domain help pages should be generated from the schema
+  - Custom validations should be allowed and easy to define
+
+JSON schema can be used to define the data schema
+
+  - **The validation should be done in a way that is easy to understand and maintain**
+ 
+Scala can be used to satisfy this requirement
 ## Overview
 
 `json-schema-validated` is a Scala-based project for validating data using JSON schema language. The data is loaded as key-value pairs, where the keys can vary between domains and then validated against JSON schema.    
@@ -25,9 +42,9 @@ Two fundamental schema are used in the validation process
 
 One or many JSON schema can be used to validate the data with error messages defined for each schema
 ## Example usage
-Example usage of the project is provided in the [examples](src/main/scala/validation/examples) directory. The examples include:
+Example usage of the project is provided in the [examples](src/main/scala/examples) directory. The examples include:
 
-The `csvFileValidation` method in the [CSVFileValidationLambdaHandler](src/main/scala/validation/examples/CSVFileValidationLambdaHandler.scala) class is responsible for validating CSV data against multiple JSON schemas. Here is the method with a brief explanation:
+The `csvFileValidation` method in the [CSVFileValidationLambdaHandler](src/main/scala/examples/CSVFileValidationLambdaHandler.scala) class is responsible for validating CSV data against multiple JSON schemas. Here is the method with a brief explanation:
 
 ```scala
 def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
@@ -60,7 +77,7 @@ The method returns an `IO` containing the result of the data validation.
 
 ### Configuration Loading
 
-The `prepareValidationConfiguration` method in the [ValidationConfig](src/main/scala/validation/config/ValidationConfig.scala) class is responsible for preparing the validation configuration using the provided config file and alternate key. Here is the method with a brief explanation:
+The `prepareValidationConfiguration` method in the [ValidationConfig](src/main/scala/config/ValidationConfig.scala) class is responsible for preparing the validation configuration using the provided config file and alternate key. Here is the method with a brief explanation:
 
 ```scala
 def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): IO[ValidatorConfiguration] = {
@@ -77,7 +94,7 @@ def prepareValidationConfiguration(configFile: String, alternateKey: Option[Stri
 }
 ```
 
-- **domainKeyToPropertyMapper**: Creates a [function](src/main/scala/validation/config/ValidationConfig.scala#L34C3-L42C45) to map alternate keys to properties.
+- **domainKeyToPropertyMapper**: Creates a [function](src/main/scala/config/ValidationConfig.scala#L34C3-L42C45) to map alternate keys to properties.
 - **propertyToDomainKeyMapper**: Creates a function to map properties to alternate keys.
 - **stringValueMapper**: Creates a function to convert string values to their respective types based on the property type. Especially useful for CSV validation
 - **ValidatorConfiguration**: Combines the above functions into a `ValidatorConfiguration` object.

@@ -1,4 +1,4 @@
-package validation.datalaoader
+package datalaoader
 
 import cats.*
 import cats.syntax.all.catsSyntaxValidatedId
