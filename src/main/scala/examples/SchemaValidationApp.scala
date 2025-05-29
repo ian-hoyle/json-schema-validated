@@ -1,12 +1,9 @@
 package examples
 
 import cats.data.Validated.*
-import cats.effect.IO
-import cats.effect.unsafe.implicits.global
 import config.ValidationConfig.prepareValidationConfiguration
 import datalaoader.CSVLoader.loadCSVData
 import io.circe.generic.auto.*
-import io.circe.parser.decode
 import io.circe.syntax.*
 import validation.custom.DebugPrintFirstRow
 import validation.jsonschema.JsonSchemaValidated.{addJsonForValidation, composeMultipleValidated, mapKeys}
@@ -17,29 +14,26 @@ object SchemaValidationApp {
 
   def main(args: Array[String]): Unit = {
 
-    val params = Parameters("config.json",
-      List("organisationBase.json",
+    val params = Parameters(
+      configFile ="config.json",
+      schema = List("organisationBase.json",
         "openRecord.json"),
-      Some("TDRMetadataUpload"), "sample.csv", Some("Filepath"), None, Some("TDRMetadataUpload"))
+      alternateKey = Some("TDRMetadataUpload"),
+      fileToValidate = "sample.csv",
+      idKey = Some("Filepath"),
+      requiredSchema = None,
+      keyToOutAlternate = Some("TDRMetadataUpload"))
 
-    val paramsString = params.asJson.noSpaces
+      val result = csvFileValidation(params)
 
-
-    decode[Parameters](paramsString) match {
-      case Right(params) =>
-        val result = IO(csvFileValidation(params)).unsafeRunSync()
-        result match {
-          case Valid(data) =>
-            println("Validation successful")
-            //data.foreach(row => println(row))
-          case Invalid(errors) =>
-            println(s"Validation failed with ${errors.length} errors:")
-            println(errors.asJson)
-            //errors.toList.foreach(error => println(error))
-        }
-      case Left(error) =>
-        println(s"Invalid input: ${error.getMessage}")
-    }
+      result match {
+        case Valid(data) =>
+          println("Validation successful")
+          //data.foreach(row => println(row))
+        case Invalid(errors) =>
+          println(s"Validation failed with ${errors.length} errors:")
+          println(errors.asJson)
+       }
   }
 
 
