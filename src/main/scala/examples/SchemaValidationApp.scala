@@ -16,8 +16,7 @@ object SchemaValidationApp {
 
     val params = Parameters(
       configFile ="config.json",
-      schema = List("organisationBase.json",
-        "openRecord.json"),
+      schema = List("organisationBase.json", "openRecord.json"),
       alternateKey = Some("TDRMetadataUpload"),
       fileToValidate = "sample.csv",
       idKey = Some("Filepath"),
