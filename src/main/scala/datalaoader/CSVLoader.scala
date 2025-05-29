@@ -22,7 +22,7 @@ object CSVLoader:
   def loadCSV(csvFile: String, idColumn: Option[String]): List[RowData] = {
     val data: Try[List[RowData]] = Using {
       csvFile match {
-        case _ if csvFile.startsWith("http") => Source.fromURL(URI.create(csvFile).toASCIIString)
+        case _ if csvFile.startsWith("http") || csvFile.startsWith("file:") => Source.fromURL(URI.create(csvFile).toASCIIString)
         case _ if csvFile.startsWith("s3://") => Source.fromInputStream(getS3ObjectInputStream(csvFile))
         case _ => Source.fromResource(csvFile)
       }

@@ -14,11 +14,13 @@ object SchemaValidationApp {
 
   def main(args: Array[String]): Unit = {
 
+    val fileToValidate = if (args.length > 0) args(0) else "sample.csv"
+
     val params = Parameters(
       configFile ="config.json",
-      schema = List("organisationBase.json", "openRecord.json"),
+      schema = List("organisationBase.json", "openRecord.json", "closedRecord.json"),
       alternateKey = Some("TDRMetadataUpload"),
-      fileToValidate = "sample.csv",
+      fileToValidate = fileToValidate,
       idKey = Some("Filepath"),
       requiredSchema = None,
       keyToOutAlternate = Some("TDRMetadataUpload"))

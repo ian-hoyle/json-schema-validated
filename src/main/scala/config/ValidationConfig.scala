@@ -14,8 +14,8 @@ import validation.jsonschema.ValidatedSchema.loadData
 import scala.util.{Failure, Success, Try}
 
 object ValidationConfig:
-  
-  val ARRAY_SPLIT_CHAR = '|'
+
+  private val ARRAY_SPLIT_CHAR = '|'
 
   def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): ValidatorConfiguration = {
 
