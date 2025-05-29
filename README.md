@@ -1,13 +1,13 @@
 # json-schema-validated
 
 ## Table of Contents
-- [Reason for the project](#reason-for-the-project)
+- [Reason for the project](#justification)
 - [Overview](#overview)
 - [Schema](#schema)
 - [Example usage](#example-usage)
 
 
-## Reason for the project
+## Justification
 Needed to support the transfer of data to The National Archives (TNA)
   - The data could be in different formats (CSV, JSON, etc.)
   - The date must be validated so that it can be used in the TNA system
