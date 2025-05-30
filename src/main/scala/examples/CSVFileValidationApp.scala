@@ -7,13 +7,12 @@ import io.circe.generic.auto.*
 import io.circe.syntax.*
 import validation.custom.DebugPrintFirstRow
 import validation.jsonschema.JsonSchemaValidated
-import validation.jsonschema.JsonSchemaValidated.{addJsonForValidation, mapKeys}
+import validation.jsonschema.JsonSchemaValidated.{addJsonForValidation, mapKeys, combineValidations, validate}
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
 import validation.{DataValidationResult, Parameters, RowData}
-import cats.implicits.*
 import validation.error.CSVValidationResult.*
 
-object SchemaValidationApp {
+object CSVFileValidationApp {
 
   def main(args: Array[String]): Unit = {
 
@@ -45,16 +44,6 @@ object SchemaValidationApp {
     val configuration = prepareValidationConfiguration(parameters.configFile, parameters.alternateKey)
 
     val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = JsonSchemaValidated.generateSchemaValidatedList(parameters.schema, configuration.keyToAltIn)
-
-    def combineValidations(validations: List[List[RowData] => DataValidationResult[List[RowData]]])(inputData: List[RowData]): DataValidationResult[List[RowData]] = {
-      validations.map(validation => validation(inputData)).combineAll
-    }
-
-    def validate(dataLoader: DataValidationResult[List[RowData]], validations: Seq[List[RowData] => DataValidationResult[List[RowData]]]): DataValidationResult[List[RowData]] = {
-      validations.foldLeft(dataLoader) {
-        (acc, validate) => acc.andThen(validate)
-      }
-    }
 
     val validations = Seq(
       mapKeys(configuration.altInToKey) _,

@@ -38,6 +38,15 @@ object JsonSchemaValidated:
     }.combineAll
   }
 
+  def combineValidations(validations: List[List[RowData] => DataValidationResult[List[RowData]]])(inputData: List[RowData]): DataValidationResult[List[RowData]] = {
+    validations.map(validation => validation(inputData)).combineAll
+  }
+
+  def validate(dataLoader: DataValidationResult[List[RowData]], validations: Seq[List[RowData] => DataValidationResult[List[RowData]]]): DataValidationResult[List[RowData]] = {
+    validations.foldLeft(dataLoader) {
+      (acc, validate) => acc.andThen(validate)
+    }
+  }
 
   def mapKeys(keyMapper: String => String)(inputData: List[RowData]): DataValidationResult[List[RowData]] = {
     val validatedData = inputData.map {
