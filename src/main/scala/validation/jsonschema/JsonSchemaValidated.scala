@@ -25,6 +25,12 @@ object JsonSchemaValidated:
         IO.pure(errors.invalid)
     }
   }
+
+  def generateSchemaValidatedList(schemaFiles: List[String], propertyToAlt: String => String): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+    schemaFiles.map { schemaFile =>
+      data => ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)
+    }
+  }
   
   def composeMultipleValidated(schemaFiles: List[String], propertyToAlt: String => String)(data: List[RowData]): DataValidationResult[List[RowData]] = {
     schemaFiles.map { schemaFile =>

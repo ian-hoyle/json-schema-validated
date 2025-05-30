@@ -59,6 +59,25 @@
       ]
     },
     {
+      "key": "file_name",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Filename"
+        }
+      ]
+    },
+    {
+      "key": "language",
+      "domainKeys": [
+        {
+          "domain": "TDRMetadataUpload",
+          "domainKey": "Language of record"
+        }
+      ],
+      "tdrDownloadIndex": 2
+    },
+    {
       "key": "description_alternate",
       "domainKeys": [
         {
