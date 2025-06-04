@@ -45,15 +45,16 @@ object CSVFileValidationApp {
 
     val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = JsonSchemaValidated.generateSchemaValidatedList(parameters.schema, configuration.keyToAltIn)
 
-    val validations = Seq(
-      mapKeys(configuration.altInToKey) _,
-      addJsonForValidation(configuration.valueMapper) _,
+    val failFastValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = List(
+      mapKeys(configuration.altInToKey),
+      addJsonForValidation(configuration.valueMapper),
       DebugPrintFirstRow.printFirstRow,
-      validateSchemaSingleRow(parameters.requiredSchema, configuration.keyToAltIn) _,
-      combineValidations(combiningValidations) _
+      validateSchemaSingleRow(parameters.requiredSchema, configuration.keyToAltIn)
     )
-    val dataLoader = loadCSVData(parameters.fileToValidate,parameters.idKey)
 
+
+    val validations = failFastValidations ++ List(combineValidations(combiningValidations))
+    val dataLoader = loadCSVData(parameters.fileToValidate,parameters.idKey)
 
     validate(dataLoader,validations)
 
