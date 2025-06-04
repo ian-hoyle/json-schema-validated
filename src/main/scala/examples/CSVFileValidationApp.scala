@@ -53,7 +53,7 @@ object CSVFileValidationApp {
     )
 
 
-    val validations = failFastValidations ++ List(combineValidations(combiningValidations))
+    val validations = failFastValidations :+ combineValidations(combiningValidations)
     val dataLoader = loadCSVData(parameters.fileToValidate,parameters.idKey)
 
     validate(dataLoader,validations)
