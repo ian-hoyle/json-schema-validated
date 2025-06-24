@@ -38,7 +38,15 @@ object JsonSchemaValidated:
     }.combineAll
   }
 
-  def validate(dataLoader: DataValidationResult[List[RowData]], 
+  /**
+   * Validates the provided data using a sequence of fail-fast validations followed by composed validations.
+   *
+   * @param dataLoader          The initial data to validate, wrapped in a DataValidationResult.
+   * @param failFastValidations A sequence of validations to apply in order, stopping at the first failure.
+   * @param composeValidations  A sequence of validations to apply after fail-fast validations, combining their results.
+   * @return The result of applying all validations, as a DataValidationResult.
+   */
+  def validate(dataLoader: DataValidationResult[List[RowData]],
                failFastValidations: Seq[List[RowData] => DataValidationResult[List[RowData]]],
                composeValidations: Seq[List[RowData] => DataValidationResult[List[RowData]]]): DataValidationResult[List[RowData]] = {
     val failFastValidated = failFastValidations.foldLeft(dataLoader) {
