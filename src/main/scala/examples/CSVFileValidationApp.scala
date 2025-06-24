@@ -7,7 +7,7 @@ import io.circe.generic.auto.*
 import io.circe.syntax.*
 import validation.custom.{DebugPrintFirstRow, FailedValidation}
 import validation.jsonschema.JsonSchemaValidated
-import validation.jsonschema.JsonSchemaValidated.{addJsonForValidation, combineValidations, mapKeys, validate}
+import validation.jsonschema.JsonSchemaValidated.{addJsonForValidation, composeMultipleValidated, mapKeys, validate}
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
 import validation.{DataValidationResult, Parameters, RowData}
 import validation.error.CSVValidationResult.*
@@ -45,21 +45,18 @@ object CSVFileValidationApp {
 
     val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = JsonSchemaValidated.generateSchemaValidatedList(parameters.schema, configuration.keyToAltIn)
 
-    val combiningValidationsWithFailure =  combiningValidations :+ FailedValidation.failedValidation
-
     val failFastValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = List(
       mapKeys(configuration.altInToKey),
+     // FailedValidation.failedValidation,
       addJsonForValidation(configuration.valueMapper),
       DebugPrintFirstRow.printFirstRow,
       validateSchemaSingleRow(parameters.requiredSchema, configuration.keyToAltIn)
     )
 
 
-    val validations = failFastValidations :+ combineValidations(combiningValidationsWithFailure)
-    val dataLoader = loadCSVData(parameters.fileToValidate,parameters.idKey)
+    val dataLoader: DataValidationResult[List[RowData]] = loadCSVData(parameters.fileToValidate,parameters.idKey)
 
-    validate(dataLoader,validations)
-
+    validate(dataLoader, failFastValidations, combiningValidations:+ FailedValidation.failedValidation)
+    
   }
-
 }

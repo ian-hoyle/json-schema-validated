@@ -38,14 +38,15 @@ object JsonSchemaValidated:
     }.combineAll
   }
 
-  def combineValidations(validations: List[List[RowData] => DataValidationResult[List[RowData]]])(inputData: List[RowData]): DataValidationResult[List[RowData]] = {
-    validations.map(validation => validation(inputData)).combineAll
-  }
-
-  def validate(dataLoader: DataValidationResult[List[RowData]], validations: Seq[List[RowData] => DataValidationResult[List[RowData]]]): DataValidationResult[List[RowData]] = {
-    validations.foldLeft(dataLoader) {
-      (acc, validate) => acc.andThen(validate)
+  def validate(dataLoader: DataValidationResult[List[RowData]], 
+               failFastValidations: Seq[List[RowData] => DataValidationResult[List[RowData]]],
+               composeValidations: Seq[List[RowData] => DataValidationResult[List[RowData]]]): DataValidationResult[List[RowData]] = {
+    val failFastValidated = failFastValidations.foldLeft(dataLoader) {
+      (acc, validate) => {
+         acc.andThen(validate)
+      }
     }
+    failFastValidated.andThen(data => composeValidations.map(_(data)).combineAll)
   }
 
   def mapKeys(keyMapper: String => String)(inputData: List[RowData]): DataValidationResult[List[RowData]] = {
@@ -61,7 +62,6 @@ object JsonSchemaValidated:
       row.copy(json = Some(json))
     }
     validatedData.valid
-  
   }
 
   private def convertToJSONString(data: Map[String, Any], valueMapper: (String, String) => Any) = {
