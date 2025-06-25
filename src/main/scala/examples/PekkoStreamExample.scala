@@ -45,8 +45,8 @@ object PekkoStreamExample {
     val processedData: Future[Validated[NonEmptyList[ValidationErrors], List[RowData]]] = csvSource
       .map(row => mapKeys(configuration.altInToKey)(List(row)))
       .map(row => row andThen addJsonForValidation(configuration.valueMapper))
-      .map(row => row andThen validateSchemaSingleRow(parameters.requiredSchema, configuration.keyToAltIn))
-      .mapAsync(20)(row => Future(row andThen composeMultipleValidated(parameters.schema, configuration.keyToAltIn)))
+      .map(row => row andThen validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey))
+      .mapAsync(20)(row => Future(row andThen composeMultipleValidated(parameters.schema, configuration.inputAlternateKey)))
       .runFold(Validated.valid[NonEmptyList[ValidationErrors], List[RowData]](List.empty)) { (acc, current) =>
         acc combine current
       }

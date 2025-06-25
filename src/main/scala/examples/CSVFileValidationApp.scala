@@ -9,7 +9,7 @@ import validation.custom.{DebugPrintFirstRow, FailedValidation}
 import validation.jsonschema.JsonSchemaValidated
 import validation.jsonschema.JsonSchemaValidated.{addJsonForValidation, composeMultipleValidated, mapKeys, validate}
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
-import validation.{DataValidationResult, Parameters, RowData}
+import validation.{DataValidationResult, Parameters, RowData, ValidatorConfiguration}
 import validation.error.CSVValidationResult.*
 
 object CSVFileValidationApp {
@@ -41,16 +41,16 @@ object CSVFileValidationApp {
 
 
   private def csvFileValidation(parameters: Parameters): DataValidationResult[List[RowData]] = {
-    val configuration = prepareValidationConfiguration(parameters.configFile, parameters.inputAlternateKey)
+    val configuration: ValidatorConfiguration = prepareValidationConfiguration(parameters.configFile, parameters.inputAlternateKey)
 
-    val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = JsonSchemaValidated.generateSchemaValidatedList(parameters.schema, configuration.keyToAltIn)
+    val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = JsonSchemaValidated.generateSchemaValidatedList(parameters.schema, configuration.inputAlternateKey)
 
     val failFastValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = List(
       mapKeys(configuration.altInToKey),
      // FailedValidation.failedValidation,
       addJsonForValidation(configuration.valueMapper),
       DebugPrintFirstRow.printFirstRow,
-      validateSchemaSingleRow(parameters.requiredSchema, configuration.keyToAltIn)
+      validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey)
     )
 
 

@@ -59,9 +59,9 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
           // generating domain specific on build removes this requirement 
           andThen mapKeys(configuration.altInToKey)
           andThen addJsonForValidation(configuration.valueMapper)
-          andThen validateSchemaSingleRow(parameters.requiredSchema, configuration.keyToAltIn)
+          andThen validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey)
       )
-      validation <- validateWithMultipleSchemaInParallel(data, parameters.schema, configuration.keyToAltIn)
+      validation <- validateWithMultipleSchemaInParallel(data, parameters.schema, configuration.inputAlternateKey)
     } yield validation
   }
 }
