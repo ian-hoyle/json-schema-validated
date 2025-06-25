@@ -29,16 +29,20 @@ object CSVFileValidationApp {
 
 
     val configuration: ValidatorConfiguration = prepareValidationConfiguration(parameters.configFile, parameters.inputAlternateKey)
+
+    // Validate the data can be loaded
     val dataLoader: DataValidationResult[List[RowData]] = loadCSVData(parameters.fileToValidate, parameters.idKey)
-    val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = getCombiningValidations(parameters.schema, configuration)
+    // Validations that can stop processing early
     val failFastValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = getFailFastValidations(parameters, configuration)
+    // Validations that can be combined and run after the fail-fast validations
+    val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = getCombiningValidations(parameters.schema, configuration)
+
 
     val result = validate(dataLoader, failFastValidations, combiningValidations:+ FailedValidation.failedValidation)
 
     result match {
       case Valid(data) =>
         println("Validation successful")
-      //data.foreach(row => println(row))
       case Invalid(errors) =>
         println(s"Validation failed with ${errors.length} errors:")
         println(errors.asJson)
