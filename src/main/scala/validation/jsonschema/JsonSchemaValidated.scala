@@ -25,7 +25,7 @@ object JsonSchemaValidated:
         IO.pure(errors.invalid)
     }
   }
-
+  // The propertyToAlt function is used to map the internal property names to the original input for error reporting.
   def generateSchemaValidatedList(schemaFiles: List[String], propertyToAlt: String => String): List[List[RowData] => DataValidationResult[List[RowData]]] = {
     schemaFiles.map { schemaFile =>
       data => ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)
