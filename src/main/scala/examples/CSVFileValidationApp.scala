@@ -21,7 +21,7 @@ object CSVFileValidationApp {
     val params = Parameters(
       configFile = "config.json",
       schema = List("organisationBase.json", "openRecord.json", "closedRecord.json"),
-      alternateKey = Some("TDRMetadataUpload"),
+      inputAlternateKey = Some("TDRMetadataUpload"),
       fileToValidate = fileToValidate,
       idKey = Some("Filepath"),
       requiredSchema = None,
@@ -41,7 +41,7 @@ object CSVFileValidationApp {
 
 
   private def csvFileValidation(parameters: Parameters): DataValidationResult[List[RowData]] = {
-    val configuration = prepareValidationConfiguration(parameters.configFile, parameters.alternateKey)
+    val configuration = prepareValidationConfiguration(parameters.configFile, parameters.inputAlternateKey)
 
     val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = JsonSchemaValidated.generateSchemaValidatedList(parameters.schema, configuration.keyToAltIn)
 

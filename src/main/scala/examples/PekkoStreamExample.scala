@@ -31,7 +31,7 @@ object PekkoStreamExample {
       Some("TDRMetadataUpload"), "sample.csv", Some("Filepath"), Some("organisationBase.json"), Some("TDRMetadataUpload"))
 
 
-    val configuration = prepareValidationConfiguration(parameters.configFile, parameters.alternateKey)
+    val configuration = prepareValidationConfiguration(parameters.configFile, parameters.inputAlternateKey)
     // Load the CSV data and generate 10,000 rows for each row in the CSV to simulate a large dataset
     val smallDataSet: List[RowData] = loadCSV(parameters.fileToValidate, parameters.idKey)
     val largeDataSet: List[RowData] = smallDataSet.zipWithIndex.flatMap { case (row, index) =>
