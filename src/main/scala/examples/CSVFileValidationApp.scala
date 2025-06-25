@@ -18,7 +18,7 @@ object CSVFileValidationApp {
 
     val fileToValidate = if (args.length > 0) args(0) else "sample.csv"
 
-    val params = Parameters(
+    val parameters = Parameters(
       configFile = "config.json",
       schema = List("organisationBase.json", "openRecord.json", "closedRecord.json"),
       inputAlternateKey = Some("TDRMetadataUpload"),
@@ -27,7 +27,13 @@ object CSVFileValidationApp {
       requiredSchema = None,
       keyToOutAlternate = Some("TDRMetadataUpload"))
 
-    val result = csvFileValidation(params)
+
+    val configuration: ValidatorConfiguration = prepareValidationConfiguration(parameters.configFile, parameters.inputAlternateKey)
+    val dataLoader: DataValidationResult[List[RowData]] = loadCSVData(parameters.fileToValidate, parameters.idKey)
+    val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = getCombiningValidations(parameters.schema, configuration)
+    val failFastValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = getFailFastValidations(parameters, configuration)
+
+    val result = validate(dataLoader, failFastValidations, combiningValidations:+ FailedValidation.failedValidation)
 
     result match {
       case Valid(data) =>
@@ -40,23 +46,17 @@ object CSVFileValidationApp {
   }
 
 
-  private def csvFileValidation(parameters: Parameters): DataValidationResult[List[RowData]] = {
-    val configuration: ValidatorConfiguration = prepareValidationConfiguration(parameters.configFile, parameters.inputAlternateKey)
 
-    val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = JsonSchemaValidated.generateSchemaValidatedList(parameters.schema, configuration.inputAlternateKey)
+  private def getCombiningValidations(schemas:List[String], validatorConfiguration: ValidatorConfiguration) : List[List[RowData] => DataValidationResult[List[RowData]]] = {
+    JsonSchemaValidated.generateSchemaValidatedList(schemas, validatorConfiguration.inputAlternateKey)
+  }
 
-    val failFastValidations: List[List[RowData] => DataValidationResult[List[RowData]]] = List(
+  private def getFailFastValidations( parameters: Parameters,configuration: ValidatorConfiguration): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+    List(
       mapKeys(configuration.altInToKey),
-     // FailedValidation.failedValidation,
       addJsonForValidation(configuration.valueMapper),
       DebugPrintFirstRow.printFirstRow,
       validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey)
     )
-
-
-    val dataLoader: DataValidationResult[List[RowData]] = loadCSVData(parameters.fileToValidate,parameters.idKey)
-
-    validate(dataLoader, failFastValidations, combiningValidations:+ FailedValidation.failedValidation)
-    
   }
 }
