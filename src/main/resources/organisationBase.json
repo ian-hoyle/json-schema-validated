@@ -88,19 +88,16 @@
       "$ref": "classpath:/definitions.json#/definitions/closure_types"
     },
     "closure_period": {
+      "description": "A list of the number (1-150) of years closure for each foi exemption code, in corresponding order. This is only provided if the record is Closed",
       "type": [
-        "integer",
+        "array",
         "null"
       ],
-      "propertyType": "Supplied",
-      "minimum": 1,
-      "maximum": 150,
-      "alternateKeys": [
-        {
-          "tdrFileHeader": "Closure Period",
-          "tdrDataLoadHeader": "ClosurePeriod"
-        }
-      ]
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 150
+      }
     },
     "closure_start_date": {
       "type": [
