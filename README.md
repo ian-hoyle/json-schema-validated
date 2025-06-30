@@ -49,11 +49,15 @@ Here is a snippet from `organisationBase.json`:
   "$id": "/schema/baseSchema",
   "type": "object",
   "properties": {
-    "client_side_checksum": {
-      "type": "string",
-      "minLength": 64,
-      "maximum": 64,
-      "description": "checksum calculated"
+    "foi_exemption_code": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "$ref": "classpath:/definitions.json#/definitions/foi_codes"
+      }
     },
     "file_size": {
       "type": "integer",
@@ -91,9 +95,9 @@ Here is a snippet from `config.json`:
       ]
     },
     {
-      "key": "date_last_modified",
+      "key": "foi_exemption_code",
       "domainKeys": [
-        { "domain": "TDRMetadataUpload", "domainKey": "Date last modified" }
+        { "domain": "TDRMetadataUpload", "domainKey": "FOI exemption code" }
       ]
     },
     {
@@ -107,7 +111,41 @@ Here is a snippet from `config.json`:
 }
 ```
 
-One or many JSON schema can be used to validate the data with error messages defined for each schema
+One or many JSON schema can be used to validate the data with error messages defined for each schema.
+
+Here is a snippet from `closedRecord.json` schema that could also be applied:
+
+```json
+{
+  "$id": "/schema/closed-closure",
+  "type": "object",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "closure_type": { "const": "Closed" }
+        }
+      },
+      "then": {
+        "properties": {
+          "closure_start_date": { "type": "string" },
+          "closure_period": { "type": "integer" },
+          "foi_exemption_code": { "type": "array" },
+          "foi_exemption_asserted": { "type": "string" },
+          "title_closed": { "type": "boolean" },
+          "description_closed": { "type": "boolean" }
+        }
+        // ... more conditional logic ...
+      }
+    }
+    // ... more conditions ...
+  ]
+}
+```
+
+**How conditional validation works:**
+
+This schema uses the `if` and `then` keywords to apply additional validation rules only when the `closure_type` property is set to `"Closed"`. If `closure_type` is not `"Closed"`, these extra requirements are not enforced. This allows the schema to dynamically require or validate fields based on the value of another field, supporting context-sensitive validation logic.
 
 ## Example usage
 
