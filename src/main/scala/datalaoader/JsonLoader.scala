@@ -2,29 +2,32 @@ package datalaoader
 
 import cats.*
 import cats.syntax.all.catsSyntaxValidatedId
-import com.github.tototoshi.csv.CSVReader
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import validation.{DataValidationResult, RowData}
 
 import scala.util.{Try, Using}
 
-object CSVLoader:
+object JsonLoader:
 
-  def loadCSVData(
+  def loadJsonListData(
       csvFile: String,
       idColumn: Option[String]
   ): DataValidationResult[List[RowData]] = {
-    val loaded = loadCSV(csvFile, idColumn)
+    val loaded = loadJson(csvFile, idColumn)
     loaded.valid
   }
 
-  def loadCSV(csvFile: String, idColumn: Option[String]): List[RowData] = {
-    val data: Try[List[RowData]] = Using { LoaderUtils.getSourceFromPath(csvFile) } { source =>
-      val cSVReader: CSVReader = CSVReader.open(source)
-      cSVReader
-        .allWithHeaders()
-        .map(convertToRowData(idColumn))
-        .zipWithIndex
-        .map((data, index) => data.copy(row_number = Some(index + 1)))
+  private def loadJson(csvFile: String, idColumn: Option[String]): List[RowData] = {
+    val data: Try[List[RowData]] = Using {
+      LoaderUtils.getSourceFromPath(csvFile)
+    } { source =>
+      val jsonString = source.getLines().mkString
+      val mapper     = new ObjectMapper()
+      mapper.registerModule(DefaultScalaModule)
+      val rows: List[Map[String, String]] =
+        mapper.readValue(jsonString, classOf[List[Map[String, String]]])
+      rows.map(convertToRowData(idColumn))
     }
     data.getOrElse(List.empty[RowData])
   }

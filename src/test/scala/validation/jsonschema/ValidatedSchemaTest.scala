@@ -17,7 +17,10 @@ class ValidatedSchemaTest extends AnyFunSuite:
      }
      """.stripMargin
 
-    val validationResult: DataValidationResult[List[RowData]] = ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(List(createRowData(json)))
+    val validationResult: DataValidationResult[List[RowData]] =
+      ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
+        List(createRowData(json))
+      )
     val validData = testIsValid(validationResult)
   }
 
@@ -30,7 +33,10 @@ class ValidatedSchemaTest extends AnyFunSuite:
        }
        """.stripMargin
 
-    val validationResult: DataValidationResult[List[RowData]] = ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(List(createRowData(json)))
+    val validationResult: DataValidationResult[List[RowData]] =
+      ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
+        List(createRowData(json))
+      )
     val invalidData = testIsInvalid(validationResult)
     invalidData.head.errors.head.message shouldBe "/file_size: string found, integer expected"
   }
@@ -44,7 +50,10 @@ class ValidatedSchemaTest extends AnyFunSuite:
         }
         """.stripMargin
 
-    val validationResult: DataValidationResult[List[RowData]] = ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(List(createRowData(json)))
+    val validationResult: DataValidationResult[List[RowData]] =
+      ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
+        List(createRowData(json))
+      )
     val errors = testIsInvalid(validationResult)
     errors.head.errors.head.message shouldBe "Must be a pipe delimited list of valid FOI codes, (eg. 31|33). Please see the guidance for more detail on valid codes"
   }
@@ -68,9 +77,10 @@ class ValidatedSchemaTest extends AnyFunSuite:
   }
 
   def createRowData(json: String): RowData = {
-    RowData(Some(1), Some("test/test2.txt"), Map("File path" -> "test/test2.txt", "description_closed" -> "YES"), Some(json))
+    RowData(
+      Some(1),
+      Some("test/test2.txt"),
+      Map("File path" -> "test/test2.txt", "description_closed" -> "YES"),
+      Some(json)
+    )
   }
-
-
-
-

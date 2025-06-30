@@ -15,67 +15,91 @@ import scala.io.Source
 import scala.jdk.CollectionConverters.*
 import scala.util.{Try, Using}
 
-
 object ValidatedSchema:
 
   private lazy val loadedSchema = mutable.Map.empty[String, JsonSchema]
-  private val propertiesMap = mutable.Map.empty[String, Properties]
+  private val propertiesMap     = mutable.Map.empty[String, Properties]
 
-
-  def validateSchemaSingleRow(schemaFile: Option[String], propertyToAlt: String => String)(data: List[RowData]): DataValidationResult[List[RowData]] =
+  def validateSchemaSingleRow(schemaFile: Option[String], propertyToAlt: String => String)(
+      data: List[RowData]
+  ): DataValidationResult[List[RowData]] =
     schemaFile match {
       case Some(schema) => schemaValidated(schema, propertyToAlt)(List(data.head)).map(_ => data)
-      case None => data.valid
+      case None         => data.valid
     }
 
-  
-  /**
-   * Validates a list of `RowData` against a JSON schema file.
-   *
-   * @param schemaFile      The path to the JSON schema file to validate against.
-   * @param propertyToAlt   A function to map property names to alternate names for error reporting.
-   *                        Defaults to an identity function.
-   * @param data            The list of `RowData` to validate.
-   * @return                A `DataValidationResult` containing either the validated data or validation errors.
-   */
-  def schemaValidated(schemaFile: String, propertyToAlt: String => String = (x: String) => x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
+  /** Validates a list of `RowData` against a JSON schema file.
+    *
+    * @param schemaFile
+    *   The path to the JSON schema file to validate against.
+    * @param propertyToAlt
+    *   A function to map property names to alternate names for error reporting. Defaults to an identity function.
+    * @param data
+    *   The list of `RowData` to validate.
+    * @return
+    *   A `DataValidationResult` containing either the validated data or validation errors.
+    */
+  def schemaValidated(schemaFile: String, propertyToAlt: String => String = (x: String) => x)(
+      data: List[RowData]
+  ): DataValidationResult[List[RowData]] = {
 
     val jsonSchema = getLoadedSchema(schemaFile)
-    val messagesProvider: MessageOption => String = loadMessages(schemaFile.replace(".json", ".properties"))
+    val messagesProvider: MessageOption => String = loadMessages(
+      schemaFile.replace(".json", ".properties")
+    )
 
     val errors: List[SchemaValidationErrors] = data.map(data =>
-      SchemaValidationErrors(data.assetId,
+      SchemaValidationErrors(
+        data.assetId,
         jsonSchema.validate(data.json.get, InputFormat.JSON).asScala.toSet,
-        data.data))
+        data.data
+      )
+    )
 
     val convertedErrors: List[ConvertedErrors] = errors.map(validationError =>
-      ConvertedErrors(validationError.assetId,
-        convertSchemaValidationErrorToJSValidationError(validationError.errors,
+      ConvertedErrors(
+        validationError.assetId,
+        convertSchemaValidationErrorToJSValidationError(
+          validationError.errors,
           schemaFile,
           messagesProvider,
           validationError.data,
-          propertyToAlt)))
+          propertyToAlt
+        )
+      )
+    )
 
     val filtered: List[ConvertedErrors] = convertedErrors.filter(x => x.errors.nonEmpty)
-    if (filtered.isEmpty)
-      data.valid
+    if (filtered.isEmpty) data.valid
     else
-      val validationErrorsList: Seq[ValidationErrors] = filtered.map(x => ValidationErrors(x.assetId.getOrElse(""), x.errors))
+      val validationErrorsList: Seq[ValidationErrors] =
+        filtered.map(x => ValidationErrors(x.assetId.getOrElse(""), x.errors))
       NonEmptyList.fromList[ValidationErrors](validationErrorsList.toSet.toList).get.invalid
   }
 
-  private def convertSchemaValidationErrorToJSValidationError(schemaValidationMessages: Set[ValidationMessage],
-                                                              schemaFile: String,
-                                                              messageProvider: MessageOption => String,
-                                                              originalData: Map[String, Any],
-                                                              propertyToAlt: String => String): Set[JsonSchemaValidationError] = {
+  private def convertSchemaValidationErrorToJSValidationError(
+      schemaValidationMessages: Set[ValidationMessage],
+      schemaFile: String,
+      messageProvider: MessageOption => String,
+      originalData: Map[String, Any],
+      propertyToAlt: String => String
+  ): Set[JsonSchemaValidationError] = {
     for {
       message <- schemaValidationMessages
       validationError = {
-        val propertyName = Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
+        val propertyName =
+          Option(message.getProperty).getOrElse(message.getInstanceLocation.getName(0))
         val originalProperty = propertyToAlt(propertyName)
-        val originalValue = originalData.getOrElse(propertyName, message.getInstanceNode.asText)
-        JsonSchemaValidationError(schemaFile, originalProperty, message.getMessageKey, messageProvider(MessageOption(s"$propertyName.${message.getMessageKey}", Some(message.getMessage))), originalValue.toString)
+        val originalValue    = originalData.getOrElse(propertyName, message.getInstanceNode.asText)
+        JsonSchemaValidationError(
+          schemaFile,
+          originalProperty,
+          message.getMessageKey,
+          messageProvider(
+            MessageOption(s"$propertyName.${message.getMessageKey}", Some(message.getMessage))
+          ),
+          originalValue.toString
+        )
       }
     } yield validationError
   }
@@ -84,15 +108,17 @@ object ValidatedSchema:
 
     val alternative = messageOption.alternateMessage match {
       case Some(message) => message
-      case None => messageOption.key
+      case None          => messageOption.key
     }
-    val properties = propertiesMap.getOrElseUpdate(propertiesFileName, {
-      val newProperties = new Properties()
-      Using(Source.fromResource(propertiesFileName)) { source =>
-        newProperties.load(source.bufferedReader())
+    val properties = propertiesMap.getOrElseUpdate(
+      propertiesFileName, {
+        val newProperties = new Properties()
+        Using(Source.fromResource(propertiesFileName)) { source =>
+          newProperties.load(source.bufferedReader())
+        }
+        newProperties
       }
-      newProperties
-    })
+    )
 
     properties.getProperty(messageOption.key, alternative)
   }
@@ -111,7 +137,9 @@ object ValidatedSchema:
 
     val data: Try[String] = loadData(mySchema)
 
-    val inputStream: InputStream = new ByteArrayInputStream(data.get.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+    val inputStream: InputStream = new ByteArrayInputStream(
+      data.get.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+    )
     val schema = JsonMetaSchema.getV202012
 
     val jsonSchemaFactory = new JsonSchemaFactory.Builder()
@@ -119,7 +147,8 @@ object ValidatedSchema:
       .metaSchema(JsonMetaSchema.getV202012)
       .build()
 
-    val schemaValidatorsConfig = SchemaValidatorsConfig.builder().formatAssertionsEnabled(true).build()
+    val schemaValidatorsConfig =
+      SchemaValidatorsConfig.builder().formatAssertionsEnabled(true).build()
     jsonSchemaFactory.getSchema(inputStream, schemaValidatorsConfig)
   }
 
@@ -134,9 +163,12 @@ object ValidatedSchema:
   }
 
   // The propertyToAlt function is used to map the internal property names to the original input for error reporting.
-  def generateSchemaValidatedList(schemaFiles: List[String], propertyToAlt: String => String): List[List[RowData] => DataValidationResult[List[RowData]]] = {
-    schemaFiles.map { schemaFile =>
-      data => ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)
+  def generateSchemaValidatedList(
+      schemaFiles: List[String],
+      propertyToAlt: String => String
+  ): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+    schemaFiles.map { schemaFile => data =>
+      ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)
     }
   }
 

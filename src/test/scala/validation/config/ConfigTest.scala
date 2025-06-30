@@ -8,11 +8,17 @@ import scala.io.Source
 
 class ConfigTest extends AnyFunSuite:
   test("Load config from Resources") {
-    val jsonConfigFileName = "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
+    val jsonConfigFileName =
+      "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
     val jsonConfigFileResources = "config.json"
-    val altKey = "TDRMetadataUpload"
-    val idKey = "File path"
-    val params = ConfigParameters(jsonConfigFileResources, Some(altKey), "organisationBase.json", decodeConfig(jsonConfigFileResources))
+    val altKey                  = "TDRMetadataUpload"
+    val idKey                   = "File path"
+    val params = ConfigParameters(
+      jsonConfigFileResources,
+      Some(altKey),
+      "organisationBase.json",
+      decodeConfig(jsonConfigFileResources)
+    )
 
     val propertyToAlternateKey = ValidationConfig.propertyToDomainKeyMapper(params)
     assert(propertyToAlternateKey("date_last_modified") == "Date last modified")
@@ -28,8 +34,13 @@ class ConfigTest extends AnyFunSuite:
   }
   test("Creates header property convertors") {
     val jsonConfigFileName = "config.json"
-    val altKey = "TDRMetadataUpload"
-    val params = ConfigParameters(jsonConfigFileName, Some(altKey), "organisationBase.json", decodeConfig(jsonConfigFileName))
+    val altKey             = "TDRMetadataUpload"
+    val params = ConfigParameters(
+      jsonConfigFileName,
+      Some(altKey),
+      "organisationBase.json",
+      decodeConfig(jsonConfigFileName)
+    )
 
     val propertyToAlternateKey = ValidationConfig.propertyToDomainKeyMapper(params)
     assert(propertyToAlternateKey("date_last_modified") == "Date last modified")
@@ -45,9 +56,15 @@ class ConfigTest extends AnyFunSuite:
   }
 
   test("Invalid alternate key returns original value") {
-    val jsonConfigFileName = "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
+    val jsonConfigFileName =
+      "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
     val altKey = "badKey"
-    val params = ConfigParameters(jsonConfigFileName, Some(altKey), "organisationBase.json", decodeConfig("config.json"))
+    val params = ConfigParameters(
+      jsonConfigFileName,
+      Some(altKey),
+      "organisationBase.json",
+      decodeConfig("config.json")
+    )
 
     val propertyToAlternateKey = ValidationConfig.propertyToDomainKeyMapper(params)
     assert(propertyToAlternateKey("date_last_modified") == "date_last_modified")

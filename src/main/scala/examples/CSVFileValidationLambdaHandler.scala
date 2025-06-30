@@ -18,14 +18,16 @@ import scala.jdk.CollectionConverters.*
 
 object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
 
-
   private val headers = Map[String, String](
-    "Access-Control-Allow-Origin" -> "*",
+    "Access-Control-Allow-Origin"  -> "*",
     "Access-Control-Allow-Methods" -> "OPTIONS, POST",
     "Access-Control-Allow-Headers" -> "Content-Type, Authorization"
   )
 
-  override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
+  override def handleRequest(
+      input: APIGatewayProxyRequestEvent,
+      context: Context
+  ): APIGatewayProxyResponseEvent = {
 
     val requestBody = input.getBody
     decode[Parameters](requestBody) match {
@@ -53,9 +55,15 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
   def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
     for {
-      configuration <- IO(prepareValidationConfiguration(parameters.configFile, parameters.baseSchema, parameters.inputAlternateKey))
-      dataLoader = loadCSVData(parameters.fileToValidate, parameters.idKey)
-      failFastValidationList = failFastValidations(parameters, configuration)
+      configuration <- IO(
+        prepareValidationConfiguration(
+          parameters.configFile,
+          parameters.baseSchema,
+          parameters.inputAlternateKey
+        )
+      )
+      dataLoader              = loadCSVData(parameters.fileToValidate, parameters.idKey)
+      failFastValidationList  = failFastValidations(parameters, configuration)
       combiningValidationList = combiningValidations(parameters.schema, configuration)
       validation <- IO {
         Validation.validate(dataLoader, failFastValidationList, combiningValidationList)
@@ -63,7 +71,10 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
     } yield validation
   }
 
-  def failFastValidations(parameters: Parameters, configuration: ValidatorConfiguration): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+  def failFastValidations(
+      parameters: Parameters,
+      configuration: ValidatorConfiguration
+  ): List[List[RowData] => DataValidationResult[List[RowData]]] = {
     List(
       mapKeys(configuration.altInToKey),
       addJsonForValidation(configuration.valueMapper),
@@ -71,8 +82,10 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
     )
   }
 
-  def combiningValidations(schemas: List[String], configuration: ValidatorConfiguration): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+  def combiningValidations(
+      schemas: List[String],
+      configuration: ValidatorConfiguration
+  ): List[List[RowData] => DataValidationResult[List[RowData]]] = {
     generateSchemaValidatedList(schemas, configuration.inputAlternateKey)
   }
 }
-
