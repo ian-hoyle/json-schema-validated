@@ -51,7 +51,7 @@ object CSVFileValidationApp extends App {
 
   private val startTime = System.currentTimeMillis
   private val result = validate(
-    loadedJSON,
+    loadedCSV,
     failFastValidations,
     combiningValidations :+ FailedValidation.failedValidation
   )

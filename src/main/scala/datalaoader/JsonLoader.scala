@@ -2,8 +2,9 @@ package datalaoader
 
 import cats.*
 import cats.syntax.all.catsSyntaxValidatedId
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{JavaType, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.fasterxml.jackson.core.`type`.TypeReference
 import validation.{DataValidationResult, RowData}
 
 import scala.util.{Try, Using}
@@ -25,21 +26,24 @@ object JsonLoader:
       val jsonString = source.getLines().mkString
       val mapper     = new ObjectMapper()
       mapper.registerModule(DefaultScalaModule)
-      val rows: List[Map[String, String]] =
-        mapper.readValue(jsonString, classOf[List[Map[String, String]]])
+
+      // Create type reference for List[Map[String, Any]]
+      val typeRef                      = new TypeReference[List[Map[String, Any]]]() {}
+      val rows: List[Map[String, Any]] = mapper.readValue(jsonString, typeRef)
+
       rows.map(convertToRowData(idColumn))
     }
     data.getOrElse(List.empty[RowData])
   }
 
-  private def convertToRowData(idColumn: Option[String])(data: Map[String, String]): RowData = {
+  private def convertToRowData(idColumn: Option[String])(data: Map[String, Any]): RowData = {
     val assetId = getAssetId(idColumn, data)
     RowData(None, assetId, data, None)
   }
 
-  private def getAssetId(idKey: Option[String], data: Map[String, String]): Option[String] = {
+  private def getAssetId(idKey: Option[String], data: Map[String, Any]): Option[String] = {
     for {
       id    <- idKey
       value <- data.get(id)
-    } yield value
+    } yield value.toString
   }
