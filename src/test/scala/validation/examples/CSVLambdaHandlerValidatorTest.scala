@@ -5,7 +5,7 @@ import examples.CSVFileValidationLambdaHandler
 import org.scalatest.funsuite.AnyFunSuite
 
 
-class CSVValidatorTest extends AnyFunSuite:
+class CSVLambdaHandlerValidatorTest extends AnyFunSuite:
   test("Validate a csv where a row fails schema validation") {
     //val jsonConfigFileName = "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
     val jsonConfigFileName = "config.json"
@@ -13,7 +13,7 @@ class CSVValidatorTest extends AnyFunSuite:
 
     val altKey = "TDRMetadataUpload"
     val idKey = "Filepath"
-    val params = Parameters(jsonConfigFileName, List(baseFile, "openRecord.json"), Some(altKey), "sample.csv", Some(idKey), Some(baseFile), Some(altKey))
+    val params = Parameters(jsonConfigFileName, baseFile, List(baseFile, "openRecord.json"), Some(altKey), "sample.csv", Some(idKey), Some(baseFile), Some(altKey))
 
     import cats.effect.unsafe.implicits.*
     val runMe = CSVFileValidationLambdaHandler.csvFileValidation(params).unsafeRunSync()

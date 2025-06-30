@@ -1,0 +1,5 @@
+package validation
+
+object Validation {
+
+}
