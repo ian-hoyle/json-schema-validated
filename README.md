@@ -70,8 +70,10 @@ Here is a snippet from `organisationBase.json`:
     "file_path": {
       "type": "string",
       "minLength": 1
-    },
-    // ... more properties ...
+    }
+  },
+  "additionalProperties": {
+    "description": "Additional properties would be defined here"
   }
 }
 ```
@@ -197,9 +199,8 @@ result match {
 
 This approach allows you to flexibly compose different validation steps, separating those that should stop processing immediately from those that can be accumulated and reported together.
 
-For a more complete example, see [`CSVFileValidationApp`](src/main/scala/examples/CSVFileValidationApp.scala).
+For an example, see [`CSVFileValidationApp`](src/main/scala/examples/CSVFileValidationApp.scala).
 
-Example usage of the project is provided in the [examples](src/main/scala/examples) directory. Below is a simplified example from `CSVFileValidationApp`:
 
 ```scala
 import config.ValidationConfig.prepareValidationConfiguration
