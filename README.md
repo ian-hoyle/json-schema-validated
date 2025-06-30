@@ -42,6 +42,71 @@ Two fundamental schema are used in the validation process
   - Alternate keys for mapping between domains
   - Domain specific validations that can't be defined using JSON schema
 
+Here is a snippet from `organisationBase.json`:
+
+```json
+{
+  "$id": "/schema/baseSchema",
+  "type": "object",
+  "properties": {
+    "client_side_checksum": {
+      "type": "string",
+      "minLength": 64,
+      "maximum": 64,
+      "description": "checksum calculated"
+    },
+    "file_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "file_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    // ... more properties ...
+  }
+}
+```
+
+Here is a snippet from `config.json`:
+
+```json
+{
+  "$id": "/schema/config",
+  "type": "object",
+  "configItems": [
+    {
+      "key": "file_path",
+      "domainKeys": [
+        { "domain": "TDRMetadataUpload", "domainKey": "Filepath" },
+        { "domain": "TDRDataLoad", "domainKey": "Filepath" }
+      ],
+      "tdrDownloadIndex": 1,
+      "domainValidations": [
+        { "domain": "TDRMetadataUpload", "domainValidation": "FILE_EXIST" }
+      ]
+    },
+    {
+      "key": "date_last_modified",
+      "domainKeys": [
+        { "domain": "TDRMetadataUpload", "domainKey": "Date last modified" }
+      ]
+    },
+    {
+      "key": "description",
+      "domainKeys": [
+        { "domain": "TDRMetadataUpload", "domainKey": "Description" }
+      ]
+    }
+    // ... more config items ...
+  ]
+}
+```
+
 One or many JSON schema can be used to validate the data with error messages defined for each schema
 
 ## Example usage
