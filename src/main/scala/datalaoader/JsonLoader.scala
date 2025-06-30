@@ -2,9 +2,9 @@ package datalaoader
 
 import cats.*
 import cats.syntax.all.catsSyntaxValidatedId
-import com.fasterxml.jackson.databind.{JavaType, ObjectMapper}
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import validation.{DataValidationResult, RowData}
 
 import scala.util.{Try, Using}
@@ -12,16 +12,16 @@ import scala.util.{Try, Using}
 object JsonLoader:
 
   def loadJsonListData(
-      csvFile: String,
+      jsonListFile: String,
       idColumn: Option[String]
   ): DataValidationResult[List[RowData]] = {
-    val loaded = loadJson(csvFile, idColumn)
+    val loaded = loadJson(jsonListFile, idColumn)
     loaded.valid
   }
 
-  private def loadJson(csvFile: String, idColumn: Option[String]): List[RowData] = {
+  private def loadJson(jsonListFile: String, idColumn: Option[String]): List[RowData] = {
     val data: Try[List[RowData]] = Using {
-      LoaderUtils.getSourceFromPath(csvFile)
+      LoaderUtils.getSourceFromPath(jsonListFile)
     } { source =>
       val jsonString = source.getLines().mkString
       val mapper     = new ObjectMapper()
