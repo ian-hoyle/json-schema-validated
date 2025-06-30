@@ -2,8 +2,7 @@ package validation.config
 
 import config.ValidationConfig
 import org.scalatest.funsuite.AnyFunSuite
-import config.ValidationConfig.decodeConfig
-import validation.{ConfigParameters, JsonConfig}
+import config.ValidationConfig.{ConfigParameters, JsonConfig, decodeConfig}
 
 import scala.io.Source
 

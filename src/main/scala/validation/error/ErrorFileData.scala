@@ -3,7 +3,6 @@ package validation.error
 import cats.data.Validated.*
 import cats.data.{NonEmptyList, Validated}
 import cats.kernel.Monoid
-import validation.error.FileError.FileError
 import validation.error.ValidationErrors.combineValidationErrors
 import validation.{DataValidationResult, RowData}
 
@@ -53,14 +52,14 @@ object CSVValidationResult {
 }
 
 
-case class ErrorFileData(consignmentId: UUID, date: String, fileError: FileError, validationErrors: List[ValidationErrors])
+case class ErrorFileData(consignmentId: UUID, date: String, validationErrors: List[ValidationErrors])
 
 object ErrorFileData {
 
-  def apply(fileError: FileError = FileError.None, validationErrors: List[ValidationErrors] = Nil): ErrorFileData = {
+  def apply(validationErrors: List[ValidationErrors] = Nil): ErrorFileData = {
 
     val pattern = "yyyy-MM-dd"
     val dateFormat = new SimpleDateFormat(pattern)
-    ErrorFileData(UUID.randomUUID(), dateFormat.format(new Date), fileError, validationErrors)
+    ErrorFileData(UUID.randomUUID(), dateFormat.format(new Date), validationErrors)
   }
 }

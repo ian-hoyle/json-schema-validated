@@ -1,8 +1,9 @@
-package validation
+package validation.examples
 
 import cats.data.Validated.*
 import examples.CSVFileValidationLambdaHandler
 import org.scalatest.funsuite.AnyFunSuite
+import validation.Parameters
 
 
 class CSVLambdaHandlerValidatorTest extends AnyFunSuite:

@@ -10,9 +10,9 @@ import io.circe.parser.decode
 import io.circe.syntax.*
 import config.ValidationConfig.prepareValidationConfiguration
 import datalaoader.CSVLoader.loadCSVData
-import validation.jsonschema.JsonSchemaValidated.*
-import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
-import validation.{DataValidationResult, Parameters, RowData}
+import validation.jsonschema.ValidationDataUtils.*
+import validation.jsonschema.ValidatedSchema.{generateSchemaValidatedList, validateSchemaSingleRow}
+import validation.{DataValidationResult, Parameters, RowData, Validation, ValidatorConfiguration}
 
 import scala.jdk.CollectionConverters.*
 
@@ -53,16 +53,26 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
 
   def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
     for {
-      configuration <- IO(prepareValidationConfiguration(parameters.configFile, parameters.inputAlternateKey))
-      data <- IO(
-        loadCSVData(parameters.fileToValidate, parameters.idKey)
-          // generating domain specific on build removes this requirement 
-          andThen mapKeys(configuration.altInToKey)
-          andThen addJsonForValidation(configuration.valueMapper)
-          andThen validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey)
-      )
-      validation <- validateWithMultipleSchemaInParallel(data, parameters.schema, configuration.inputAlternateKey)
+      configuration <- IO(prepareValidationConfiguration(parameters.configFile, parameters.baseSchema, parameters.inputAlternateKey))
+      dataLoader = loadCSVData(parameters.fileToValidate, parameters.idKey)
+      failFastValidationList = failFastValidations(parameters, configuration)
+      combiningValidationList = combiningValidations(parameters.schema, configuration)
+      validation <- IO {
+        Validation.validate(dataLoader, failFastValidationList, combiningValidationList)
+      }
     } yield validation
+  }
+
+  def failFastValidations(parameters: Parameters, configuration: ValidatorConfiguration): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+    List(
+      mapKeys(configuration.altInToKey),
+      addJsonForValidation(configuration.valueMapper),
+      validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey)
+    )
+  }
+
+  def combiningValidations(schemas: List[String], configuration: ValidatorConfiguration): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+    generateSchemaValidatedList(schemas, configuration.inputAlternateKey)
   }
 }
 

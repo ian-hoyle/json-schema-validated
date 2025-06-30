@@ -3,7 +3,7 @@ package config
 import cats.data.Reader
 import ujson.{Arr, Obj, Value}
 import upickle.core.LinkedHashMap
-import validation.{ConfigItem, ConfigParameters, JsonConfig, ValidatorConfiguration}
+import validation.ValidatorConfiguration
 
 import scala.collection.mutable
 import io.circe.generic.auto.*
@@ -17,7 +17,17 @@ object ValidationConfig:
 
   private val ARRAY_SPLIT_CHAR = '|'
 
-  def prepareValidationConfiguration(configFile: String, alternateKey: Option[String]): ValidatorConfiguration = {
+  case class ConfigParameters(csConfig: String, alternates: Option[String], baseSchema: String, jsonConfig: JsonConfig)
+
+  case class JsonConfig(configItems: List[ConfigItem])
+
+  case class ConfigItem(key: String, domainKeys: Option[List[DomainKey]], tdrMetadataDownloadIndex: Option[Int], domainValidations: Option[List[DomainValidation]])
+
+  case class DomainKey(domain: String, domainKey: String)
+
+  case class DomainValidation(domain: String, domainValidation: String)
+
+  def prepareValidationConfiguration(configFile: String, baseSchema: String, alternateKey: Option[String]): ValidatorConfiguration = {
 
       val csvConfigurationReader = for {
         altHeaderToPropertyMapper <- Reader(ValidationConfig.domainKeyToPropertyMapper)
@@ -25,7 +35,7 @@ object ValidationConfig:
         valueMapper <- Reader(ValidationConfig.stringValueMapper)
       } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper,
         valueMapper)
-      csvConfigurationReader.run(ConfigParameters(configFile, alternateKey, "organisationBase.json", decodeConfig(configFile)))
+      csvConfigurationReader.run(ConfigParameters(configFile, alternateKey,baseSchema, decodeConfig(configFile)))
   }
 
   def domainKeyToPropertyMapper(parameters: ConfigParameters): String => String =
@@ -100,16 +110,19 @@ object ValidationConfig:
 
   private def convertValueFunction(propertyType: String): String => Any = {
     propertyType match {
-      case "integer"       => (str: String) => Try(str.toInt).getOrElse(str)
-      case "array_string"  => (str: String) => if (str.isEmpty) "" else str.split(ARRAY_SPLIT_CHAR)
+      case "integer" => (str: String) => Try(str.toInt).getOrElse(str)
+      case "array_string" => (str: String) => if (str.isEmpty) "" else str.split(ARRAY_SPLIT_CHAR)
       case "array_integer" => (str: String) => if (str.isEmpty) "" else str.split(ARRAY_SPLIT_CHAR).map(s => Try(s.toInt).getOrElse(s))
       case "boolean" =>
         (str: String) =>
           str.toUpperCase match {
             case "YES" => true
-            case "NO"  => false
-            case _     => str
+            case "NO" => false
+            case _ => str
           }
       case _ => (str: String) => str
     }
   }
+
+
+

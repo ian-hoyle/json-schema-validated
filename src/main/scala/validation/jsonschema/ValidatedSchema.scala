@@ -28,7 +28,16 @@ object ValidatedSchema:
       case None => data.valid
     }
 
-  // ToDo: Should return Invalid if no JSON in RowData
+  
+  /**
+   * Validates a list of `RowData` against a JSON schema file.
+   *
+   * @param schemaFile      The path to the JSON schema file to validate against.
+   * @param propertyToAlt   A function to map property names to alternate names for error reporting.
+   *                        Defaults to an identity function.
+   * @param data            The list of `RowData` to validate.
+   * @return                A `DataValidationResult` containing either the validated data or validation errors.
+   */
   def schemaValidated(schemaFile: String, propertyToAlt: String => String = (x: String) => x)(data: List[RowData]): DataValidationResult[List[RowData]] = {
 
     val jsonSchema = getLoadedSchema(schemaFile)
@@ -122,6 +131,13 @@ object ValidatedSchema:
         Using(Source.fromResource(mySchema))(_.mkString)
     }
     data
+  }
+
+  // The propertyToAlt function is used to map the internal property names to the original input for error reporting.
+  def generateSchemaValidatedList(schemaFiles: List[String], propertyToAlt: String => String): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+    schemaFiles.map { schemaFile =>
+      data => ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)
+    }
   }
 
   private case class MessageOption(key: String, alternateMessage: Option[String])
