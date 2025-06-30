@@ -88,10 +88,6 @@ Here is a snippet from `config.json`:
       "domainKeys": [
         { "domain": "TDRMetadataUpload", "domainKey": "Filepath" },
         { "domain": "TDRDataLoad", "domainKey": "Filepath" }
-      ],
-      "tdrDownloadIndex": 1,
-      "domainValidations": [
-        { "domain": "TDRMetadataUpload", "domainValidation": "FILE_EXIST" }
       ]
     },
     {

@@ -21,7 +21,7 @@ object ValidationConfig:
 
   case class JsonConfig(configItems: List[ConfigItem])
 
-  case class ConfigItem(key: String, domainKeys: Option[List[DomainKey]], tdrMetadataDownloadIndex: Option[Int], domainValidations: Option[List[DomainValidation]])
+  case class ConfigItem(key: String, domainKeys: Option[List[DomainKey]])
 
   case class DomainKey(domain: String, domainKey: String)
 
@@ -123,6 +123,4 @@ object ValidationConfig:
       case _ => (str: String) => str
     }
   }
-
-
 

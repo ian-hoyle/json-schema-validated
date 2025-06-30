@@ -13,13 +13,6 @@
           "domain": "TDRDataLoad",
           "domainKey": "Filepath"
         }
-      ],
-      "tdrDownloadIndex": 1,
-      "domainValidations": [
-        {
-          "domain": "TDRMetadataUpload",
-          "domainValidation": "FILE_EXIST"
-        }
       ]
     },
     {
@@ -74,8 +67,7 @@
           "domain": "TDRMetadataUpload",
           "domainKey": "Language of record"
         }
-      ],
-      "tdrDownloadIndex": 2
+      ]
     },
     {
       "key": "description_alternate",
