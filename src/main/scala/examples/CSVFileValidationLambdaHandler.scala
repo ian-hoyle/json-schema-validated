@@ -12,7 +12,7 @@ import config.ValidationConfig.prepareValidationConfiguration
 import datalaoader.CSVLoader.loadCSVData
 import validation.jsonschema.ValidationDataUtils.*
 import validation.jsonschema.ValidatedSchema.{generateSchemaValidatedList, validateSchemaSingleRow}
-import validation.{DataValidationResult, Parameters, RowData, Validation, ValidatorConfiguration}
+import validation.{DataValidation, Parameters, RowData, Validation, ValidatorConfiguration}
 
 import scala.jdk.CollectionConverters.*
 
@@ -53,7 +53,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
     }
   }
 
-  def csvFileValidation(parameters: Parameters): IO[DataValidationResult[List[RowData]]] = {
+  def csvFileValidation(parameters: Parameters): IO[DataValidation] = {
     for {
       configuration <- IO(
         prepareValidationConfiguration(
@@ -74,7 +74,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
   def failFastValidations(
       parameters: Parameters,
       configuration: ValidatorConfiguration
-  ): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+  ): List[List[RowData] => DataValidation] = {
     List(
       mapKeys(configuration.altInToKey),
       addJsonForValidation(configuration.valueMapper),
@@ -85,7 +85,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
   def combiningValidations(
       schemas: List[String],
       configuration: ValidatorConfiguration
-  ): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+  ): List[List[RowData] => DataValidation] = {
     generateSchemaValidatedList(schemas, configuration.inputAlternateKey)
   }
 }

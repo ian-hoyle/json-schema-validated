@@ -3,13 +3,13 @@ package validation.jsonschema
 import cats.implicits.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import validation.{DataValidationResult, RowData}
+import validation.{DataValidation, RowData}
 
 object ValidationDataUtils:
 
   def mapKeys(
       keyMapper: String => String
-  )(inputData: List[RowData]): DataValidationResult[List[RowData]] = {
+  )(inputData: List[RowData]): DataValidation = {
     val validatedData = inputData.map { row =>
       row.copy(data = row.data.map { case (k, v) => keyMapper(k) -> v })
     }
@@ -18,7 +18,7 @@ object ValidationDataUtils:
 
   def addJsonForValidation(
       valueMapper: (String, String) => Any
-  )(data: List[RowData]): DataValidationResult[List[RowData]] = {
+  )(data: List[RowData]): DataValidation = {
     val validatedData = data.map { row =>
       val json = convertToJSONString(row.data, valueMapper)
       row.copy(json = Some(json))

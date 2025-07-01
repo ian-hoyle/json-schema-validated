@@ -4,7 +4,7 @@ import cats.data.Validated.*
 import cats.data.{NonEmptyList, Validated}
 import cats.kernel.Monoid
 import validation.error.ValidationErrors.combineValidationErrors
-import validation.{DataValidationResult, RowData}
+import validation.{DataValidation, RowData}
 
 import java.text.SimpleDateFormat
 import java.util.{Date, UUID}
@@ -47,15 +47,15 @@ object ValidationErrors {
 import cats.implicits.*
 
 object CSVValidationResult {
-  implicit val dataValidationResultMonoid: Monoid[DataValidationResult[List[RowData]]] =
-    new Monoid[DataValidationResult[List[RowData]]] {
-      override def empty: DataValidationResult[List[RowData]] =
+  implicit val dataValidationResultMonoid: Monoid[DataValidation] =
+    new Monoid[DataValidation] {
+      override def empty: DataValidation =
         Validated.valid(List.empty[RowData]) // Empty list of RowData is the valid default
 
       override def combine(
-          x: DataValidationResult[List[RowData]],
-          y: DataValidationResult[List[RowData]]
-      ): DataValidationResult[List[RowData]] =
+          x: DataValidation,
+          y: DataValidation
+      ): DataValidation =
         (x, y) match {
           case (Valid(valueX), Valid(valueY)) => Valid(valueY)
           case (Invalid(errorsX), Invalid(errorsY)) =>

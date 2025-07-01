@@ -4,7 +4,7 @@ import cats.data.ValidatedNel
 import com.networknt.schema.ValidationMessage
 import validation.error.{JsonSchemaValidationError, ValidationErrors}
 
-type DataValidationResult[A] = ValidatedNel[ValidationErrors, A]
+type DataValidation = ValidatedNel[ValidationErrors,List[RowData]]
 case class RowData(
     row_number: Option[Int],
     assetId: Option[String],

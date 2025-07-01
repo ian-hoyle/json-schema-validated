@@ -36,17 +36,17 @@ object CSVFileValidationApp extends App {
   )
 
   // Validate the data can be loaded
-  private val loadedCSV: DataValidationResult[List[RowData]] =
+  private val loadedCSV: DataValidation =
     CSVLoader.loadCSVData(parameters.fileToValidate, parameters.idKey)
   private val loadedJSON = JsonLoader.loadJsonListData("sampleJsonList.json", parameters.idKey)
   private val largerDataLoader =
     loadedCSV andThen largerDataSet(sizeMultiplier) // Generate a larger dataset for testing
 
   // Validations that can stop processing early
-  private val failFastValidations: List[List[RowData] => DataValidationResult[List[RowData]]] =
+  private val failFastValidations: List[List[RowData] => DataValidation] =
     getFailFastValidations(parameters, configuration)
   // Validations that can be combined and run after the fail-fast validations
-  private val combiningValidations: List[List[RowData] => DataValidationResult[List[RowData]]] =
+  private val combiningValidations: List[List[RowData] => DataValidation] =
     getCombiningValidations(parameters.schema, configuration)
 
   private val startTime = System.currentTimeMillis
@@ -70,14 +70,14 @@ object CSVFileValidationApp extends App {
 private def getCombiningValidations(
     schemas: List[String],
     validatorConfiguration: ValidatorConfiguration
-): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+): List[List[RowData] => DataValidation] = {
   ValidatedSchema.generateSchemaValidatedList(schemas, validatorConfiguration.inputAlternateKey)
 }
 
 private def getFailFastValidations(
     parameters: Parameters,
     configuration: ValidatorConfiguration
-): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+): List[List[RowData] => DataValidation] = {
   List(
     mapKeys(configuration.altInToKey),
     addJsonForValidation(configuration.valueMapper),
@@ -89,7 +89,7 @@ private def getFailFastValidations(
 // just for testing purposes, to generate a larger dataset
 private def largerDataSet(
     sizeMultiplier: Int
-)(data: List[RowData]): DataValidationResult[List[RowData]] = {
+)(data: List[RowData]): DataValidation = {
   data.zipWithIndex.flatMap { case (row, index) =>
     (1 to sizeMultiplier).map(i => row.copy(assetId = Some(s"${index * sizeMultiplier + i}_${row.assetId.getOrElse("")}")))
   }.valid

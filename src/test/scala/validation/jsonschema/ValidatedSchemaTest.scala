@@ -4,7 +4,7 @@ import cats.data.Validated
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.*
 import validation.error.ValidationErrors
-import validation.{DataValidationResult, RowData}
+import validation.{DataValidation, RowData}
 
 class ValidatedSchemaTest extends AnyFunSuite:
 
@@ -17,7 +17,7 @@ class ValidatedSchemaTest extends AnyFunSuite:
      }
      """.stripMargin
 
-    val validationResult: DataValidationResult[List[RowData]] =
+    val validationResult: DataValidation =
       ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
         List(createRowData(json))
       )
@@ -33,7 +33,7 @@ class ValidatedSchemaTest extends AnyFunSuite:
        }
        """.stripMargin
 
-    val validationResult: DataValidationResult[List[RowData]] =
+    val validationResult: DataValidation =
       ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
         List(createRowData(json))
       )
@@ -50,7 +50,7 @@ class ValidatedSchemaTest extends AnyFunSuite:
         }
         """.stripMargin
 
-    val validationResult: DataValidationResult[List[RowData]] =
+    val validationResult: DataValidation =
       ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
         List(createRowData(json))
       )
@@ -58,7 +58,7 @@ class ValidatedSchemaTest extends AnyFunSuite:
     errors.head.errors.head.message shouldBe "Must be a pipe delimited list of valid FOI codes, (eg. 31|33). Please see the guidance for more detail on valid codes"
   }
 
-  def testIsValid(e: DataValidationResult[List[RowData]]): List[RowData] = {
+  def testIsValid(e: DataValidation): List[RowData] = {
     e match {
       case Validated.Valid(data) => data
       case Validated.Invalid(errors) =>
@@ -67,7 +67,7 @@ class ValidatedSchemaTest extends AnyFunSuite:
     }
   }
 
-  def testIsInvalid(e: DataValidationResult[List[RowData]]): List[ValidationErrors] = {
+  def testIsInvalid(e: DataValidation): List[ValidationErrors] = {
     e match {
       case Validated.Valid(data) =>
         data.toList shouldBe empty

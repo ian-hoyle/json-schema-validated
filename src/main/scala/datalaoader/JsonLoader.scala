@@ -5,7 +5,7 @@ import cats.syntax.all.catsSyntaxValidatedId
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import validation.{DataValidationResult, RowData}
+import validation.{DataValidation, RowData}
 
 import scala.util.{Try, Using}
 
@@ -14,7 +14,7 @@ object JsonLoader:
   def loadJsonListData(
       jsonListFile: String,
       idColumn: Option[String]
-  ): DataValidationResult[List[RowData]] = {
+  ): DataValidation = {
     val loaded = loadJson(jsonListFile, idColumn)
     loaded.valid
   }

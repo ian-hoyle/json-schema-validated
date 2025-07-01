@@ -5,7 +5,7 @@ import cats.data.NonEmptyList
 import cats.syntax.all.catsSyntaxValidatedId
 import com.networknt.schema.*
 import validation.error.{JsonSchemaValidationError, ValidationErrors}
-import validation.{ConvertedErrors, DataValidationResult, RowData, SchemaValidationErrors}
+import validation.{ConvertedErrors, DataValidation, RowData, SchemaValidationErrors}
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URI
@@ -22,7 +22,7 @@ object ValidatedSchema:
 
   def validateSchemaSingleRow(schemaFile: Option[String], propertyToAlt: String => String)(
       data: List[RowData]
-  ): DataValidationResult[List[RowData]] =
+  ): DataValidation =
     schemaFile match {
       case Some(schema) => schemaValidated(schema, propertyToAlt)(List(data.head)).map(_ => data)
       case None         => data.valid
@@ -41,7 +41,7 @@ object ValidatedSchema:
     */
   def schemaValidated(schemaFile: String, propertyToAlt: String => String = (x: String) => x)(
       data: List[RowData]
-  ): DataValidationResult[List[RowData]] = {
+  ): DataValidation = {
 
     val jsonSchema = getLoadedSchema(schemaFile)
     val messagesProvider: MessageOption => String = loadMessages(
@@ -166,7 +166,7 @@ object ValidatedSchema:
   def generateSchemaValidatedList(
       schemaFiles: List[String],
       propertyToAlt: String => String
-  ): List[List[RowData] => DataValidationResult[List[RowData]]] = {
+  ): List[List[RowData] => DataValidation] = {
     schemaFiles.map { schemaFile => data =>
       ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)
     }

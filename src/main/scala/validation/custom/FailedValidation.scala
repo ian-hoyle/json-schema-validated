@@ -3,12 +3,12 @@ package validation.custom
 import cats.data.NonEmptyList
 import cats.syntax.validated.*
 import validation.error.{JsonSchemaValidationError, ValidationErrors}
-import validation.{DataValidationResult, RowData}
+import validation.{DataValidation, RowData}
 
 object FailedValidation {
   def failedValidation(
       data: List[RowData]
-  ): DataValidationResult[List[RowData]] = {
+  ): DataValidation = {
     val error = JsonSchemaValidationError(
       validationProcess = "forced failure",
       property = "No property",

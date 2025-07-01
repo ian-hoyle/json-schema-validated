@@ -12,7 +12,7 @@ import validation.error.ValidationErrors
 import validation.jsonschema.ValidationDataUtils.{addJsonForValidation, mapKeys}
 import validation.jsonschema.ValidatedSchema
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
-import validation.{DataValidationResult, Parameters, RowData}
+import validation.{DataValidation, Parameters, RowData}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -83,7 +83,7 @@ object PekkoStreamExample {
 
   private def composeMultipleValidated(schemaFiles: List[String], propertyToAlt: String => String)(
       data: List[RowData]
-  ): DataValidationResult[List[RowData]] = {
+  ): DataValidation = {
     schemaFiles.map { schemaFile =>
       ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)
     }.combineAll

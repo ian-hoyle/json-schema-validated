@@ -153,10 +153,10 @@ The main API for validation is the `validate` method in the [`Validation`](src/m
 
 ```scala
 def validate(
-  dataLoader: ValidatedNel[ValidationErrors, List[RowData]],
-  failFastValidations: Seq[List[RowData] => DataValidationResult[List[RowData]]],
-  composeValidations: Seq[List[RowData] => DataValidationResult[List[RowData]]]
-): DataValidationResult[List[RowData]]
+  dataLoader: DataValidation,
+  failFastValidations: Seq[List[RowData] => DataValidation],
+  composeValidations: Seq[List[RowData] => DataValidation]
+): DataValidation
 ```
 
 - **dataLoader**: The initial data to validate, typically loaded and parsed from a file, wrapped in a `ValidatedNel`.
@@ -164,7 +164,7 @@ def validate(
 - **composeValidations**: A sequence of validations that are run after the fail-fast validations, in parallel, and their results are combined.
 
 > **Note:**
-> `DataValidationResult[List[RowData]]` is a type alias for `ValidatedNel[ValidationErrors, List[RowData]]`.
+> `DataValidation` is a type alias for `ValidatedNel[ValidationErrors, List[RowData]]`.
 
 ### Example usage
 
@@ -172,17 +172,17 @@ Below is a simplified example of how to use the `validate` API:
 
 ```scala
 import validation.Validation.validate
-import validation.{DataValidationResult, RowData, ValidationErrors}
-import cats.data.ValidatedNel
+import validation.{DataValidation, RowData, ValidationErrors}
+
 
 // Assume you have a dataLoader that loads your data as a ValidatedNel
-val dataLoader: ValidatedNel[ValidationErrors, List[RowData]] = ...
+val dataLoader: DataValidation = ...
 
 // Define your fail-fast and composed validations
-val failFastValidations: Seq[List[RowData] => DataValidationResult[List[RowData]]] = Seq(
+val failFastValidations: Seq[List[RowData] => DataValidation] = Seq(
   // e.g. mapping keys, adding JSON, required field checks
 )
-val composeValidations: Seq[List[RowData] => DataValidationResult[List[RowData]]] = Seq(
+val composeValidations: Seq[List[RowData] => DataValidation] = Seq(
   // e.g. schema validations, business rule checks
 )
 
@@ -207,7 +207,7 @@ import config.ValidationConfig.prepareValidationConfiguration
 import datalaoader.CSVLoader.loadCSVData
 import validation.Validation.validate
 import validation.jsonschema.ValidatedSchema
-import validation.{DataValidationResult, Parameters, RowData, ValidatorConfiguration}
+import validation.{DataValidation, Parameters, RowData, ValidatorConfiguration}
 
 object CSVFileValidationApp extends App {
   val parameters = Parameters(
@@ -227,7 +227,7 @@ object CSVFileValidationApp extends App {
     parameters.inputAlternateKey
   )
 
-  val dataLoader: DataValidationResult[List[RowData]] = loadCSVData(parameters.fileToValidate, parameters.idKey)
+  val dataLoader: DataValidation = loadCSVData(parameters.fileToValidate, parameters.idKey)
 
   val failFastValidations = List(
     // Add fail-fast validations here, e.g. mapping keys, adding JSON, etc.

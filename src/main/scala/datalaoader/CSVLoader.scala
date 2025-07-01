@@ -3,7 +3,7 @@ package datalaoader
 import cats.*
 import cats.syntax.all.catsSyntaxValidatedId
 import com.github.tototoshi.csv.CSVReader
-import validation.{DataValidationResult, RowData}
+import validation.{DataValidation, RowData}
 
 import scala.util.{Try, Using}
 
@@ -12,7 +12,7 @@ object CSVLoader:
   def loadCSVData(
       csvFile: String,
       idColumn: Option[String]
-  ): DataValidationResult[List[RowData]] = {
+  ): DataValidation = {
     val loaded = loadCSV(csvFile, idColumn)
     loaded.valid
   }
