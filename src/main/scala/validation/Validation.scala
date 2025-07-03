@@ -1,12 +1,10 @@
 package validation
 
-import cats.data.ValidatedNel
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.implicits.*
 import validation.DataValidation
 import validation.error.CSVValidationResult.dataValidationResultMonoid
-import validation.error.ValidationErrors
-import cats.effect.unsafe.implicits.global
 
 object Validation {
 
