@@ -14,17 +14,17 @@ object CustomJsonValidation {
           .fold(
             _ => errAcc, // On parsing error, don't add to errors
             fields => {
-              if (fields.closureType == Some("Closed") && fields.closurePeriod.size != fields.foiExemptionCode.size) {
+              if (fields.closureType.contains("Closed") && fields.closurePeriod.size != fields.foiExemptionCode.size) {
                 val assetId = dataItem.assetId.getOrElse("unknown")
 
                 val closurePeriodError = closureFieldsMismatchError(
                   property = altInToKey("closure_period"),
-                  originalValue = fields.closurePeriod.mkString("[", ", ", "]")
+                  originalValue = dataItem.data.getOrElse("closure_period", "").toString
                 )
 
                 val foiExemptionError = closureFieldsMismatchError(
                   property = altInToKey("foi_exemption_code"),
-                  originalValue = fields.foiExemptionCode.mkString("[", ", ", "]")
+                  originalValue = dataItem.data.getOrElse("foi_exemption_code", "").toString
                 )
 
                 val validationError = ValidationErrors(
