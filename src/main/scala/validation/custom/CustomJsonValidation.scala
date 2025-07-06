@@ -11,10 +11,8 @@ object CustomJsonValidation {
         ClosureFields.fromJson(jsonString).fold(
           error => println(s"Failed to decode JSON: ${error.getMessage}"),
           fields => {
-            println("\n=== Closure Fields Decoded ===")
             println(s"Closure Period: ${fields.closurePeriod}")
             println(s"FOI Exemption Code: ${fields.foiExemptionCode}")
-            println("=============================\n")
           }
         )
       case None =>
