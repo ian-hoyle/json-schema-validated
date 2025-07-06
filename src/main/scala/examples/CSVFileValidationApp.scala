@@ -8,7 +8,7 @@ import validation.*
 import validation.Validation.validate
 import io.circe.generic.auto.*
 import io.circe.syntax.*
-import validation.custom.{DebugPrintFirstRow, FailedValidation}
+import validation.custom.{CustomJsonValidation, DebugPrintFirstRow, FailedValidation}
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
 import validation.jsonschema.ValidationDataUtils.{addJsonForValidation, mapKeys}
 import validation.jsonschema.{ValidatedSchema, ValidationDataUtils}
@@ -53,7 +53,7 @@ object CSVFileValidationApp extends App {
   private val result = validate(
     loadedCSV,
     failFastValidations,
-    combiningValidations :+ FailedValidation.failedValidation
+    combiningValidations :+ FailedValidation.failedValidation :+ CustomJsonValidation.validateClosureFields
   )
 
   result match {

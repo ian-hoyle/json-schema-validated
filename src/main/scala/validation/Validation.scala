@@ -20,9 +20,9 @@ object Validation {
     *   The result of applying all validations, as a ValidatedNel.
     */
   def validate(
-                dataLoader: DataValidation,
-                failFastValidations: Seq[List[Data] => DataValidation],
-                composeValidations: Seq[List[Data] => DataValidation]
+      dataLoader: DataValidation,
+      failFastValidations: Seq[List[Data] => DataValidation],
+      composeValidations: Seq[List[Data] => DataValidation]
   ): DataValidation = {
 
     val failFastValidated = failFastValidations.foldLeft(dataLoader) { (acc, validate) =>
