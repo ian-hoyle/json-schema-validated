@@ -1,22 +1,22 @@
 package validation.custom
 
 import cats.syntax.validated.*
-import io.circe.parser.*
 import validation.{Data, DataValidation}
 
 object CustomJsonValidation {
   def validateClosureFields(data: List[Data]): DataValidation = {
     data.headOption.flatMap(_.json) match {
       case Some(jsonString) =>
-        for {
-          parsed <- parse(jsonString).toOption
-          fields <- parsed.as[ClosureFields](ClosureFields.closureFieldsDecoder).toOption
-        } {
-          println("\n=== Closure Fields Decoded ===")
-          println(s"Closure Period: ${fields.closurePeriod}")
-          println(s"FOI Exemption Code: ${fields.foiExemptionCode}")
-          println("=============================\n")
-        }
+        // Use fold to handle both success and failure cases directly
+        ClosureFields.fromJson(jsonString).fold(
+          error => println(s"Failed to decode JSON: ${error.getMessage}"),
+          fields => {
+            println("\n=== Closure Fields Decoded ===")
+            println(s"Closure Period: ${fields.closurePeriod}")
+            println(s"FOI Exemption Code: ${fields.foiExemptionCode}")
+            println("=============================\n")
+          }
+        )
       case None =>
         println("No JSON data found in first item")
     }
@@ -24,5 +24,4 @@ object CustomJsonValidation {
     // Always return valid
     data.valid
   }
-
 }
