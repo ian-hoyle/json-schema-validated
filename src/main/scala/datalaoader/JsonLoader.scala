@@ -5,7 +5,7 @@ import cats.syntax.all.catsSyntaxValidatedId
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import validation.{DataValidation, RowData}
+import validation.{DataValidation, Data}
 
 import scala.util.{Try, Using}
 
@@ -19,8 +19,8 @@ object JsonLoader:
     loaded.valid
   }
 
-  private def loadJson(jsonListFile: String, idColumn: Option[String]): List[RowData] = {
-    val data: Try[List[RowData]] = Using {
+  private def loadJson(jsonListFile: String, idColumn: Option[String]): List[Data] = {
+    val data: Try[List[Data]] = Using {
       LoaderUtils.getSourceFromPath(jsonListFile)
     } { source =>
       val jsonString = source.getLines().mkString
@@ -31,14 +31,14 @@ object JsonLoader:
       val typeRef                      = new TypeReference[List[Map[String, Any]]]() {}
       val rows: List[Map[String, Any]] = mapper.readValue(jsonString, typeRef)
 
-      rows.map(convertToRowData(idColumn))
+      rows.map(convertToData(idColumn))
     }
-    data.getOrElse(List.empty[RowData])
+    data.getOrElse(List.empty[Data])
   }
 
-  private def convertToRowData(idColumn: Option[String])(data: Map[String, Any]): RowData = {
+  private def convertToData(idColumn: Option[String])(data: Map[String, Any]): Data = {
     val assetId = getAssetId(idColumn, data)
-    RowData(None, assetId, data, None)
+    Data(None, assetId, data, None)
   }
 
   private def getAssetId(idKey: Option[String], data: Map[String, Any]): Option[String] = {

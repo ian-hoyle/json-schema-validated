@@ -5,7 +5,7 @@ import cats.data.NonEmptyList
 import cats.syntax.all.catsSyntaxValidatedId
 import com.networknt.schema.*
 import validation.error.{JsonSchemaValidationError, ValidationErrors}
-import validation.{ConvertedErrors, DataValidation, RowData, SchemaValidationErrors}
+import validation.{ConvertedErrors, DataValidation, Data, SchemaValidationErrors}
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URI
@@ -21,26 +21,26 @@ object ValidatedSchema:
   private val propertiesMap     = mutable.Map.empty[String, Properties]
 
   def validateSchemaSingleRow(schemaFile: Option[String], propertyToAlt: String => String)(
-      data: List[RowData]
+      data: List[Data]
   ): DataValidation =
     schemaFile match {
       case Some(schema) => schemaValidated(schema, propertyToAlt)(List(data.head)).map(_ => data)
       case None         => data.valid
     }
 
-  /** Validates a list of `RowData` against a JSON schema file.
+  /** Validates a list of `Data` against a JSON schema file.
     *
     * @param schemaFile
     *   The path to the JSON schema file to validate against.
     * @param propertyToAlt
     *   A function to map property names to alternate names for error reporting. Defaults to an identity function.
     * @param data
-    *   The list of `RowData` to validate.
+    *   The list of `Data` to validate.
     * @return
     *   A `DataValidationResult` containing either the validated data or validation errors.
     */
   def schemaValidated(schemaFile: String, propertyToAlt: String => String = (x: String) => x)(
-      data: List[RowData]
+      data: List[Data]
   ): DataValidation = {
 
     val jsonSchema = getLoadedSchema(schemaFile)
@@ -166,7 +166,7 @@ object ValidatedSchema:
   def generateSchemaValidatedList(
       schemaFiles: List[String],
       propertyToAlt: String => String
-  ): List[List[RowData] => DataValidation] = {
+  ): List[List[Data] => DataValidation] = {
     schemaFiles.map { schemaFile => data =>
       ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)
     }

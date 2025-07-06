@@ -4,7 +4,7 @@ import cats.data.Validated
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.*
 import validation.error.ValidationErrors
-import validation.{DataValidation, RowData}
+import validation.{DataValidation, Data}
 
 class ValidatedSchemaTest extends AnyFunSuite:
 
@@ -19,7 +19,7 @@ class ValidatedSchemaTest extends AnyFunSuite:
 
     val validationResult: DataValidation =
       ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
-        List(createRowData(json))
+        List(createData(json))
       )
     val validData = testIsValid(validationResult)
   }
@@ -35,7 +35,7 @@ class ValidatedSchemaTest extends AnyFunSuite:
 
     val validationResult: DataValidation =
       ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
-        List(createRowData(json))
+        List(createData(json))
       )
     val invalidData = testIsInvalid(validationResult)
     invalidData.head.errors.head.message shouldBe "/file_size: string found, integer expected"
@@ -52,18 +52,18 @@ class ValidatedSchemaTest extends AnyFunSuite:
 
     val validationResult: DataValidation =
       ValidatedSchema.schemaValidated("organisationBase.json", (x: String) => x)(
-        List(createRowData(json))
+        List(createData(json))
       )
     val errors = testIsInvalid(validationResult)
     errors.head.errors.head.message shouldBe "Must be a pipe delimited list of valid FOI codes, (eg. 31|33). Please see the guidance for more detail on valid codes"
   }
 
-  def testIsValid(e: DataValidation): List[RowData] = {
+  def testIsValid(e: DataValidation): List[Data] = {
     e match {
       case Validated.Valid(data) => data
       case Validated.Invalid(errors) =>
         errors.toList shouldBe empty
-        List.empty[RowData]
+        List.empty[Data]
     }
   }
 
@@ -76,8 +76,8 @@ class ValidatedSchemaTest extends AnyFunSuite:
     }
   }
 
-  def createRowData(json: String): RowData = {
-    RowData(
+  def createData(json: String): Data = {
+    Data(
       Some(1),
       Some("test/test2.txt"),
       Map("File path" -> "test/test2.txt", "description_closed" -> "YES"),

@@ -3,7 +3,7 @@ package datalaoader
 import cats.*
 import cats.syntax.all.catsSyntaxValidatedId
 import com.github.tototoshi.csv.CSVReader
-import validation.{DataValidation, RowData}
+import validation.{DataValidation, Data}
 
 import scala.util.{Try, Using}
 
@@ -17,21 +17,21 @@ object CSVLoader:
     loaded.valid
   }
 
-  def loadCSV(csvFile: String, idColumn: Option[String]): List[RowData] = {
-    val data: Try[List[RowData]] = Using { LoaderUtils.getSourceFromPath(csvFile) } { source =>
+  def loadCSV(csvFile: String, idColumn: Option[String]): List[Data] = {
+    val data: Try[List[Data]] = Using { LoaderUtils.getSourceFromPath(csvFile) } { source =>
       val cSVReader: CSVReader = CSVReader.open(source)
       cSVReader
         .allWithHeaders()
-        .map(convertToRowData(idColumn))
+        .map(convertToData(idColumn))
         .zipWithIndex
         .map((data, index) => data.copy(row_number = Some(index + 1)))
     }
-    data.getOrElse(List.empty[RowData])
+    data.getOrElse(List.empty[Data])
   }
 
-  private def convertToRowData(idColumn: Option[String])(data: Map[String, String]): RowData = {
+  private def convertToData(idColumn: Option[String])(data: Map[String, String]): Data = {
     val assetId = getAssetId(idColumn, data)
-    RowData(None, assetId, data, None)
+    Data(None, assetId, data, None)
   }
 
   private def getAssetId(idKey: Option[String], data: Map[String, String]): Option[String] = {

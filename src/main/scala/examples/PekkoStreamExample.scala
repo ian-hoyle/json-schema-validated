@@ -12,7 +12,7 @@ import validation.error.ValidationErrors
 import validation.jsonschema.ValidationDataUtils.{addJsonForValidation, mapKeys}
 import validation.jsonschema.ValidatedSchema
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
-import validation.{DataValidation, Parameters, RowData}
+import validation.{DataValidation, Parameters, Data}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,8 +42,8 @@ object PekkoStreamExample {
       parameters.inputAlternateKey
     )
     // Load the CSV data and generate 10,000 rows for each row in the CSV to simulate a large dataset
-    val smallDataSet: List[RowData] = loadCSV(parameters.fileToValidate, parameters.idKey)
-    val largeDataSet: List[RowData] = smallDataSet.zipWithIndex.flatMap { case (row, index) =>
+    val smallDataSet: List[Data] = loadCSV(parameters.fileToValidate, parameters.idKey)
+    val largeDataSet: List[Data] = smallDataSet.zipWithIndex.flatMap { case (row, index) =>
       (1 to 10000).map(i => row.copy(assetId = Some(s"${index * 10000 + i}_${row.assetId.getOrElse("")}")))
     }
 
@@ -51,7 +51,7 @@ object PekkoStreamExample {
     val csvSource = Source(data)
 
     val startTime = System.currentTimeMillis
-    val processedData: Future[Validated[NonEmptyList[ValidationErrors], List[RowData]]] = csvSource
+    val processedData: Future[Validated[NonEmptyList[ValidationErrors], List[Data]]] = csvSource
       .map(row => mapKeys(configuration.altInToKey)(List(row)))
       .map(row => row andThen addJsonForValidation(configuration.valueMapper))
       .map(row =>
@@ -65,7 +65,7 @@ object PekkoStreamExample {
           row andThen composeMultipleValidated(parameters.schema, configuration.inputAlternateKey)
         )
       )
-      .runFold(Validated.valid[NonEmptyList[ValidationErrors], List[RowData]](List.empty)) { (acc, current) =>
+      .runFold(Validated.valid[NonEmptyList[ValidationErrors], List[Data]](List.empty)) { (acc, current) =>
         acc combine current
       }
 
@@ -82,7 +82,7 @@ object PekkoStreamExample {
   }
 
   private def composeMultipleValidated(schemaFiles: List[String], propertyToAlt: String => String)(
-      data: List[RowData]
+      data: List[Data]
   ): DataValidation = {
     schemaFiles.map { schemaFile =>
       ValidatedSchema.schemaValidated(schemaFile, propertyToAlt)(data)

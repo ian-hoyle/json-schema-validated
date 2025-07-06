@@ -154,8 +154,8 @@ The main API for validation is the `validate` method in the [`Validation`](src/m
 ```scala
 def validate(
   dataLoader: DataValidation,
-  failFastValidations: Seq[List[RowData] => DataValidation],
-  composeValidations: Seq[List[RowData] => DataValidation]
+  failFastValidations: Seq[List[Data] => DataValidation],
+  composeValidations: Seq[List[Data] => DataValidation]
 ): DataValidation
 ```
 
@@ -164,7 +164,28 @@ def validate(
 - **composeValidations**: A sequence of validations that are run after the fail-fast validations, in parallel, and their results are combined.
 
 > **Note:**
-> `DataValidation` is a type alias for `ValidatedNel[ValidationErrors, List[RowData]]`.
+> `DataValidation` is a type alias for `ValidatedNel[ValidationErrors, List[Data]]`.
+
+#### Key Types
+
+- **Data**: Represents a single data item or record to be validated. It's a case class containing:
+  - `row_number`: Optional integer representing the row number in source data (e.g., CSV)
+  - `assetId`: Optional string that uniquely identifies the asset/record
+  - `data`: A Map of key-value pairs representing the data properties
+  - `json`: Optional string containing the JSON representation of the data
+
+- **ValidationErrors**: A case class representing validation errors for a specific asset:
+  - `assetId`: Identifier of the asset that has validation errors
+  - `errors`: A Set of `JsonSchemaValidationError` objects
+
+- **JsonSchemaValidationError**: Details about a specific validation error:
+  - `validationProcess`: The process where validation failed
+  - `property`: The property/field that failed validation
+  - `errorKey`: A key identifying the type of error
+  - `message`: Human-readable error message
+  - `value`: The invalid value (default empty string)
+
+The validation framework also includes a `Monoid` instance for `List[ValidationErrors]`, which allows errors from multiple validation steps to be combined while grouping them by asset ID.
 
 ### Example usage
 
@@ -172,17 +193,18 @@ Below is a simplified example of how to use the `validate` API:
 
 ```scala
 import validation.Validation.validate
-import validation.{DataValidation, RowData, ValidationErrors}
+import validation.{DataValidation, Data, ValidationErrors}
 
 
 // Assume you have a dataLoader that loads your data as a ValidatedNel
-val dataLoader: DataValidation = ...
+val dataLoader: DataValidation =
+...
 
 // Define your fail-fast and composed validations
-val failFastValidations: Seq[List[RowData] => DataValidation] = Seq(
+val failFastValidations: Seq[List[Data] => DataValidation] = Seq(
   // e.g. mapping keys, adding JSON, required field checks
 )
-val composeValidations: Seq[List[RowData] => DataValidation] = Seq(
+val composeValidations: Seq[List[Data] => DataValidation] = Seq(
   // e.g. schema validations, business rule checks
 )
 
@@ -201,13 +223,12 @@ This approach allows you to flexibly compose different validation steps, separat
 
 For an example, see [`CSVFileValidationApp`](src/main/scala/examples/CSVFileValidationApp.scala).
 
-
 ```scala
 import config.ValidationConfig.prepareValidationConfiguration
 import datalaoader.CSVLoader.loadCSVData
 import validation.Validation.validate
 import validation.jsonschema.ValidatedSchema
-import validation.{DataValidation, Parameters, RowData, ValidatorConfiguration}
+import validation.{DataValidation, Parameters, Data, ValidatorConfiguration}
 
 object CSVFileValidationApp extends App {
   val parameters = Parameters(
