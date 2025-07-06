@@ -48,12 +48,13 @@ object CSVFileValidationApp extends App {
   // Validations that can be combined and run after the fail-fast validations
   private val combiningValidations: List[List[Data] => DataValidation] =
     getCombiningValidations(parameters.schema, configuration)
+  private val customJsonValidation = CustomJsonValidation.validateClosureFields(configuration.inputAlternateKey)
 
   private val startTime = System.currentTimeMillis
   private val result = validate(
     loadedCSV,
     failFastValidations,
-    combiningValidations :+ FailedValidation.failedValidation :+ CustomJsonValidation.validateClosureFields
+    combiningValidations :+ FailedValidation.failedValidation :+ customJsonValidation
   )
 
   result match {

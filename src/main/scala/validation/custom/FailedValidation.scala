@@ -14,7 +14,7 @@ object FailedValidation {
       property = "No property",
       errorKey = "Force",
       message = "hello world failure",
-      "Lets just fail"
+      value = "Lets just fail"
     )
 
     val validationErrors = ValidationErrors("hello world", Set(error))
