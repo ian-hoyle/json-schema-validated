@@ -14,7 +14,7 @@ object CustomJsonValidation {
           .fold(
             _ => errAcc, // On parsing error, don't add to errors
             fields => {
-              if (fields.closureType.contains("Closed") && fields.closurePeriod.size != fields.foiExemptionCode.size) {
+              if (validationRuleFail(fields)) {
                 val assetId = dataItem.assetId.getOrElse("unknown")
 
                 val closurePeriodError = closureFieldsMismatchError(
@@ -46,6 +46,9 @@ object CustomJsonValidation {
       case None      => data.valid
     }
   }
+
+  private def validationRuleFail(fields: ClosureFields): Boolean =
+    fields.closureType.contains("Closed") && fields.closurePeriod.size != fields.foiExemptionCode.size
 
   private def closureFieldsMismatchError(property: String, originalValue: String): JsonSchemaValidationError = JsonSchemaValidationError(
     validationProcess = "ClosedRecordValidation",
