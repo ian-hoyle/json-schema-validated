@@ -48,7 +48,7 @@ object CustomJsonValidation {
   }
 
   private def validationRuleFail(fields: ClosureFields): Boolean =
-    fields.closureType.contains("Closed") && fields.closurePeriod.size != fields.foiExemptionCode.size
+    fields.closure_type.contains("Closed") && fields.closure_period.size != fields.foi_exemption_code.size
 
   private def closureFieldsMismatchError(property: String, originalValue: String): JsonSchemaValidationError = JsonSchemaValidationError(
     validationProcess = "ClosedRecordValidation",
