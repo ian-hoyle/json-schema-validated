@@ -187,6 +187,84 @@ def validate(
 
 The validation framework also includes a `Monoid` instance for `List[ValidationErrors]`, which allows errors from multiple validation steps to be combined while grouping them by asset ID.
 
+### User-Friendly Error Messages
+
+For each JSON schema file, there is a corresponding `.properties` file with the same base name that contains user-friendly error messages. The key in the properties file is formatted as `{property}.{errorKey}`, matching the property and errorKey from validation errors.
+
+For example, with `closedRecord.json` schema:
+
+```json
+{
+  "$id": "/schema/closed-closure",
+  "type": "object",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "closure_type": {
+            "const": "Closed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "closure_start_date": {
+            "type": "string"
+          },
+          "foi_exemption_code": {
+            "type": "array"
+          },
+          "foi_exemption_asserted": {
+            "type": "string"
+          },
+          // ...more properties...
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "title_closed": { "const": true }
+              }
+            },
+            "required": ["title_closed"],
+            "then": {
+              "required": ["title_alternate"],
+              "properties": {
+                "title_alternate": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          // ...more conditions...
+        ]
+      }
+    }
+  ]
+}
+```
+
+The corresponding `closedRecord.properties` file contains user-friendly error messages:
+
+```properties
+foi_exemption_asserted.type=Must be provided for a closed record
+foi_exemption_code.type=Must be provided for a closed record
+closure_period.type=Must be provided for a closed record
+closure_start_date.type=Must be provided for a closed record
+title_closed.type=Must be provided for a closed record
+title_closed.enum=Must be Yes or No
+title_closed.const=Must be Yes if an alternate is provided
+title_alternate.type=Must not be empty if title is closed
+description_closed.type=Must be provided for a closed record
+description_closed.const=Must be Yes if an alternate is provided
+description_closed.enum=Must be Yes or No
+description_alternate.type=Must not be empty if description is closed
+```
+
+When validation fails, the library looks up the appropriate error message using the property name and error key. For example, if the `title_closed` field fails validation with an error key of `const`, the error message "Must be Yes if an alternate is provided" will be displayed to the user.
+
+This approach allows for customized, context-specific error messages that are more helpful to end users than generic JSON Schema validation errors.
+
 ### Example usage
 
 Below is a simplified example of how to use the `validate` API:
