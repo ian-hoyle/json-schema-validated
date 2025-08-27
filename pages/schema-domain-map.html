@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema ↔ Domain key map</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 1.25rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
+    p { margin: 0.25rem 0 0.75rem; max-width: 80ch; }
+    .controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin: 0.5rem 0 1rem; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+    th, td { border: 1px solid #8884; padding: 0.35rem 0.5rem; vertical-align: top; }
+    th { background: #ddd4; position: sticky; top: 0; backdrop-filter: blur(2px); }
+    tbody tr:nth-child(odd) { background: #00000006; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.95em; }
+    .muted { opacity: 0.75; }
+    .warn { color: #a33; font-weight: 600; }
+    .ok { color: #2a7; font-weight: 600; }
+    .footer { margin-top: 1.25rem; font-size: 0.9rem; }
+    .sr { position: absolute; left: -9999px; }
+    input[type="search"] { padding: 0.25rem 0.5rem; min-width: 12rem; }
+  </style>
+</head>
+<body>
+  <h1>Schema ↔ Domain key map</h1>
+  <p>
+    This page loads <code>organisationBase.json</code> and <code>config.json</code> from the repository and generates a table of
+    base schema properties (from <code>organisationBase.json</code>) with a column per domain (from <code>config.json</code>) showing
+    the domain-specific header (domainKey) used for that property. Error-to-message mapping is done during validation in code (see
+    <code>ValidatedSchema.schemaValidated</code>); this page is purely documentation of header mappings.
+  </p>
+
+  <div class="controls">
+    <label for="filter" class="sr">Filter properties</label>
+    <input id="filter" type="search" placeholder="Filter properties…" />
+    <span id="counts" class="muted"></span>
+  </div>
+
+  <div id="tableHost" role="region" aria-live="polite"></div>
+
+  <div class="footer muted" id="notes"></div>
+
+  <script>
+    (async function main() {
+      const tableHost = document.getElementById('tableHost');
+      const notes = document.getElementById('notes');
+      const filter = document.getElementById('filter');
+      const counts = document.getElementById('counts');
+
+      const lex = (a, b) => String(a).localeCompare(String(b));
+
+      async function tryFetch(urls) {
+        let lastErr;
+        for (const url of urls) {
+          try {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (res.ok) return await res.json();
+          } catch (e) { lastErr = e; }
+        }
+        throw lastErr || new Error('Unable to fetch any URL: ' + urls.join(', '));
+      }
+
+      // Prefer local copies for GitHub Pages; fall back to src paths when running from repo root
+      const orgBase = await tryFetch([
+        './organisationBase.json',
+        '../src/main/resources/organisationBase.json'
+      ]);
+      const cfg = await tryFetch([
+        './config.json',
+        '../src/main/resources/config.json'
+      ]);
+
+      // Collect properties from organisationBase
+      const baseProps = Object.keys((orgBase && orgBase.properties) || {}).sort(lex);
+
+      // Build domains and mapping from config
+      const items = Array.isArray(cfg && cfg.configItems) ? cfg.configItems : [];
+      const domainsSet = new Set();
+      const mapping = new Map(); // property -> Map(domain -> domainKey)
+
+      for (const item of items) {
+        const key = item && item.key;
+        const domainKeys = (item && item.domainKeys) || [];
+        if (!key) continue;
+        const m = mapping.get(key) || new Map();
+        for (const dk of domainKeys) {
+          if (!dk || !dk.domain) continue;
+          domainsSet.add(dk.domain);
+          if (dk.domainKey) m.set(dk.domain, dk.domainKey);
+        }
+        mapping.set(key, m);
+      }
+
+      const domains = Array.from(domainsSet).sort(lex);
+
+      // Render table
+      function render(rows) {
+        const thead = `
+          <thead>
+            <tr>
+              <th>Property</th>
+              ${domains.map(d => `<th>${escapeHtml(d)}</th>`).join('')}
+            </tr>
+          </thead>`;
+        const tbody = `
+          <tbody>
+            ${rows.map(prop => {
+              const m = mapping.get(prop) || new Map();
+              return `<tr>
+                <td><code>${escapeHtml(prop)}</code></td>
+                ${domains.map(d => `<td>${escapeHtml(m.get(d) || '')}</td>`).join('')}
+              </tr>`;
+            }).join('')}
+          </tbody>`;
+        tableHost.innerHTML = `<table>${thead}${tbody}</table>`;
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function(c) {
+          switch (c) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return c;
+          }
+        });
+      }
+
+      // Initial render
+      render(baseProps);
+      counts.textContent = `${baseProps.length} properties · ${domains.length} domains`;
+
+      // Filter logic
+      filter.addEventListener('input', () => {
+        const q = filter.value.trim().toLowerCase();
+        const rows = q ? baseProps.filter(p => p.toLowerCase().includes(q)) : baseProps;
+        render(rows);
+        counts.textContent = `${rows.length}/${baseProps.length} properties · ${domains.length} domains`;
+      });
+
+      // Notes: show any config keys that don't exist in organisationBase
+      const cfgOnly = items.map(i => i && i.key).filter(Boolean).filter(k => !baseProps.includes(k)).sort(lex);
+      if (cfgOnly.length) {
+        notes.innerHTML = `<div class="warn">Config-only keys (not in organisationBase):</div>
+          <div class="muted">${cfgOnly.map(k => `<code>${escapeHtml(k)}</code>`).join(', ')}</div>`;
+      } else {
+        notes.innerHTML = `<div class="ok">All config keys are present in organisationBase.</div>`;
+      }
+    })();
+  </script>
+</body>
+</html>

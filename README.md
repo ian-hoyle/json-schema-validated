@@ -462,3 +462,19 @@ The method returns a `ValidatorConfiguration` object.
 - Generate case classes: `sbt generateCaseClasses`
 - Run the CSV example app: `sbt "runMain examples.CSVFileValidationApp"`
 - Lambda handler example: see [`CSVFileValidationLambdaHandler`](src/main/scala/examples/CSVFileValidationLambdaHandler.scala)
+
+## Schema ↔ Domain map page
+
+A static page that visualises the mapping between base schema properties and per-domain headers is available at:
+
+- pages/schema-domain-map.html (open in a browser when served from the repo)
+- On GitHub Pages: https://OWNER.github.io/REPO/pages/schema-domain-map.html
+
+Notes
+- The page fetches JSON from ../src/main/resources, so it must be served over HTTP (not from file://).
+- To preview locally from the repo root, run a simple server and open the page URL:
+
+```sh
+python3 -m http.server 8080
+# then open http://localhost:8080/pages/schema-domain-map.html
+```

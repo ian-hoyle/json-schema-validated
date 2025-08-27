@@ -1,0 +1,128 @@
+{
+  "$id": "/schema/baseSchema",
+  "type": "object",
+  "properties": {
+    "client_side_checksum": {
+      "type": "string",
+      "minLength": 64,
+      "maximum": 64,
+      "description" : "checksum calculated"
+    },
+    "file_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "file_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "date_last_modified": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 8000
+    },
+    "end_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
+    },
+    "file_name_translation": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 8000
+    },
+    "file_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "language": {
+      "type": "array",
+       "items": {
+        "type": "string",
+        "$ref": "classpath:/definitions.json#/definitions/languages"
+      }
+    },
+    "description_alternate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 8000
+    },
+    "description_closed": {
+      "type": "boolean"
+    },
+    "foi_exemption_asserted": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
+    },
+    "foi_exemption_code": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "$ref": "classpath:/definitions.json#/definitions/foi_codes"
+      }
+    },
+    "closure_type": {
+      "type": "string",
+      "$ref": "classpath:/definitions.json#/definitions/closure_types"
+    },
+    "closure_period": {
+      "description": "A list of the number (1-150) of years closure for each foi exemption code, in corresponding order. This is only provided if the record is Closed",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 150
+      }
+    },
+    "closure_start_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?)?$"
+    },
+    "title_closed": {
+      "type": "boolean"
+    },
+    "title_alternate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 8000
+    },
+    "former_reference_department": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 255
+    }
+  }
+}
+
