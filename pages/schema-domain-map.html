@@ -72,8 +72,39 @@
         '../src/main/resources/config.json'
       ]);
 
-      // Collect properties from organisationBase
+      // Collect properties from organisationBase and compute display types
       const baseProps = Object.keys((orgBase && orgBase.properties) || {}).sort(lex);
+      const typeByProp = new Map();
+
+      function firstType(t) {
+        if (Array.isArray(t)) return t[0];
+        if (typeof t === 'string') return t;
+        return '';
+      }
+      function refSuffix(ref) {
+        if (!ref || typeof ref !== 'string') return '';
+        const i = ref.lastIndexOf('/');
+        return i >= 0 ? ref.slice(i + 1) : ref;
+      }
+      function computeDisplayType(def) {
+        if (!def) return '';
+        const t = firstType(def.type);
+        if (t === 'array') {
+          const it = def.items || {};
+          const itemType = firstType(it.type);
+          let s = itemType ? `array -> ${itemType}` : 'array';
+          const seg = refSuffix(it.$ref);
+          if (seg) s += ` -> ${seg}`;
+          return s;
+        }
+        if (t === 'string' && typeof def.format === 'string' && def.format) {
+          return `string -> ${def.format}`;
+        }
+        return t || '';
+      }
+      for (const p of baseProps) {
+        typeByProp.set(p, computeDisplayType(orgBase.properties[p]));
+      }
 
       // Build domains and mapping from config
       const items = Array.isArray(cfg && cfg.configItems) ? cfg.configItems : [];
@@ -93,7 +124,21 @@
         mapping.set(key, m);
       }
 
-      const domains = Array.from(domainsSet).sort(lex);
+      // Domain order: prefer TDRMetadataUpload, then TDRDataLoad, then lexicographic fallback
+      const preferredOrder = ["TDRMetadataUpload", "TDRDataLoad"];
+      const domainCmp = (a, b) => {
+        const ia = preferredOrder.indexOf(a);
+        const ib = preferredOrder.indexOf(b);
+        const aIn = ia !== -1;
+        const bIn = ib !== -1;
+        if (aIn || bIn) {
+          if (aIn && !bIn) return -1;
+          if (!aIn && bIn) return 1;
+          if (ia !== ib) return ia - ib;
+        }
+        return lex(a, b);
+      };
+      const domains = Array.from(domainsSet).sort(domainCmp);
 
       // Render table
       function render(rows) {
@@ -101,6 +146,7 @@
           <thead>
             <tr>
               <th>Property</th>
+              <th>Type</th>
               ${domains.map(d => `<th>${escapeHtml(d)}</th>`).join('')}
             </tr>
           </thead>`;
@@ -108,8 +154,10 @@
           <tbody>
             ${rows.map(prop => {
               const m = mapping.get(prop) || new Map();
+              const t = typeByProp.get(prop) || '';
               return `<tr>
                 <td><code>${escapeHtml(prop)}</code></td>
+                <td>${escapeHtml(t)}</td>
                 ${domains.map(d => `<td>${escapeHtml(m.get(d) || '')}</td>`).join('')}
               </tr>`;
             }).join('')}
