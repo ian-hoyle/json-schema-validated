@@ -472,7 +472,7 @@ A static page that visualises the mapping between base schema properties and per
 
 Notes
 - The page fetches JSON from ../src/main/resources, so it must be served over HTTP (not from file://).
-- To preview locally from the repo root, run a simple server and open the page URL:
+- To preview locally from the repo root, run a simple python server and open the page URL:
 
 ```sh
 python3 -m http.server 8080
