@@ -8,7 +8,7 @@ A data validation library for Scala that leverages JSON Schema for schema-based 
 - Map between domain-specific headers and canonical property names via config
 - User-friendly, per-schema error messages using .properties files
 - Optional conditional rules with JSON Schema if/then
-- SBT tasks to generate domain-flavoured schemas and case classes
+- SBT task to generate case classes
 - Examples for CSV data, including a Lambda-friendly handler
 
 ## Table of Contents
@@ -52,26 +52,30 @@ Conceptually:
 ```scala
 import cats.data.ValidatedNel
 import cats.syntax.all._
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+import validation.error.CSVValidationResult.dataValidationResultMonoid
 
 // type DataValidation = ValidatedNel[ValidationErrors, List[Data]]
 
 def runFailFast(
-  data0: DataValidation,
+  loadedData: DataValidation,
   steps: Seq[List[Data] => DataValidation]
 ): DataValidation =
-  steps.foldLeft(data0)((acc, f) => acc.andThen(f))
+  steps.foldLeft(loadedData)((acc, f) => acc.andThen(f))
 
 def runComposed(
   data: List[Data],
   steps: Seq[List[Data] => DataValidation]
 ): DataValidation =
-  steps.toList.traverse_(_(data)).as(data)
+  // run validations in parallel and combine their Validated results (accumulating errors)
+  steps.map(f => IO(f(data))).parSequence.map(_.combineAll).unsafeRunSync()
 
 val result: DataValidation =
   runFailFast(dataLoader, failFastValidations).andThen(ds => runComposed(ds, composeValidations))
 ```
 
-This model keeps the API simple (functions in, `Validated` out), makes fail-fast behaviour explicit, and cleanly accumulates errors from independent checks.
+This mirrors Validation.scala: fail-fast via `andThen`, then parallel composition with IO and `combineAll` using the project’s Monoid for `DataValidation` to accumulate errors and keep the validated data when successful.
 
 ## How it works (60 seconds)
 1. Load data as a `ValidatedNel` of `List[Data]` (e.g. from CSV).
