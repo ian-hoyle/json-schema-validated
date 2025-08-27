@@ -79,7 +79,7 @@
         // Attempts to produce an array of { name, details, format, example, required?, type? }
         // Supported shapes:
         // 1) Object map: { fieldName: { details, format, example, ... }, ... }
-        // 2) Array of objects: [ { name, details, format, example, ... }, ... ]
+        // 2) Array of objects: [ { name|property, details, format, example, tdrRequirement?, ... }, ... ]
         // 3) JSON Schema-like: { properties: { fieldName: { description, type, examples|example }, required: [] } }
         if (!json) return [];
 
@@ -94,7 +94,7 @@
             const example = (def.example !== undefined) ? def.example : (Array.isArray(def.examples) ? def.examples[0] : '');
             out.push({ name, details, format, example, required: req.has(name), type: def.type || '' });
           }
-          return out.sort((a,b) => lex(a.name,b.name));
+          return out.sort((a,b) => (''+a.name).localeCompare(''+b.name));
         }
 
         // Case 1: Object map
@@ -107,22 +107,23 @@
             const type = def.type || '';
             out.push({ name, details, format, example, required: !!def.required, type });
           }
-          return out.sort((a,b) => lex(a.name,b.name));
+          return out.sort((a,b) => (''+a.name).localeCompare(''+b.name));
         }
 
-        // Case 2: Array of objects with name
+        // Case 2: Array of objects (support `property` as name)
         if (Array.isArray(json)) {
           for (const def of json) {
             if (!def || typeof def !== 'object') continue;
-            const name = def.name || def.key || def.id || '';
+            const name = def.name || def.property || def.key || def.id || '';
             if (!name) continue;
             const details = def.details || def.description || '';
             const format = def.format || '';
             const example = def.example !== undefined ? def.example : (Array.isArray(def.examples) ? def.examples[0] : '');
             const type = def.type || '';
-            out.push({ name, details, format, example, required: !!def.required, type });
+            const required = !!def.required || (typeof def.tdrRequirement === 'string' && def.tdrRequirement.toLowerCase() === 'mandatory');
+            out.push({ name, details, format, example, required, type });
           }
-          return out.sort((a,b) => lex(a.name,b.name));
+          return out.sort((a,b) => (''+a.name).localeCompare(''+b.name));
         }
 
         return out;
@@ -185,4 +186,3 @@
   </script>
 </body>
 </html>
-

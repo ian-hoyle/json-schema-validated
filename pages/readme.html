@@ -130,13 +130,10 @@ def runComposed(
   data: List[Data],
   steps: Seq[List[Data] =&gt; DataValidation]
 ): DataValidation =
-  // run validations in parallel and combine their Validated results (accumulating errors)
-  // NOTE: each schema validation converts raw validator messages into user-friendly
-  // JsonSchemaValidationError using schema .properties (see ValidatedSchema.schemaValidated)
   steps.map(f =&gt; IO(f(data))).parSequence.map(_.combineAll).unsafeRunSync()
 
 val result: DataValidation =
-  runFailFast(dataLoader, failFastValidations).andThen(ds =&gt; runComposed(ds, composeValidations))
+  runFailFast(loadedData, failFastValidations).andThen(ds =&gt; runComposed(ds, composeValidations))
 </code></pre>
       <p>This mirrors Validation.scala: fail-fast via <code>andThen</code>, then parallel composition with IO and <code>combineAll</code>. Crucially, each schema validation (e.g. <code>ValidatedSchema.schemaValidated</code>) performs the error-to-message mapping using the schema’s <code>.properties</code> file; the Monoid then simply combines these already user-friendly errors.</p>
 
@@ -341,11 +338,11 @@ result match {
 </code></pre>
       <p>Expected validation outcome (friendly messages):</p>
       <pre><code>- file a/b/c.txt
-  - foi_exemption_asserted.type: Must be provided for a closed record
-  - closure_start_date.type: Must be provided for a closed record
-  - closure_period.type: Must be provided for a closed record
-  - foi_exemption_code.type: Must be provided for a closed record
-  - title_alternate.type: Must not be empty if title is closed
+  - FOI decision asserted: Must be provided for a closed record
+  - Closure Start Date: Must be provided for a closed record
+  - Closure status: Must be provided for a closed record
+  - FOI exemption code: Must be provided for a closed record
+  - Add alternative title without the file extension: Must not be empty if title is closed
 </code></pre>
 
       <h2 id="configuration-loading">Configuration Loading</h2>
