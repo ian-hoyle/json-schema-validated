@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Metadata template viewer</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 1.25rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    p { margin: 0.25rem 0 0.75rem; max-width: 90ch; }
+    .controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin: 0.75rem 0 1rem; }
+    input[type="search"], select { padding: 0.3rem 0.5rem; min-width: 12rem; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+    th, td { border: 1px solid #8884; padding: 0.35rem 0.5rem; vertical-align: top; }
+    th { background: #ddd4; position: sticky; top: 0; backdrop-filter: blur(2px); }
+    tbody tr:nth-child(odd) { background: #00000008; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.95em; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+    .muted { opacity: 0.75; }
+    .small { font-size: 0.9em; }
+    .warn { color: #a33; font-weight: 600; }
+    .ok { color: #2a7; font-weight: 600; }
+    .sr { position: absolute; left: -9999px; }
+    details summary { cursor: pointer; }
+    .wrap { max-width: 1200px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Metadata template viewer</h1>
+    <p>
+      This page fetches the public metadata template from
+      <a href="https://github.com/nationalarchives/da-metadata-schema/blob/main/guidance/metadata-template.json" target="_blank" rel="noopener">nationalarchives/da-metadata-schema</a>
+      and renders a user-friendly table. It shows each field’s <strong>name</strong>, <strong>details</strong>, <strong>format</strong>, and <strong>example</strong> when available.
+    </p>
+
+    <div class="controls">
+      <label for="filter" class="sr">Filter fields</label>
+      <input id="filter" type="search" placeholder="Filter fields…" />
+      <span id="counts" class="muted small"></span>
+    </div>
+
+    <div id="tableHost" role="region" aria-live="polite"></div>
+
+    <details class="small" style="margin-top:0.75rem">
+      <summary>About this page</summary>
+      <p>
+        The viewer tries to adapt to different JSON shapes. If the upstream structure changes, the raw JSON is still accessible below.
+      </p>
+      <pre id="rawJson" class="muted" aria-label="Raw JSON preview"></pre>
+    </details>
+  </div>
+
+  <script>
+    (async function main() {
+      const RAW_URL = 'https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/guidance/metadata-template.json';
+      const tableHost = document.getElementById('tableHost');
+      const filterEl = document.getElementById('filter');
+      const counts = document.getElementById('counts');
+      const rawJson = document.getElementById('rawJson');
+
+      const lex = (a, b) => String(a).localeCompare(String(b));
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function(c) {
+          switch (c) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return c;
+          }
+        });
+      }
+
+      function normalizeTemplate(json) {
+        // Attempts to produce an array of { name, details, format, example, required?, type? }
+        // Supported shapes:
+        // 1) Object map: { fieldName: { details, format, example, ... }, ... }
+        // 2) Array of objects: [ { name, details, format, example, ... }, ... ]
+        // 3) JSON Schema-like: { properties: { fieldName: { description, type, examples|example }, required: [] } }
+        if (!json) return [];
+
+        const out = [];
+
+        // Case 3: JSON Schema-like
+        if (json && typeof json === 'object' && json.properties && typeof json.properties === 'object') {
+          const req = Array.isArray(json.required) ? new Set(json.required) : new Set();
+          for (const [name, def] of Object.entries(json.properties)) {
+            const details = def.description || def.details || '';
+            const format = def.format || (def.pattern ? `pattern: ${def.pattern}` : (Array.isArray(def.type) ? def.type.join(' | ') : def.type || ''));
+            const example = (def.example !== undefined) ? def.example : (Array.isArray(def.examples) ? def.examples[0] : '');
+            out.push({ name, details, format, example, required: req.has(name), type: def.type || '' });
+          }
+          return out.sort((a,b) => lex(a.name,b.name));
+        }
+
+        // Case 1: Object map
+        if (json && typeof json === 'object' && !Array.isArray(json)) {
+          for (const [name, def] of Object.entries(json)) {
+            if (!def || typeof def !== 'object') continue;
+            const details = def.details || def.description || '';
+            const format = def.format || '';
+            const example = def.example !== undefined ? def.example : (Array.isArray(def.examples) ? def.examples[0] : '');
+            const type = def.type || '';
+            out.push({ name, details, format, example, required: !!def.required, type });
+          }
+          return out.sort((a,b) => lex(a.name,b.name));
+        }
+
+        // Case 2: Array of objects with name
+        if (Array.isArray(json)) {
+          for (const def of json) {
+            if (!def || typeof def !== 'object') continue;
+            const name = def.name || def.key || def.id || '';
+            if (!name) continue;
+            const details = def.details || def.description || '';
+            const format = def.format || '';
+            const example = def.example !== undefined ? def.example : (Array.isArray(def.examples) ? def.examples[0] : '');
+            const type = def.type || '';
+            out.push({ name, details, format, example, required: !!def.required, type });
+          }
+          return out.sort((a,b) => lex(a.name,b.name));
+        }
+
+        return out;
+      }
+
+      function renderTable(rows) {
+        const thead = `
+          <thead>
+            <tr>
+              <th style="width:18%">Name</th>
+              <th style="width:42%">Details</th>
+              <th style="width:20%">Format</th>
+              <th style="width:20%">Example</th>
+            </tr>
+          </thead>`;
+        const tbody = `
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                <td><code>${escapeHtml(r.name)}</code>${r.required ? ' <span class="warn" title="Required">*</span>' : ''}</td>
+                <td>${escapeHtml(r.details || '')}</td>
+                <td>${escapeHtml(r.format || r.type || '')}</td>
+                <td>${r.example === undefined || r.example === null ? '' : `<pre>${escapeHtml(typeof r.example === 'string' ? r.example : JSON.stringify(r.example, null, 2))}</pre>`}</td>
+              </tr>
+            `).join('')}
+          </tbody>`;
+        tableHost.innerHTML = `<table>${thead}${tbody}</table>`;
+      }
+
+      function applyFilter(allRows, q) {
+        if (!q) return allRows;
+        const needle = q.trim().toLowerCase();
+        return allRows.filter(r =>
+          r.name.toLowerCase().includes(needle) ||
+          String(r.details || '').toLowerCase().includes(needle) ||
+          String(r.format || r.type || '').toLowerCase().includes(needle) ||
+          String(r.example || '').toLowerCase().includes(needle)
+        );
+      }
+
+      try {
+        const res = await fetch(RAW_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+        rawJson.textContent = JSON.stringify(json, null, 2);
+
+        const rows = normalizeTemplate(json);
+        renderTable(rows);
+        counts.textContent = `${rows.length} fields`;
+
+        filterEl.addEventListener('input', () => {
+          const filtered = applyFilter(rows, filterEl.value);
+          renderTable(filtered);
+          counts.textContent = `${filtered.length}/${rows.length} fields`;
+        });
+      } catch (err) {
+        tableHost.innerHTML = `<div class="warn">Failed to load template: ${escapeHtml(err.message || err)}</div>`;
+      }
+    })();
+  </script>
+</body>
+</html>
+

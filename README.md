@@ -478,3 +478,20 @@ Notes
 python3 -m http.server 8080
 # then open http://localhost:8080/pages/schema-domain-map.html
 ```
+
+## Metadata template viewer page
+
+A static page that renders the National Archives metadata template in a user-friendly table (Name, Details, Format, Example):
+
+- pages/metadata-template.html (open in a browser when served from the repo)
+- On GitHub Pages: https://OWNER.github.io/REPO/pages/metadata-template.html
+
+Notes
+- The page fetches the live JSON from:
+  https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/guidance/metadata-template.json
+- Serve over HTTP for local preview (fetch won’t work from file://). From the repo root:
+
+```sh
+python3 -m http.server 8080
+# then open http://localhost:8080/pages/metadata-template.html
+```
