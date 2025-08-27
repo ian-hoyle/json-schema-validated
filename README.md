@@ -69,19 +69,21 @@ def runComposed(
   steps: Seq[List[Data] => DataValidation]
 ): DataValidation =
   // run validations in parallel and combine their Validated results (accumulating errors)
+  // NOTE: each schema validation converts raw validator messages into user-friendly
+  // JsonSchemaValidationError using schema .properties (see ValidatedSchema.schemaValidated)
   steps.map(f => IO(f(data))).parSequence.map(_.combineAll).unsafeRunSync()
 
 val result: DataValidation =
   runFailFast(dataLoader, failFastValidations).andThen(ds => runComposed(ds, composeValidations))
 ```
 
-This mirrors Validation.scala: fail-fast via `andThen`, then parallel composition with IO and `combineAll` using the project’s Monoid for `DataValidation` to accumulate errors and keep the validated data when successful.
+This mirrors Validation.scala: fail-fast via `andThen`, then parallel composition with IO and `combineAll`. Crucially, each schema validation (e.g. `ValidatedSchema.schemaValidated`) performs the error-to-message mapping using the schema’s `.properties` file; the Monoid then simply combines these already user-friendly errors.
 
 ## How it works (60 seconds)
 1. Load data as a `ValidatedNel` of `List[Data]` (e.g. from CSV).
 2. Apply fail-fast validations (e.g. header mapping, JSON enrichment) via `andThen`.
 3. Apply parallel/composed validations (e.g. multiple JSON Schemas, business rules) and accumulate errors.
-4. Map technical errors to user-friendly messages using schema-specific `.properties`.
+4. Error messages are mapped to user-friendly text inside each schema validation using the schema’s `.properties`; the Monoid only combines already-mapped errors.
 5. Return either validated data or an accumulated non-empty list of errors, grouped per asset.
 
 ## Architecture
@@ -102,18 +104,14 @@ This mirrors Validation.scala: fail-fast via `andThen`, then parallel compositio
          +-----------+--------------------+
                      |
                      v
-         +-----------+-----------------------+
-         |  Parallel/composed validations    |  e.g. JSON Schema, business rules
-         |  (accumulate errors)              |
-         +-----------+-----------------------+
+         +-----------+----------------------------------------------+
+         |  Parallel/composed validations                           |
+         |  - JSON Schema + business rules                          |
+         |  - Error mapping to user-friendly messages (per schema)  |
+         +-----------+----------------------------------------------+
                      |
                      v
-     +---------------+---------------------------+
-     |  Error mapping (schema .properties files) |
-     +---------------+---------------------------+
-                     |
-                     v
-               Validated result
+                 Validated result
 ```
 
 ## Overview
@@ -236,6 +234,8 @@ This schema uses the `if` and `then` keywords to apply additional validation rul
 ## User-Friendly Error Messages
 
 For each JSON schema file, there is a corresponding `.properties` file with the same base name that contains user-friendly error messages. The key in the properties file is formatted as `{property}.{errorKey}`, matching the property and errorKey from validation errors.
+
+During validation, `ValidatedSchema.schemaValidated` converts raw validator messages (`ValidationMessage`) into `JsonSchemaValidationError` by looking up the user-friendly text in the schema’s `.properties`. This happens inside each schema validation step, so when results are combined, the errors are already mapped to friendly messages.
 
 For example, with `closedRecord.json` schema:
 
