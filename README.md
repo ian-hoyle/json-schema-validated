@@ -2,11 +2,27 @@
 
 A data validation library for Scala that leverages JSON Schema for schema-based validation and uses [Cats Data Validated](https://typelevel.org/cats/datatypes/validated.html) for functional error accumulation and reporting.
 
+## Features
+- Validate data against one or many JSON Schemas (NetworkNT JSON Schema Validator)
+- Compose validations as functions: fail-fast chains and parallel error-accumulating checks
+- Map between domain-specific headers and canonical property names via config
+- User-friendly, per-schema error messages using .properties files
+- Optional conditional rules with JSON Schema if/then
+- SBT tasks to generate domain-flavoured schemas and case classes
+- Examples for CSV data, including a Lambda-friendly handler
+
 ## Table of Contents
 - [Justification](#justification)
+- [How it works (60 seconds)](#how-it-works-60-seconds)
+- [Architecture](#architecture)
 - [Overview](#overview)
 - [Schema](#schema)
+- [User-Friendly Error Messages](#user-friendly-error-messages)
 - [Example usage](#example-usage)
+- [Small example: input and output](#small-example-input-and-output)
+- [Configuration Loading](#configuration-loading)
+- [generateSchema Task](#generateschema-task)
+- [Quick start](#quick-start)
 
 ## Justification
 Needed to support the transfer of data to The National Archives (TNA)
@@ -25,22 +41,94 @@ JSON schema can be used to define the data schema
  
 Scala can be used to satisfy this requirement
 
+### Validation as composable function lists
+
+- Each validation is a function of the form `List[Data] => DataValidation` where `DataValidation = ValidatedNel[ValidationErrors, List[Data]]`.
+- You typically organise validations into two pipelines:
+  - Fail-fast sequence: run steps in order, short-circuiting on the first failure (using `andThen`).
+  - Parallel/accumulating: run independent validations over the same input and accumulate all errors into a single `ValidatedNel`.
+
+Conceptually:
+
+```scala
+import cats.data.ValidatedNel
+import cats.syntax.all._
+
+// type DataValidation = ValidatedNel[ValidationErrors, List[Data]]
+
+def runFailFast(
+  data0: DataValidation,
+  steps: Seq[List[Data] => DataValidation]
+): DataValidation =
+  steps.foldLeft(data0)((acc, f) => acc.andThen(f))
+
+def runComposed(
+  data: List[Data],
+  steps: Seq[List[Data] => DataValidation]
+): DataValidation =
+  steps.toList.traverse_(_(data)).as(data)
+
+val result: DataValidation =
+  runFailFast(dataLoader, failFastValidations).andThen(ds => runComposed(ds, composeValidations))
+```
+
+This model keeps the API simple (functions in, `Validated` out), makes fail-fast behaviour explicit, and cleanly accumulates errors from independent checks.
+
+## How it works (60 seconds)
+1. Load data as a `ValidatedNel` of `List[Data]` (e.g. from CSV).
+2. Apply fail-fast validations (e.g. header mapping, JSON enrichment) via `andThen`.
+3. Apply parallel/composed validations (e.g. multiple JSON Schemas, business rules) and accumulate errors.
+4. Map technical errors to user-friendly messages using schema-specific `.properties`.
+5. Return either validated data or an accumulated non-empty list of errors, grouped per asset.
+
+## Architecture
+
+```
+           +------------------+
+           |   Source files   |  (CSV, JSON, ...)
+           +---------+--------+
+                     |
+                     v
+            +--------+---------+
+            |     Data loader  |  (parses to List[Data])
+            +--------+---------+
+                     |
+                     v
+         +-----------+--------------------+
+         |  Fail-fast validations (andThen)|  e.g. key mapping, JSON enrichment
+         +-----------+--------------------+
+                     |
+                     v
+         +-----------+-----------------------+
+         |  Parallel/composed validations    |  e.g. JSON Schema, business rules
+         |  (accumulate errors)              |
+         +-----------+-----------------------+
+                     |
+                     v
+     +---------------+---------------------------+
+     |  Error mapping (schema .properties files) |
+     +---------------+---------------------------+
+                     |
+                     v
+               Validated result
+```
+
 ## Overview
 
 `json-schema-validated` is a Scala-based data validation library for validating data using JSON Schema and functional programming principles. It loads data as key-value pairs, supports multiple domains, and validates using [NetworkNT JSON Schema Validator](http://github.com/networknt/json-schema-validator) and [Cats Data Validated](https://typelevel.org/cats/datatypes/validated.html) for robust error handling and composability.
 
 The JSON schema validation is performed using [NetworkNT JSON Schema Validator](http://github.com/networknt/json-schema-validator)
 
-Conditional validation is supported by the use of multiple schema
+Conditional validation is supported by the use of multiple schemas
 
-Custom user friendly messages are supported by the use of properties files with similar names as the schema
+Custom user-friendly messages are supported by the use of properties files with similar names as the schema
 
 ## Schema
-Two fundamental schema are used in the validation process 
+Two fundamental schemas are used in the validation process 
 - [The base JSON schema](src/main/resources/organisationBase.json) defining all data and their types.
-- [Configuration JSON schema](src/main/resources/config.json) that can be used to [define](src/main/scala/validation/PackageClasses.scala#L15)
+- [Configuration JSON schema](src/main/resources/config.json) that can be used to [define](src/main/scala/validation/PackageClasses.scala)
   - Alternate keys for mapping between domains
-  - Domain specific validations that can't be defined using JSON schema
+  - Domain-specific validations that can't be defined using JSON schema
 
 Here is a snippet from `organisationBase.json`:
 
@@ -104,12 +192,11 @@ Here is a snippet from `config.json`:
         { "domain": "TDRMetadataUpload", "domainKey": "Description" }
       ]
     }
-    // ... more config items ...
   ]
 }
 ```
 
-One or many JSON schema can be used to validate the data with error messages defined for each schema.
+One or many JSON schemas can be used to validate the data with error messages defined for each schema.
 
 Here is a snippet from `closedRecord.json` schema that could also be applied:
 
@@ -133,10 +220,8 @@ Here is a snippet from `closedRecord.json` schema that could also be applied:
           "title_closed": { "type": "boolean" },
           "description_closed": { "type": "boolean" }
         }
-        // ... more conditional logic ...
       }
     }
-    // ... more conditions ...
   ]
 }
 ```
@@ -145,49 +230,7 @@ Here is a snippet from `closedRecord.json` schema that could also be applied:
 
 This schema uses the `if` and `then` keywords to apply additional validation rules only when the `closure_type` property is set to `"Closed"`. If `closure_type` is not `"Closed"`, these extra requirements are not enforced. This allows the schema to dynamically require or validate fields based on the value of another field, supporting context-sensitive validation logic.
 
-## Example usage
-
-The main API for validation is the `validate` method in the [`Validation`](src/main/scala/validation/Validation.scala) object. This method allows you to apply a sequence of fail-fast validations (which stop at the first failure) and a sequence of composed validations (which are run in parallel and whose results are combined).
-
-### The `validate` method signature
-
-```scala
-def validate(
-  dataLoader: DataValidation,
-  failFastValidations: Seq[List[Data] => DataValidation],
-  composeValidations: Seq[List[Data] => DataValidation]
-): DataValidation
-```
-
-- **dataLoader**: The initial data to validate, typically loaded and parsed from a file, wrapped in a `ValidatedNel`.
-- **failFastValidations**: A sequence of validations that are applied in order; if any fail, validation stops immediately.
-- **composeValidations**: A sequence of validations that are run after the fail-fast validations, in parallel, and their results are combined.
-
-> **Note:**
-> `DataValidation` is a type alias for `ValidatedNel[ValidationErrors, List[Data]]`.
-
-#### Key Types
-
-- **Data**: Represents a single data item or record to be validated. It's a case class containing:
-  - `row_number`: Optional integer representing the row number in source data (e.g., CSV)
-  - `assetId`: Optional string that uniquely identifies the asset/record
-  - `data`: A Map of key-value pairs representing the data properties
-  - `json`: Optional string containing the JSON representation of the data
-
-- **ValidationErrors**: A case class representing validation errors for a specific asset:
-  - `assetId`: Identifier of the asset that has validation errors
-  - `errors`: A Set of `JsonSchemaValidationError` objects
-
-- **JsonSchemaValidationError**: Details about a specific validation error:
-  - `validationProcess`: The process where validation failed
-  - `property`: The property/field that failed validation
-  - `errorKey`: A key identifying the type of error
-  - `message`: Human-readable error message
-  - `value`: The invalid value (default empty string)
-
-The validation framework also includes a `Monoid` instance for `List[ValidationErrors]`, which allows errors from multiple validation steps to be combined while grouping them by asset ID.
-
-### User-Friendly Error Messages
+## User-Friendly Error Messages
 
 For each JSON schema file, there is a corresponding `.properties` file with the same base name that contains user-friendly error messages. The key in the properties file is formatted as `{property}.{errorKey}`, matching the property and errorKey from validation errors.
 
@@ -216,8 +259,7 @@ For example, with `closedRecord.json` schema:
           },
           "foi_exemption_asserted": {
             "type": "string"
-          },
-          // ...more properties...
+          }
         },
         "allOf": [
           {
@@ -235,8 +277,7 @@ For example, with `closedRecord.json` schema:
                 }
               }
             }
-          },
-          // ...more conditions...
+          }
         ]
       }
     }
@@ -265,7 +306,7 @@ When validation fails, the library looks up the appropriate error message using 
 
 This approach allows for customized, context-specific error messages that are more helpful to end users than generic JSON Schema validation errors.
 
-### Example usage
+## Example usage
 
 Below is a simplified example of how to use the `validate` API:
 
@@ -273,12 +314,8 @@ Below is a simplified example of how to use the `validate` API:
 import validation.Validation.validate
 import validation.{DataValidation, Data, ValidationErrors}
 
+val dataLoader: DataValidation = ??? // load your data
 
-// Assume you have a dataLoader that loads your data as a ValidatedNel
-val dataLoader: DataValidation =
-...
-
-// Define your fail-fast and composed validations
 val failFastValidations: Seq[List[Data] => DataValidation] = Seq(
   // e.g. mapping keys, adding JSON, required field checks
 )
@@ -286,20 +323,42 @@ val composeValidations: Seq[List[Data] => DataValidation] = Seq(
   // e.g. schema validations, business rule checks
 )
 
-// Run validation
 val result = validate(dataLoader, failFastValidations, composeValidations)
 
 result match {
-  case cats.data.Validated.Valid(data) =>
-    println("Validation successful")
-  case cats.data.Validated.Invalid(errors) =>
-    println(s"Validation failed with ${errors.length} errors")
+  case cats.data.Validated.Valid(data) => println("Validation successful")
+  case cats.data.Validated.Invalid(errors) => println(s"Validation failed with ${errors.length} errors")
 }
 ```
 
-This approach allows you to flexibly compose different validation steps, separating those that should stop processing immediately from those that can be accumulated and reported together.
+A tiny custom validation example:
 
-For an example, see [`CSVFileValidationApp`](src/main/scala/examples/CSVFileValidationApp.scala).
+```scala
+import cats.data.Validated
+import cats.data.ValidatedNel
+import cats.syntax.all._
+
+// Ensures every record has a non-empty "file_path"
+def requireFilePath: List[Data] => DataValidation = { rows =>
+  val missing = rows.filter(r => r.data.get("file_path").forall(_.toString.trim.isEmpty))
+  if (missing.isEmpty) rows.validNel
+  else {
+    val errs = missing.flatMap { r =>
+      r.assetId.toList.map(id => ValidationErrors(id, Set(JsonSchemaValidationError(
+        validationProcess = "RequiredFields",
+        property = "file_path",
+        errorKey = "required",
+        message = "Must be provided",
+        value = ""
+      ))))
+    }
+    // collapse per-asset errors and return all rows as invalid
+    Validated.invalidNel(errs.reduce(_ |+| _))
+  }
+}
+```
+
+For a complete example, see [`CSVFileValidationApp`](src/main/scala/examples/CSVFileValidationApp.scala).
 
 ```scala
 import config.ValidationConfig.prepareValidationConfiguration
@@ -336,17 +395,38 @@ object CSVFileValidationApp extends App {
   val result = validate(dataLoader, failFastValidations, combiningValidations)
 
   result match {
-    case cats.data.Validated.Valid(data) =>
-      println("Validation successful")
-    case cats.data.Validated.Invalid(errors) =>
-      println(s"Validation failed with ${errors.length} errors")
+    case cats.data.Validated.Valid(data) => println("Validation successful")
+    case cats.data.Validated.Invalid(errors) => println(s"Validation failed with ${errors.length} errors")
   }
 }
 ```
 
-This example demonstrates how to configure, load, and validate CSV data using multiple JSON schemas. For more details, see the [examples](src/main/scala/examples) directory.
+## Small example: input and output
 
-### Configuration Loading
+Input row (conceptual):
+
+```json
+{
+  "Filepath": "a/b/c.txt",
+  "closure_type": "Closed",
+  "title_closed": true
+}
+```
+
+Expected validation outcome (friendly messages):
+
+```
+- file a/b/c.txt
+  - foi_exemption_asserted.type: Must be provided for a closed record
+  - closure_start_date.type: Must be provided for a closed record
+  - closure_period.type: Must be provided for a closed record
+  - foi_exemption_code.type: Must be provided for a closed record
+  - title_alternate.type: Must not be empty if title is closed
+```
+
+These messages are resolved via `closedRecord.properties` based on the JSON Schema error keys.
+
+## Configuration Loading
 
 The `prepareValidationConfiguration` method in the [ValidationConfig](src/main/scala/config/ValidationConfig.scala) object is responsible for preparing the validation configuration using the provided config file, base schema, and alternate key. Here is the current method signature and a brief explanation:
 
@@ -376,16 +456,14 @@ The method returns a `ValidatorConfiguration` object.
 
 The `generateSchema` task is an SBT custom task designed to generate JSON schemas based on provided configurations. This task reads a list of JSON files, processes them, and outputs the modified schemas.
 
-The schema generated are copies with the original property names replaced with the alternate keys defined in the configuration file. 
+The schemas generated are copies with the original property names replaced with the alternate keys defined in the configuration file. 
 
-The task is defined in the [GenerateSchema](project/GenerateSchema.scala) object.
+The task is defined in the [CustomTasks](project/CustomTasks.scala) object.
 
-### Usage
+### Quick start
 
-To use the `generateSchema` task, follow these steps:
-
-1. **Configure the list of file names**:
-   Set the list of JSON file names that you want to process using the `fileNames` setting key.
-
-2. **Run the task**:
-   Execute the `sbt generateSchema` task from the console.
+- Prerequisites: Java 11+, SBT, Scala 3
+- Run tests: `sbt test`
+- Generate domain-flavoured schemas and case classes: `sbt generateSchema generateCaseClasses`
+- Run the CSV example app: `sbt "runMain examples.CSVFileValidationApp"`
+- Lambda handler example: see [`CSVFileValidationLambdaHandler`](src/main/scala/examples/CSVFileValidationLambdaHandler.scala)
