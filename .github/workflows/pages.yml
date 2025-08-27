@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: false # disabled; using gh-pages branch deployment instead
+    if: false # disabled; using gh-pages branch deployment instead.
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
