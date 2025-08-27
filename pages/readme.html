@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project README (static)</title>
+  <meta name="description" content="Rendered README for json-schema-validated (static HTML, no JS)" />
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 1.25rem; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    header { display:flex; align-items:baseline; justify-content:space-between; gap:.5rem; margin-bottom:.75rem; }
+    h1, h2, h3 { line-height: 1.2; }
+    h1 { font-size: 1.8rem; margin: 0; }
+    h2 { font-size: 1.35rem; margin-top: 1.25rem; }
+    h3 { font-size: 1.15rem; margin-top: 1rem; }
+    p { line-height: 1.55; }
+    .muted { opacity: .75; font-size: .95rem; }
+    pre { background: #0000000b; padding: .75rem; border-radius: 6px; overflow: auto; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: .95em; }
+    table { border-collapse: collapse; width: 100%; margin: .75rem 0; }
+    th, td { border: 1px solid #8884; padding: .35rem .5rem; }
+    nav a { margin-right: .75rem; }
+    .note { padding:.5rem .6rem; border-left: 4px solid #8884; background:#00000008; border-radius:4px; }
+    ul { margin: .4rem 0 .6rem 1.2rem; }
+    ol { margin: .4rem 0 .6rem 1.2rem; }
+    hr { border: none; border-top: 1px solid #8884; margin: 1rem 0; }
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Project README</h1>
+      <nav class="muted">
+        <a href="./readme.html">README</a>
+        <a href="./schema-domain-map.html">Schema ↔ Domain map</a>
+        <a href="./metadata-template.html">Metadata template viewer</a>
+      </nav>
+    </header>
+
+    <article id="content">
+      <h1 id="json-schema-validated">json-schema-validated</h1>
+      <p>A data validation library for Scala that leverages JSON Schema for schema-based validation and uses <a href="https://typelevel.org/cats/datatypes/validated.html">Cats Data Validated</a> for functional error accumulation and reporting.</p>
+
+      <h2 id="features">Features</h2>
+      <ul>
+        <li>Validate data against one or many JSON Schemas (NetworkNT JSON Schema Validator)</li>
+        <li>Compose validations as functions: fail-fast chains and parallel error-accumulating checks</li>
+        <li>Map between domain-specific headers and canonical property names via config</li>
+        <li>User-friendly, per-schema error messages using .properties files</li>
+        <li>Optional conditional rules with JSON Schema if/then</li>
+        <li>SBT task to generate case classes</li>
+        <li>Examples for CSV data, including a Lambda-friendly handler</li>
+      </ul>
+
+      <h2 id="toc">Table of Contents</h2>
+      <ul>
+        <li><a href="#justification">Justification</a></li>
+        <li><a href="#how-it-works-60-seconds">How it works (60 seconds)</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#schema">Schema</a></li>
+        <li><a href="#user-friendly-error-messages">User-Friendly Error Messages</a></li>
+        <li><a href="#example-usage">Example usage</a></li>
+        <li><a href="#small-example-input-and-output">Small example: input and output</a></li>
+        <li><a href="#configuration-loading">Configuration Loading</a></li>
+        <li><a href="#quick-start">Quick start</a></li>
+        <li><a href="#schema-domain-map-page">Schema ↔ Domain map page</a></li>
+        <li><a href="#metadata-template-viewer-page">Metadata template viewer page</a></li>
+      </ul>
+
+      <h2 id="justification">Justification</h2>
+      <p>Needed to support the transfer of data to The National Archives (TNA)</p>
+      <ul>
+        <li>The data could be in different formats (CSV, JSON, etc.)</li>
+        <li>The data must be validated so that it can be used in the TNA system</li>
+        <li>The data schema must be defined in a central location</li>
+        <li>The schema should be defined once but should be allowed to be used for different domains</li>
+        <li>Multiple schemas should be allowed to be used for the same data</li>
+        <li>Error messages should be user-friendly and easy to understand</li>
+        <li>The schema and mapping to domain help pages should be generated from the schema</li>
+        <li>Custom validations should be allowed and easy to define</li>
+      </ul>
+      <p>JSON schema can be used to define the data schema</p>
+      <p><strong>The validation should be done in a way that is easy to understand and maintain</strong></p>
+      <p>Scala can be used to satisfy this requirement</p>
+
+      <h3 id="validation-as-composable">Validation as composable function lists</h3>
+      <ul>
+        <li>Each validation is a function of the form <code>List[Data] =&gt; DataValidation</code> where <code>DataValidation = ValidatedNel[ValidationErrors, List[Data]]</code>.</li>
+        <li>You typically organise validations into two pipelines:
+          <ul>
+            <li>Fail-fast sequence: run steps in order, short-circuiting on the first failure (using <code>andThen</code>).</li>
+            <li>Parallel/accumulating: run independent validations over the same input and accumulate all errors into a single <code>ValidatedNel</code>.</li>
+          </ul>
+        </li>
+      </ul>
+      <pre><code class="language-scala">import cats.data.ValidatedNel
+import cats.syntax.all._
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+import validation.error.CSVValidationResult.dataValidationResultMonoid
+
+// type DataValidation = ValidatedNel[ValidationErrors, List[Data]]
+
+def runFailFast(
+  loadedData: DataValidation,
+  steps: Seq[List[Data] =&gt; DataValidation]
+): DataValidation =
+  steps.foldLeft(loadedData)((acc, f) =&gt; acc.andThen(f))
+
+def runComposed(
+  data: List[Data],
+  steps: Seq[List[Data] =&gt; DataValidation]
+): DataValidation =
+  // run validations in parallel and combine their Validated results (accumulating errors)
+  // NOTE: each schema validation converts raw validator messages into user-friendly
+  // JsonSchemaValidationError using schema .properties (see ValidatedSchema.schemaValidated)
+  steps.map(f =&gt; IO(f(data))).parSequence.map(_.combineAll).unsafeRunSync()
+
+val result: DataValidation =
+  runFailFast(dataLoader, failFastValidations).andThen(ds =&gt; runComposed(ds, composeValidations))
+</code></pre>
+      <p>This mirrors Validation.scala: fail-fast via <code>andThen</code>, then parallel composition with IO and <code>combineAll</code>. Crucially, each schema validation (e.g. <code>ValidatedSchema.schemaValidated</code>) performs the error-to-message mapping using the schema’s <code>.properties</code> file; the Monoid then simply combines these already user-friendly errors.</p>
+
+      <h2 id="how-it-works-60-seconds">How it works (60 seconds)</h2>
+      <ol>
+        <li>Load data as a <code>ValidatedNel</code> of <code>List[Data]</code> (e.g. from CSV).</li>
+        <li>Apply fail-fast validations (e.g. header mapping, JSON enrichment) via <code>andThen</code>.</li>
+        <li>Apply parallel/composed validations (e.g. multiple JSON Schemas, business rules) and accumulate errors.</li>
+        <li>Error messages are mapped to user-friendly text inside each schema validation using the schema’s <code>.properties</code>; the Monoid only combines already-mapped errors.</li>
+        <li>Return either validated data or an accumulated non-empty list of errors, grouped per asset.</li>
+      </ol>
+
+      <h2 id="architecture">Architecture</h2>
+      <pre><code>           +------------------+
+           |   Source files   |  (CSV, JSON, ...)
+           +---------+--------+
+                     |
+                     v
+            +--------+---------+
+            |     Data loader  |  (parses to List[Data])
+            +--------+---------+
+                     |
+                     v
+         +-----------+--------------------+
+         |  Fail-fast validations (andThen)|  e.g. key mapping, JSON enrichment
+         +-----------+--------------------+
+                     |
+                     v
+         +-----------+----------------------------------------------+
+         |  Parallel/composed validations                           |
+         |  - JSON Schema + business rules                          |
+         |  - Error mapping to user-friendly messages (per schema)  |
+         +-----------+----------------------------------------------+
+                     |
+                     v
+                 Validated result
+</code></pre>
+
+      <h2 id="overview">Overview</h2>
+      <p><code>json-schema-validated</code> is a Scala-based data validation library for validating data using JSON Schema and functional programming principles. It loads data as key-value pairs, supports multiple domains, and validates using <a href="http://github.com/networknt/json-schema-validator">NetworkNT JSON Schema Validator</a> and <a href="https://typelevel.org/cats/datatypes/validated.html">Cats Data Validated</a> for robust error handling and composability.</p>
+      <p>The JSON schema validation is performed using <a href="http://github.com/networknt/json-schema-validator">NetworkNT JSON Schema Validator</a></p>
+      <p>Conditional validation is supported by the use of multiple schemas</p>
+      <p>Custom user-friendly messages are supported by the use of properties files with similar names as the schema</p>
+
+      <h2 id="schema">Schema</h2>
+      <p>Two fundamental schemas are used in the validation process</p>
+      <ul>
+        <li><a href="../src/main/resources/organisationBase.json">The base JSON schema</a> defining all data and their types.</li>
+        <li><a href="../src/main/resources/config.json">Configuration JSON schema</a> that can be used to <a href="../src/main/scala/validation/PackageClasses.scala">define</a>
+          <ul>
+            <li>Alternate keys for mapping between domains</li>
+            <li>Domain-specific validations that can't be defined using JSON schema</li>
+          </ul>
+        </li>
+      </ul>
+      <p>Here is a snippet from <code>organisationBase.json</code>:</p>
+      <pre><code class="language-json">{
+  "$id": "/schema/baseSchema",
+  "type": "object",
+  "properties": {
+    "foi_exemption_code": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "$ref": "classpath:/definitions.json#/definitions/foi_codes"
+      }
+    },
+    "file_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "file_path": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": {
+    "description": "Additional properties would be defined here"
+  }
+}
+</code></pre>
+
+      <p>Here is a snippet from <code>config.json</code>:</p>
+      <pre><code class="language-json">{
+  "$id": "/schema/config",
+  "type": "object",
+  "configItems": [
+    {
+      "key": "file_path",
+      "domainKeys": [
+        { "domain": "TDRMetadataUpload", "domainKey": "Filepath" },
+        { "domain": "TDRDataLoad", "domainKey": "Filepath" }
+      ]
+    },
+    {
+      "key": "foi_exemption_code",
+      "domainKeys": [
+        { "domain": "TDRMetadataUpload", "domainKey": "FOI exemption code" }
+      ]
+    },
+    {
+      "key": "description",
+      "domainKeys": [
+        { "domain": "TDRMetadataUpload", "domainKey": "Description" }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+      <p>One or many JSON schemas can be used to validate the data with error messages defined for each schema.</p>
+      <p>Here is a snippet from <code>closedRecord.json</code> schema that could also be applied:</p>
+      <pre><code class="language-json">{
+  "$id": "/schema/closed-closure",
+  "type": "object",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "closure_type": { "const": "Closed" }
+        }
+      },
+      "then": {
+        "properties": {
+          "closure_start_date": { "type": "string" },
+          "closure_period": { "type": "integer" },
+          "foi_exemption_code": { "type": "array" },
+          "foi_exemption_asserted": { "type": "string" },
+          "title_closed": { "type": "boolean" },
+          "description_closed": { "type": "boolean" }
+        }
+      }
+    }
+  ]
+}
+</code></pre>
+      <p><strong>How conditional validation works:</strong> This schema uses the <code>if</code> and <code>then</code> keywords to apply additional validation rules only when the <code>closure_type</code> property is set to <code>"Closed"</code>. If <code>closure_type</code> is not <code>"Closed"</code>, these extra requirements are not enforced. This allows the schema to dynamically require or validate fields based on the value of another field, supporting context-sensitive validation logic.</p>
+
+      <h2 id="example-usage">Example usage</h2>
+      <p>The main API for validation is the <code>validate</code> method in the <a href="../src/main/scala/validation/Validation.scala"><code>Validation</code></a> object. This method allows you to apply a sequence of fail-fast validations (which stop at the first failure) and a sequence of composed validations (which are run in parallel and whose results are combined).</p>
+      <h3 id="validate-signature">The <code>validate</code> method signature</h3>
+      <pre><code class="language-scala">def validate(
+  dataLoader: DataValidation,
+  failFastValidations: Seq[List[Data] =&gt; DataValidation],
+  composeValidations: Seq[List[Data] =&gt; DataValidation]
+): DataValidation
+</code></pre>
+      <ul>
+        <li><strong>dataLoader</strong>: The initial data to validate, typically loaded and parsed from a file, wrapped in a <code>ValidatedNel</code>.</li>
+        <li><strong>failFastValidations</strong>: A sequence of validations that are applied in order; if any fail, validation stops immediately.</li>
+        <li><strong>composeValidations</strong>: A sequence of validations that are run after the fail-fast validations, in parallel, and their results are combined.</li>
+      </ul>
+      <div class="note"><strong>Note:</strong> <code>DataValidation</code> is a type alias for <code>ValidatedNel[ValidationErrors, List[Data]]</code>.</div>
+
+      <h3 id="key-types">Key Types</h3>
+      <ul>
+        <li><strong>Data</strong>: Represents a single data item or record to be validated. It's a case class containing: row_number, assetId, data map, json string.</li>
+        <li><strong>ValidationErrors</strong>: Represents validation errors for a specific asset: assetId and Set of JsonSchemaValidationError.</li>
+        <li><strong>JsonSchemaValidationError</strong>: Details about a specific validation error: validationProcess, property, errorKey, message, value.</li>
+      </ul>
+      <p>The validation framework also includes a <code>Monoid</code> instance for <code>List[ValidationErrors]</code>, which allows errors from multiple validation steps to be combined while grouping them by asset ID.</p>
+
+      <h2 id="user-friendly-error-messages">User-Friendly Error Messages</h2>
+      <p>For each JSON schema file, there is a corresponding <code>.properties</code> file with the same base name that contains user-friendly error messages. The key in the properties file is formatted as <code>{property}.{errorKey}</code>, matching the property and errorKey from validation errors.</p>
+      <p>When validation fails, the library looks up the appropriate error message using the property name and error key. For example, if the <code>title_closed</code> field fails validation with an error key of <code>const</code>, the error message "Must be Yes if an alternate is provided" will be displayed to the user.</p>
+
+      <h2 id="example-usage-2">Example usage</h2>
+      <pre><code class="language-scala">import validation.Validation.validate
+import validation.{DataValidation, Data, ValidationErrors}
+
+val dataLoader: DataValidation = ??? // load your data
+
+val failFastValidations: Seq[List[Data] =&gt; DataValidation] = Seq(
+  // e.g. mapping keys, adding JSON, required field checks
+)
+val composeValidations: Seq[List[Data] =&gt; DataValidation] = Seq(
+  // e.g. schema validations, business rule checks
+)
+
+val result = validate(dataLoader, failFastValidations, composeValidations)
+
+result match {
+  case cats.data.Validated.Valid(data) =&gt; println("Validation successful")
+  case cats.data.Validated.Invalid(errors) =&gt; println(s"Validation failed with ${errors.length} errors")
+}
+</code></pre>
+
+      <h2 id="small-example-input-and-output">Small example: input and output</h2>
+      <p>Input row (conceptual):</p>
+      <pre><code class="language-json">{
+  "Filepath": "a/b/c.txt",
+  "closure_type": "Closed",
+  "title_closed": true
+}
+</code></pre>
+      <p>Expected validation outcome (friendly messages):</p>
+      <pre><code>- file a/b/c.txt
+  - foi_exemption_asserted.type: Must be provided for a closed record
+  - closure_start_date.type: Must be provided for a closed record
+  - closure_period.type: Must be provided for a closed record
+  - foi_exemption_code.type: Must be provided for a closed record
+  - title_alternate.type: Must not be empty if title is closed
+</code></pre>
+
+      <h2 id="configuration-loading">Configuration Loading</h2>
+      <pre><code class="language-scala">def prepareValidationConfiguration(
+  configFile: String,
+  baseSchema: String,
+  alternateKey: Option[String]
+): ValidatorConfiguration = {
+  val csvConfigurationReader = for {
+    altHeaderToPropertyMapper &lt;- Reader(ValidationConfig.domainKeyToPropertyMapper)
+    propertyToAltHeaderMapper &lt;- Reader(ValidationConfig.propertyToDomainKeyMapper)
+    valueMapper &lt;- Reader(ValidationConfig.stringValueMapper)
+  } yield ValidatorConfiguration(altHeaderToPropertyMapper, propertyToAltHeaderMapper, valueMapper)
+  csvConfigurationReader.run(ConfigParameters(configFile, alternateKey, baseSchema, decodeConfig(configFile)))
+}
+</code></pre>
+      <ul>
+        <li><strong>configFile</strong>: Path to the configuration file.</li>
+        <li><strong>baseSchema</strong>: Path to the base JSON schema file.</li>
+        <li><strong>alternateKey</strong>: Optional alternate key for domain mapping.</li>
+        <li><strong>ValidatorConfiguration</strong>: Combines the above functions into a <code>ValidatorConfiguration</code> object.</li>
+      </ul>
+      <p>The method returns a <code>ValidatorConfiguration</code> object.</p>
+
+      <h2 id="quick-start">Quick start</h2>
+      <ul>
+        <li>Prerequisites: Java 11+, SBT, Scala 3</li>
+        <li>Run tests: <code>sbt test</code></li>
+        <li>Generate case classes: <code>sbt generateCaseClasses</code></li>
+        <li>Run the CSV example app: <code>sbt "runMain examples.CSVFileValidationApp"</code></li>
+        <li>Lambda handler example: see <a href="../src/main/scala/examples/CSVFileValidationLambdaHandler.scala">CSVFileValidationLambdaHandler</a></li>
+      </ul>
+
+      <h2 id="schema-domain-map-page">Schema ↔ Domain map page</h2>
+      <p>A static page that visualises the mapping between base schema properties and per-domain headers is available at:</p>
+      <ul>
+        <li><a href="./schema-domain-map.html">pages/schema-domain-map.html</a></li>
+      </ul>
+
+      <h2 id="metadata-template-viewer-page">Metadata template viewer page</h2>
+      <p>A static page that renders the National Archives metadata template in a user-friendly table (Name, Details, Format, Example):</p>
+      <ul>
+        <li><a href="./metadata-template.html">pages/metadata-template.html</a></li>
+      </ul>
+    </article>
+  </div>
+</body>
+</html>
