@@ -21,7 +21,6 @@ A data validation library for Scala that leverages JSON Schema for schema-based 
 - [Example usage](#example-usage)
 - [Small example: input and output](#small-example-input-and-output)
 - [Configuration Loading](#configuration-loading)
-- [generateSchema Task](#generateschema-task)
 - [Quick start](#quick-start)
 
 ## Justification
@@ -452,18 +451,10 @@ def prepareValidationConfiguration(
 
 The method returns a `ValidatorConfiguration` object.
 
-### generateSchema Task
-
-The `generateSchema` task is an SBT custom task designed to generate JSON schemas based on provided configurations. This task reads a list of JSON files, processes them, and outputs the modified schemas.
-
-The schemas generated are copies with the original property names replaced with the alternate keys defined in the configuration file. 
-
-The task is defined in the [CustomTasks](project/CustomTasks.scala) object.
-
 ### Quick start
 
 - Prerequisites: Java 11+, SBT, Scala 3
 - Run tests: `sbt test`
-- Generate domain-flavoured schemas and case classes: `sbt generateSchema generateCaseClasses`
+- Generate case classes: `sbt generateCaseClasses`
 - Run the CSV example app: `sbt "runMain examples.CSVFileValidationApp"`
 - Lambda handler example: see [`CSVFileValidationLambdaHandler`](src/main/scala/examples/CSVFileValidationLambdaHandler.scala)
