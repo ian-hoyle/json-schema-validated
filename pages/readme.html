@@ -79,7 +79,7 @@
         <li><a href="#schema">Schema</a></li>
         <li><a href="#user-friendly-error-messages">User-Friendly Error Messages</a></li>
         <li><a href="#example-usage">Example usage</a></li>
-        <li><a href="#small-example-input-and-output">Small example: input and output</a></li>
+        <li><a href="#user-requirement">User requirement</a></li>
         <li><a href="#configuration-loading">Configuration Loading</a></li>
         <li><a href="#quick-start">Quick start</a></li>
         <li><a href="#schema-domain-map-page">Schema ↔ Domain map page</a></li>
@@ -98,6 +98,127 @@
         <li>The schema and mapping to domain help pages should be generated from the schema</li>
         <li>Custom validations should be allowed and easy to define</li>
       </ul>
+
+      <h2 id="user-requirement">User requirement</h2>
+      <p>Input data (CSV table):</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Filepath</th>
+            <th>Filename</th>
+            <th>Date last modified</th>
+            <th>Date of the record</th>
+            <th>Description</th>
+            <th>Former reference</th>
+            <th>Closure status</th>
+            <th>Closure Start Date</th>
+            <th>Closure Period</th>
+            <th>FOI exemption code</th>
+            <th>FOI decision asserted</th>
+            <th>Is the title sensitive for the public?</th>
+            <th>Add alternative title without the file extension</th>
+            <th>Is the description sensitive for the public?</th>
+            <th>Alternative description</th>
+            <th>Language</th>
+            <th>Translated title of record</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>test/test1.txt</td>
+            <td>test1.txt</td>
+            <td>2024-03-26</td>
+            <td></td>
+            <td>hello</td>
+            <td></td>
+            <td>Closed</td>
+            <td>1990-01-01</td>
+            <td>33</td>
+            <td>27(1)|27(2)</td>
+            <td>1990-01-01</td>
+            <td>Yes</td>
+            <td>title</td>
+            <td>No</td>
+            <td></td>
+            <td>English</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>test/test3.txt</td>
+            <td></td>
+            <td>2024-03-26</td>
+            <td></td>
+            <td>eee</td>
+            <td></td>
+            <td>Open</td>
+            <td></td>
+            <td></td>
+            <td>27(1)|27(2)</td>
+            <td></td>
+            <td>No</td>
+            <td>not allowed alt title</td>
+            <td>No</td>
+            <td>wrong</td>
+            <td>English</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>test/test2.txt</td>
+            <td>test2.txt</td>
+            <td>2024-03-26</td>
+            <td></td>
+            <td>www</td>
+            <td></td>
+            <td>OpenX</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>No</td>
+            <td></td>
+            <td>No</td>
+            <td></td>
+            <td>English</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Expected validation outcome (JSON):</p>
+      <pre><code class="language-json">[
+  {
+    "assetId" : "test/test2.txt",
+    "errors" : [
+      {
+        "validationProcess" : "organisationBase.json",
+        "property" : "Closure status",
+        "errorKey" : "enum",
+        "message" : "Must be either Open or Closed",
+        "value" : "OpenX"
+      }
+    ]
+  },
+  {
+    "assetId" : "test/test3.txt",
+    "errors" : [
+      {
+        "validationProcess" : "openRecord.json",
+        "property" : "Add alternative title without the file extension",
+        "errorKey" : "type",
+        "message" : "Must be empty for an open record",
+        "value" : "not allowed alt title"
+      },
+      {
+        "validationProcess" : "openRecord.json",
+        "property" : "Alternative description",
+        "errorKey" : "type",
+        "message" : "Must be empty for an open record",
+        "value" : "wrong"
+      }
+    ]
+  }
+]
+</code></pre>
+
       <p>JSON schema can be used to define the data schema</p>
       <p><strong>The validation should be done in a way that is easy to understand and maintain</strong></p>
       <p>Scala can be used to satisfy this requirement</p>
@@ -326,23 +447,6 @@ result match {
   case cats.data.Validated.Valid(data) =&gt; println("Validation successful")
   case cats.data.Validated.Invalid(errors) =&gt; println(s"Validation failed with ${errors.length} errors")
 }
-</code></pre>
-
-      <h2 id="small-example-input-and-output">Small example: input and output</h2>
-      <p>Input row (conceptual):</p>
-      <pre><code class="language-json">{
-  "Filepath": "a/b/c.txt",
-  "closure_type": "Closed",
-  "title_closed": true
-}
-</code></pre>
-      <p>Expected validation outcome (friendly messages):</p>
-      <pre><code>- file a/b/c.txt
-  - FOI decision asserted: Must be provided for a closed record
-  - Closure Start Date: Must be provided for a closed record
-  - Closure status: Must be provided for a closed record
-  - FOI exemption code: Must be provided for a closed record
-  - Add alternative title without the file extension: Must not be empty if title is closed
 </code></pre>
 
       <h2 id="configuration-loading">Configuration Loading</h2>
