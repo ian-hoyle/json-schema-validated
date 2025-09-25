@@ -1,7 +1,6 @@
 package config
 
 import cats.data.Reader
-import cats.implicits.*
 import io.circe.generic.auto.*
 import io.circe.parser.decode
 import ujson.{Arr, Obj, Value}
@@ -32,7 +31,7 @@ object ValidationConfig:
   ): ValidatorConfiguration = {
 
     val csvConfigurationReader = for {
-      altHeaderToPropertyMapper <- Reader(domainPropertyToBasePropertyMapper) // expects single-arg version
+      altHeaderToPropertyMapper <- Reader(domainPropertyToBasePropertyMapper)
       propertyToAltHeaderMapper <- Reader(domainBasePropertyToPropertyMapper)
       valueMapper               <- Reader(stringValueMapper)
     } yield ValidatorConfiguration(
@@ -64,7 +63,7 @@ object ValidationConfig:
     }.toMap
     (domain: String) => domainToMapper.getOrElse(domain, (s: String) => s)
 
-  def domainKeyToPropertyMapper(parameters: ConfigParameters, domainVal: String): String => String =
+  private def domainKeyToPropertyMapper(parameters: ConfigParameters, domainVal: String): String => String =
     val configMap: Map[String, String] =
       parameters.jsonConfig.configItems.foldLeft(Map[String, String]())((acc, item) => {
         item.domainKeys match
@@ -76,7 +75,7 @@ object ValidationConfig:
       })
     (x: String) => configMap.getOrElse(x, x)
 
-  def propertyToDomainKeyMapper(parameters: ConfigParameters, domainVal: String): String => String =
+  private def propertyToDomainKeyMapper(parameters: ConfigParameters, domainVal: String): String => String =
     val configMap: Map[String, String] =
       parameters.jsonConfig.configItems.foldLeft(Map[String, String]())((acc, item) => {
         item.domainKeys match
