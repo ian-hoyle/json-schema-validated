@@ -9,11 +9,6 @@ import validation.{DataValidation, Data}
 import java.text.SimpleDateFormat
 import java.util.{Date, UUID}
 
-object FileError extends Enumeration {
-  type FileError = Value
-  val UTF_8, INVALID_CSV, ROW_VALIDATION, SCHEMA_REQUIRED, DUPLICATE_HEADER, SCHEMA_VALIDATION, UNKNOWN, None = Value
-}
-
 case class JsonSchemaValidationError(
     validationProcess: String,
     property: String,

@@ -58,6 +58,21 @@ class ValidatedSchemaTest extends AnyFunSuite:
     errors.head.errors.head.message shouldBe "Must be a pipe delimited list of valid FOI codes, (eg. 31|33). Please see the guidance for more detail on valid codes"
   }
 
+  test("test schema with invalid valid json") {
+
+    val json =
+      """
+         {
+              "foi_exemption_code": ["23", "299"]
+         }
+         """.stripMargin
+
+    val validationResult: DataValidation =
+      ValidatedSchema.validateJson("organisationBase.json", json)
+    val errors = testIsInvalid(validationResult)
+    errors.head.errors.head.message shouldBe "Must be a pipe delimited list of valid FOI codes, (eg. 31|33). Please see the guidance for more detail on valid codes"
+  }
+
   def testIsValid(e: DataValidation): List[Data] = {
     e match {
       case Validated.Valid(data) => data

@@ -123,6 +123,11 @@ object ValidatedSchema:
     properties.getProperty(messageOption.key, alternative)
   }
 
+  def validateJson(schema: String, json: String): DataValidation = {
+    val data = Data(None, None, Map.empty[String, Any], Some(json))
+    schemaValidated(schema)(List(data))
+  }
+
   private def getLoadedSchema(schemaFile: String): JsonSchema = {
     loadedSchema.get(schemaFile) match {
       case Some(schema) => schema
