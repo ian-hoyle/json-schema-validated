@@ -13,8 +13,8 @@ case class Data(
 )
 
 case class ValidatorConfiguration(
-    altInToKey: String => String => String,
-    inputAlternateKey: String => String => String,
+    domainKeyToProperty: String => String => String,
+    propertyToDomainKey: String => String => String,
     valueMapper: (String, String) => Any
 )
 

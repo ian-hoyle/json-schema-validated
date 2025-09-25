@@ -75,9 +75,9 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       configuration: ValidatorConfiguration
   ): List[List[Data] => DataValidation] = {
     List(
-      mapKeys(configuration.altInToKey("TDRMetadataUpload")),
+      mapKeys(configuration.domainKeyToProperty("TDRMetadataUpload")),
       addJsonForValidation(configuration.valueMapper),
-      validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey("TDRMetadataUpload"))
+      validateSchemaSingleRow(parameters.requiredSchema, configuration.propertyToDomainKey("TDRMetadataUpload"))
     )
   }
 
@@ -85,6 +85,6 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       schemas: List[String],
       configuration: ValidatorConfiguration
   ): List[List[Data] => DataValidation] = {
-    generateSchemaValidatedList(schemas, configuration.inputAlternateKey("TDRMetadataUpload"))
+    generateSchemaValidatedList(schemas, configuration.propertyToDomainKey("TDRMetadataUpload"))
   }
 }

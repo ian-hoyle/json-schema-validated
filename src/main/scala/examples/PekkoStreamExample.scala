@@ -50,17 +50,17 @@ object PekkoStreamExample {
 
     val startTime = System.currentTimeMillis
     val processedData: Future[Validated[NonEmptyList[ValidationErrors], List[Data]]] = csvSource
-      .map(row => mapKeys(configuration.altInToKey("TDRMetadataUpload"))(List(row)))
+      .map(row => mapKeys(configuration.domainKeyToProperty("TDRMetadataUpload"))(List(row)))
       .map(row => row andThen addJsonForValidation(configuration.valueMapper))
       .map(row =>
         row andThen validateSchemaSingleRow(
           parameters.requiredSchema,
-          configuration.inputAlternateKey("TDRMetadataUpload")
+          configuration.propertyToDomainKey("TDRMetadataUpload")
         )
       )
       .mapAsync(20)(row =>
         Future(
-          row andThen composeMultipleValidated(parameters.schema, configuration.inputAlternateKey("TDRMetadataUpload"))
+          row andThen composeMultipleValidated(parameters.schema, configuration.propertyToDomainKey("TDRMetadataUpload"))
         )
       )
       .runFold(Validated.valid[NonEmptyList[ValidationErrors], List[Data]](List.empty)) { (acc, current) =>

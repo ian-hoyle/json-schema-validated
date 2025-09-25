@@ -46,7 +46,7 @@ object CSVFileValidationApp extends App {
   // Validations that can be combined and run after the fail-fast validations
   private val combiningValidations: List[List[Data] => DataValidation] =
     getCombiningValidations(parameters.schema, configuration)
-  private val customJsonValidation = CustomJsonValidation.validateClosureFields(configuration.inputAlternateKey("TDRMetadataUpload"))
+  private val customJsonValidation = CustomJsonValidation.validateClosureFields(configuration.propertyToDomainKey("TDRMetadataUpload"))
 
   private val startTime = System.currentTimeMillis
   private val result = validate(
@@ -70,7 +70,7 @@ private def getCombiningValidations(
     schemas: List[String],
     validatorConfiguration: ValidatorConfiguration
 ): List[List[Data] => DataValidation] = {
-  ValidatedSchema.generateSchemaValidatedList(schemas, validatorConfiguration.inputAlternateKey("TDRMetadataUpload"))
+  ValidatedSchema.generateSchemaValidatedList(schemas, validatorConfiguration.propertyToDomainKey("TDRMetadataUpload"))
 }
 
 private def getFailFastValidations(
@@ -78,10 +78,10 @@ private def getFailFastValidations(
     configuration: ValidatorConfiguration
 ): List[List[Data] => DataValidation] = {
   List(
-    mapKeys(configuration.altInToKey("TDRMetadataUpload")),
+    mapKeys(configuration.domainKeyToProperty("TDRMetadataUpload")),
     addJsonForValidation(configuration.valueMapper),
     DebugPrintFirstRow.printFirstRow,
-    validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey("TDRMetadataUpload"))
+    validateSchemaSingleRow(parameters.requiredSchema, configuration.propertyToDomainKey("TDRMetadataUpload"))
   )
 }
 
