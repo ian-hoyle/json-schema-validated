@@ -239,22 +239,22 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import validation.error.CSVValidationResult.dataValidationResultMonoid
 
-// type DataValidation = ValidatedNel[ValidationErrors, List[Data]]
+type DataValidation = ValidatedNel[ValidationErrors, List[Data]]
 
 def runFailFast(
   loadedData: DataValidation,
-  steps: Seq[List[Data] =&gt; DataValidation]
+  steps: Seq[List[Data] => DataValidation]
 ): DataValidation =
-  steps.foldLeft(loadedData)((acc, f) =&gt; acc.andThen(f))
+  steps.foldLeft(loadedData)((acc, f) => acc.andThen(f))
 
 def runComposed(
   data: List[Data],
-  steps: Seq[List[Data] =&gt; DataValidation]
+  steps: Seq[List[Data] => DataValidation]
 ): DataValidation =
-  steps.map(f =&gt; IO(f(data))).parSequence.map(_.combineAll).unsafeRunSync()
+  steps.map(f => IO(f(data))).parSequence.map(_.combineAll).unsafeRunSync()
 
 val result: DataValidation =
-  runFailFast(loadedData, failFastValidations).andThen(ds =&gt; runComposed(ds, composeValidations))
+  runFailFast(loadedData, failFastValidations).andThen(ds => runComposed(ds, composeValidations))
 </code></pre>
       <p>This mirrors Validation.scala: fail-fast via <code>andThen</code>, then parallel composition with IO and <code>combineAll</code>. Crucially, each schema validation (e.g. <code>ValidatedSchema.schemaValidated</code>) performs the error-to-message mapping using the schema’s <code>.properties</code> file; the Monoid then simply combines these already user-friendly errors.</p>
 
@@ -310,7 +310,7 @@ val result: DataValidation =
           </ul>
         </li>
       </ul>
-      <p>Here is a snippet from <code>organisationBase.json</code>:</p>
+      <p>Here is a snippet of a data type schema <code>organisationBase.json</code>:</p>
       <pre><code class="language-json">{
   "$id": "/schema/baseSchema",
   "type": "object",
@@ -343,6 +343,32 @@ val result: DataValidation =
   }
 }
 </code></pre>
+        <p>Here is a snippet of a conditional data schema <code>closedRecord.json</code> schema that could also be applied:</p>
+        <pre><code class="language-json">{
+  "$id": "/schema/closed-closure",
+  "type": "object",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "closure_type": { "const": "Closed" }
+        }
+      },
+      "then": {
+        "properties": {
+          "closure_start_date": { "type": "string" },
+          "closure_period": { "type": "integer" },
+          "foi_exemption_code": { "type": "array" },
+          "foi_exemption_asserted": { "type": "string" },
+          "title_closed": { "type": "boolean" },
+          "description_closed": { "type": "boolean" }
+        }
+      }
+    }
+  ]
+}
+</code></pre>
+        <p><strong>How conditional validation works:</strong> This schema uses the <code>if</code> and <code>then</code> keywords to apply additional validation rules only when the <code>closure_type</code> property is set to <code>"Closed"</code>. If <code>closure_type</code> is not <code>"Closed"</code>, these extra requirements are not enforced. This allows the schema to dynamically require or validate fields based on the value of another field, supporting context-sensitive validation logic.</p>
 
       <p>Here is a snippet from <code>config.json</code>:</p>
       <pre><code class="language-json">{
@@ -373,32 +399,6 @@ val result: DataValidation =
 </code></pre>
 
       <p>One or many JSON schemas can be used to validate the data with error messages defined for each schema.</p>
-      <p>Here is a snippet from <code>closedRecord.json</code> schema that could also be applied:</p>
-      <pre><code class="language-json">{
-  "$id": "/schema/closed-closure",
-  "type": "object",
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "closure_type": { "const": "Closed" }
-        }
-      },
-      "then": {
-        "properties": {
-          "closure_start_date": { "type": "string" },
-          "closure_period": { "type": "integer" },
-          "foi_exemption_code": { "type": "array" },
-          "foi_exemption_asserted": { "type": "string" },
-          "title_closed": { "type": "boolean" },
-          "description_closed": { "type": "boolean" }
-        }
-      }
-    }
-  ]
-}
-</code></pre>
-      <p><strong>How conditional validation works:</strong> This schema uses the <code>if</code> and <code>then</code> keywords to apply additional validation rules only when the <code>closure_type</code> property is set to <code>"Closed"</code>. If <code>closure_type</code> is not <code>"Closed"</code>, these extra requirements are not enforced. This allows the schema to dynamically require or validate fields based on the value of another field, supporting context-sensitive validation logic.</p>
 
       <h2 id="example-usage">Example usage</h2>
       <p>The main API for validation is the <code>validate</code> method in the <a href="../src/main/scala/validation/Validation.scala"><code>Validation</code></a> object. This method allows you to apply a sequence of fail-fast validations (which stop at the first failure) and a sequence of composed validations (which are run in parallel and whose results are combined).</p>

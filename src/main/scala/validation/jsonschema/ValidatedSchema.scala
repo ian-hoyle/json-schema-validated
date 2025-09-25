@@ -20,13 +20,10 @@ object ValidatedSchema:
   private lazy val loadedSchema = mutable.Map.empty[String, JsonSchema]
   private val propertiesMap     = mutable.Map.empty[String, Properties]
 
-  def validateSchemaSingleRow(schemaFile: Option[String], propertyToAlt: String => String)(
-      data: List[Data]
-  ): DataValidation =
-    schemaFile match {
-      case Some(schema) => schemaValidated(schema, propertyToAlt)(List(data.head)).map(_ => data)
-      case None         => data.valid
-    }
+  def validateJson(schema: String, json: String): DataValidation = {
+    val data = Data(None, None, Map.empty[String, Any], Some(json))
+    schemaValidated(schema)(List(data))
+  }
 
   /** Validates a list of `Data` against a JSON schema file.
     *
@@ -77,6 +74,14 @@ object ValidatedSchema:
       NonEmptyList.fromList[ValidationErrors](validationErrorsList.toSet.toList).get.invalid
   }
 
+  def validateSchemaSingleRow(schemaFile: Option[String], propertyToAlt: String => String)(
+      data: List[Data]
+  ): DataValidation =
+    schemaFile match {
+      case Some(schema) => schemaValidated(schema, propertyToAlt)(List(data.head)).map(_ => data)
+      case None         => data.valid
+    }
+
   private def convertSchemaValidationErrorToJSValidationError(
       schemaValidationMessages: Set[ValidationMessage],
       schemaFile: String,
@@ -121,11 +126,6 @@ object ValidatedSchema:
     )
 
     properties.getProperty(messageOption.key, alternative)
-  }
-
-  def validateJson(schema: String, json: String): DataValidation = {
-    val data = Data(None, None, Map.empty[String, Any], Some(json))
-    schemaValidated(schema)(List(data))
   }
 
   private def getLoadedSchema(schemaFile: String): JsonSchema = {
