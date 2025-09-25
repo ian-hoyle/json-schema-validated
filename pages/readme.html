@@ -129,6 +129,7 @@ sbt "runMain examples.CSVFileValidationApp" # Run CSV validation example</code><
         <li><a href="#api-reference">API Reference</a></li>
         <li><a href="#configuration">Configuration</a></li>
         <li><a href="#examples">Examples</a></li>
+        <li><a href="#generated-constants">Generated Constants</a></li>
         <li><a href="#additional-resources">Additional Resources</a></li>
       </ul>
 
@@ -417,60 +418,29 @@ file_path.minLength=File path cannot be empty</code></pre>
     valueMapper: (String, String) => Any
     )</code></pre>
 
-      <h2 id="examples">🚀 Examples</h2>
-
-      <h3 id="basic-usage">Basic Usage Pattern</h3>
-      <pre><code class="language-scala">import validation.Validation.validate
-import validation.{DataValidation, Data, ValidationErrors}
-
-// Load your data
-val dataLoader: DataValidation = loadCsvFile("data.csv")
-
-// Define validation pipelines
-val failFastValidations: Seq[List[Data] => DataValidation] = Seq(
-  validateHeaders,      // Ensure required headers exist
-  mapDomainKeys,       // Map domain-specific keys to canonical names
-  enrichWithJson       // Convert data to JSON for schema validation
-)
-
-val composeValidations: Seq[List[Data] => DataValidation] = Seq(
-  validateAgainstBaseSchema,     // Apply base data validation
-  validateBusinessRules,         // Apply conditional business logic
-  validateCrossFieldConstraints  // Check relationships between fields
-)
-
-// Execute validation
-val result = validate(dataLoader, failFastValidations, composeValidations)
-
-// Handle results
-result match {
-  case Valid(data) =>
-    println(s"✅ Validation successful! Processed ${data.length} records")
-  case Invalid(errors) =>
-    println(s"❌ Validation failed with ${errors.length} error groups")
-    errors.foreach(printErrorReport)
-}</code></pre>
-
-      <div class="quick-start">
-        <h3>🎮 Try It Now</h3>
-        <pre><code class="language-bash"># Clone and run examples
-git clone https://github.com/ian-hoyle/json-schema-validated.git
-cd json-schema-validated
-
-# Run comprehensive test suite
-sbt test
-
-# Generate case classes from schemas
-sbt generateCaseClasses
-
-# Run CSV validation example
-sbt "runMain examples.CSVFileValidationApp"
-
-# AWS Lambda handler example
-sbt "runMain examples.CSVFileValidationLambdaHandler"</code></pre>
+      <h2 id="generated-constants">🧬 Generated Constants</h2>
+      <p>The build defines two source-generation tasks (implemented as SBT auto plugins) that create type-safe constants you can use instead of raw string literals when referring to schema property names or domain identifiers. These are generated on every <code>compile</code> (they live under <code>target/…/src_managed</code>).</p>
+      <div class="note">
+        <strong>Why?</strong> Eliminates hard‑coded strings, reduces typo risk, and makes refactors (schema / domain changes) safer.
       </div>
+      <h3 id="base-schema-constants">1. Base Schema Property Constants</h3>
+      <ul>
+        <li><strong>Plugin:</strong> <code>BaseSchemaGeneratorPlugin</code></li>
+        <li><strong>Input:</strong> <code>src/main/resources/organisationBase.json</code> (top-level <code>properties</code> section)</li>
+        <li><strong>Output file:</strong> <code>target/scala-*/src_managed/main/generated/BaseSchema.scala</code></li>
+        <li><strong>Object:</strong> <code>validation.generated.BaseSchema</code></li>
+        <li><strong>Contents:</strong> One <code>final val</code> per JSON property (e.g. <code>file_path</code>, <code>foi_exemption_code</code>, <code>closure_type</code>)</li>
+      </ul>
+      <h3 id="config-domain-constants">2. Config Domain Constants</h3>
+      <ul>
+        <li><strong>Plugin:</strong> <code>DomainKeysGeneratorPlugin</code></li>
+        <li><strong>Input:</strong> <code>src/main/resources/config.json</code> (reads <code>configItems[].domainKeys[].domain</code>)</li>
+        <li><strong>Output file:</strong> <code>target/scala-*/src_managed/main/generated/ConfigDomains.scala</code></li>
+        <li><strong>Object:</strong> <code>validation.generated.ConfigDomains</code></li>
+        <li><strong>Contents:</strong> Distinct domains (e.g. <code>TDRMetadataUpload</code>, <code>TDRDataLoad</code>) as <code>final val</code> constants.</li>
+      </ul>
 
-      <h2 id="additional-resources">📋 Additional Resources</h2>
+       <h2 id="additional-resources">📋 Additional Resources</h2>
       <div class="feature-grid">
         <div class="feature-card">
           <h4>🗺️ Schema Domain Mapping</h4>
