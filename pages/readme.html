@@ -6,37 +6,94 @@
   <title>json-schema-validated</title>
   <meta name="description" content="A Scala data validation library using JSON Schema and Cats Validated for functional error handling" />
   <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 1.25rem; line-height: 1.6; }
+    :root {
+      color-scheme: light dark;
+      /* Base (light) theme tokens */
+      --bg: #ffffff;
+      --fg: #111827; /* slate-900 */
+      --muted-fg: #4b5563; /* slate-600 */
+      --border: #e2e8f0; /* slate-200 */
+      --border-strong: #d1d5db; /* slate-300 */
+      --card-bg: #f8fafc; /* slate-50 */
+      --card-fg: #1f2937; /* slate-800 */
+      --accent: #2563eb; /* blue-600 */
+      --accent-alt: #1e40af; /* blue-800 */
+      --accent-soft: #dbeafe; /* blue-100 */
+      --note-bg: #eff6ff; /* blue-50 */
+      --note-border: #3b82f6; /* blue-500 */
+      --warn-bg: #fffbeb; /* amber-50 */
+      --warn-border: #f59e0b; /* amber-500 */
+      --success-bg: #ecfdf5; /* emerald-50 */
+      --success-border: #10b981; /* emerald-500 */
+      --code-bg: #f1f5f9; /* slate-100 */
+      --pre-bg: #f8fafc; /* slate-50 */
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a; /* slate-950 */
+        --fg: #f1f5f9; /* slate-100 */
+        --muted-fg: #cbd5e1; /* slate-300 */
+        --border: #1e293b; /* slate-800 */
+        --border-strong: #334155; /* slate-700 */
+        --card-bg: #1e293b; /* slate-800 */
+        --card-fg: #f1f5f9; /* slate-100 */
+        --accent: #60a5fa; /* blue-400 */
+        --accent-alt: #93c5fd; /* blue-300 */
+        --accent-soft: #1e3a8a; /* blue-900 */
+        --note-bg: #1e3a8a; /* blue-900 */
+        --note-border: #3b82f6; /* blue-500 */
+        --warn-bg: #78350f; /* amber-900 (muted) */
+        --warn-border: #fbbf24; /* amber-400 */
+        --success-bg: #064e3b; /* emerald-900 */
+        --success-border: #34d399; /* emerald-400 */
+        --code-bg: #1e293b; /* slate-800 */
+        --pre-bg: #0f172a; /* slate-950 */
+      }
+      body { background: var(--bg); color: var(--fg); }
+      .feature-card code, code { background: #334155; color: #e2e8f0; }
+      /* High contrast for quick start in dark mode */
+      .quick-start { background: #1e3a8a; border-color: #3b82f6; color: var(--fg); }
+      .quick-start h3 { color: #93c5fd; }
+    }
+
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 1.25rem; line-height: 1.6; background: var(--bg); color: var(--fg); }
     .wrap { max-width: 1200px; margin: 0 auto; }
     header { display:flex; align-items:baseline; justify-content:space-between; gap:.5rem; margin-bottom:1.5rem; border-bottom: 1px solid #8884; padding-bottom: 1rem; }
     h1, h2, h3 { line-height: 1.2; }
-    h1 { font-size: 2.2rem; margin: 0; color: #2563eb; }
-    h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #1e40af; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
-    h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #1e40af; }
+    h1 { font-size: 2.2rem; margin: 0; color: var(--accent); }
+    h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: var(--accent-alt); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+    h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--accent-alt); }
     p { line-height: 1.65; margin-bottom: 1rem; }
-    .lead { font-size: 1.1rem; color: #4b5563; margin-bottom: 1.5rem; }
-    .muted { opacity: .75; font-size: .95rem; }
-    pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 8px; overflow: auto; margin: 1rem 0; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: .9em; background: #f1f5f9; padding: 0.2em 0.4em; border-radius: 3px; }
+    .lead { font-size: 1.1rem; color: var(--muted-fg); margin-bottom: 1.5rem; }
+    .muted { opacity: .85; font-size: .95rem; }
+    pre { background: var(--pre-bg); border: 1px solid var(--border-strong); padding: 1rem; border-radius: 8px; overflow: auto; margin: 1rem 0; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: .9em; background: var(--code-bg); padding: 0.2em 0.4em; border-radius: 3px; }
     pre code { background: none; padding: 0; }
     table { border-collapse: collapse; width: 100%; margin: 1rem 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    th, td { border: 1px solid #d1d5db; padding: .75rem; text-align: left; }
-    th { background: #f9fafb; font-weight: 600; }
-    nav a { margin-right: 1rem; text-decoration: none; color: #2563eb; font-weight: 500; }
-    nav a:hover { color: #1d4ed8; text-decoration: underline; }
-    .note { padding: 1rem; border-left: 4px solid #3b82f6; background: #eff6ff; border-radius: 6px; margin: 1rem 0; }
-    .warning { padding: 1rem; border-left: 4px solid #f59e0b; background: #fffbeb; border-radius: 6px; margin: 1rem 0; }
-    .success { padding: 1rem; border-left: 4px solid #10b981; background: #ecfdf5; border-radius: 6px; margin: 1rem 0; }
+    th, td { border: 1px solid var(--border-strong); padding: .75rem; text-align: left; }
+    th { background: var(--card-bg); font-weight: 600; color: var(--card-fg); }
+    nav a { margin-right: 1rem; text-decoration: none; color: var(--accent); font-weight: 500; }
+    nav a:hover { color: var(--accent-alt); text-decoration: underline; }
+    .note { padding: 1rem; border-left: 4px solid var(--note-border); background: var(--note-bg); border-radius: 6px; margin: 1rem 0; color: var(--fg); }
+    .warning { padding: 1rem; border-left: 4px solid var(--warn-border); background: var(--warn-bg); border-radius: 6px; margin: 1rem 0; color: var(--fg); }
+    .success { padding: 1rem; border-left: 4px solid var(--success-border); background: var(--success-bg); border-radius: 6px; margin: 1rem 0; color: var(--fg); }
     ul, ol { margin: .5rem 0 1rem 1.5rem; }
     li { margin-bottom: 0.5rem; }
-    hr { border: none; border-top: 2px solid #e5e7eb; margin: 2rem 0; }
-    a { color: #2563eb; text-decoration: none; }
-    a:hover { color: #1d4ed8; text-decoration: underline; }
-    .badge { display: inline-block; padding: 0.25rem 0.75rem; background: #dbeafe; color: #1e40af; border-radius: 1rem; font-size: 0.875rem; font-weight: 500; margin-right: 0.5rem; }
+    hr { border: none; border-top: 2px solid var(--border); margin: 2rem 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-alt); text-decoration: underline; }
+    .badge { display: inline-block; padding: 0.25rem 0.75rem; background: var(--accent-soft); color: var(--accent-alt); border-radius: 1rem; font-size: 0.875rem; font-weight: 500; margin-right: 0.5rem; }
     .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
-    .feature-card { padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa; }
-    .feature-card h4 { margin: 0 0 0.5rem 0; color: #1e40af; }
+    .feature-card { padding: 1.25rem 1.25rem 1rem; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--card-bg); color: var(--card-fg); position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .feature-card h4 { margin: 0 0 0.5rem 0; color: var(--accent-alt); font-size: 1.05rem; }
+    .feature-card p { margin: 0; font-size: .92rem; line-height: 1.4; }
+    .feature-card:focus-within, .feature-card:hover { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent); }
+
+    /* Improved contrast for forced dark mode scenarios (some mobile browsers) */
+    @media (max-width: 900px) and (prefers-color-scheme: dark) {
+      .feature-card { background: linear-gradient(145deg,#1e293b,#0f172a); }
+    }
 
     /* Images row for README visuals */
     .img-row { display:flex; gap:.75rem; align-items:stretch; margin: 2rem 0; }
@@ -58,6 +115,9 @@
       table { display: block; overflow-x: auto; white-space: nowrap; }
       .feature-grid { grid-template-columns: 1fr; }
       nav { margin-top: 0.5rem; }
+      .feature-card { padding: 1rem 1rem .85rem; }
+      .feature-card h4 { font-size: 1rem; }
+      .feature-card p { font-size: .95rem; }
     }
   </style>
 </head>
@@ -102,19 +162,19 @@ sbt "runMain examples.CSVFileValidationApp" # Run CSV validation example</code><
 
       <h2 id="why-json-schema-validated">Why json-schema-validated?</h2>
       <div class="feature-grid">
-        <div class="feature-card">
+        <div class="feature-card" tabindex="0">
           <h4>🎯 Schema-Driven Validation</h4>
           <p>Define your data structure once using JSON Schema and validate across multiple domains and formats.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" tabindex="0">
           <h4>🔧 Composable Validations</h4>
           <p>Build complex validation pipelines with fail-fast and parallel error-accumulating strategies.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" tabindex="0">
           <h4>💬 User-Friendly Errors</h4>
           <p>Automatic mapping to human-readable error messages using properties files for each schema.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" tabindex="0">
           <h4>🏗️ Functional Architecture</h4>
           <p>Leverages Cats Validated for type-safe error handling and functional composition patterns.</p>
         </div>
