@@ -315,7 +315,8 @@ val result: DataValidation =
       "if": {
         "properties": {
           "closure_type": { "const": "Closed" }
-        }
+        },
+        "required": ["closure_type"]
       },
       "then": {
         "required": ["closure_start_date", "closure_period"],
