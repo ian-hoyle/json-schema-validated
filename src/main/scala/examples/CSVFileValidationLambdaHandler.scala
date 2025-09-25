@@ -10,9 +10,10 @@ import io.circe.parser.decode
 import io.circe.syntax.*
 import config.ValidationConfig.prepareValidationConfiguration
 import datalaoader.CSVLoader.loadCSVData
+import validation.generated.ConfigDomains.TDRMetadataUpload
 import validation.jsonschema.ValidationDataUtils.*
 import validation.jsonschema.ValidatedSchema.{generateSchemaValidatedList, validateSchemaSingleRow}
-import validation.{DataValidation, Parameters, Data, Validation, ValidatorConfiguration}
+import validation.{Data, DataValidation, Parameters, Validation, ValidatorConfiguration}
 
 import scala.jdk.CollectionConverters.*
 
@@ -75,9 +76,9 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       configuration: ValidatorConfiguration
   ): List[List[Data] => DataValidation] = {
     List(
-      mapKeys(configuration.domainKeyToProperty("TDRMetadataUpload")),
+      mapKeys(configuration.domainKeyToProperty(TDRMetadataUpload)),
       addJsonForValidation(configuration.valueMapper),
-      validateSchemaSingleRow(parameters.requiredSchema, configuration.propertyToDomainKey("TDRMetadataUpload"))
+      validateSchemaSingleRow(parameters.requiredSchema, configuration.propertyToDomainKey(TDRMetadataUpload))
     )
   }
 
@@ -85,6 +86,6 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       schemas: List[String],
       configuration: ValidatorConfiguration
   ): List[List[Data] => DataValidation] = {
-    generateSchemaValidatedList(schemas, configuration.propertyToDomainKey("TDRMetadataUpload"))
+    generateSchemaValidatedList(schemas, configuration.propertyToDomainKey(TDRMetadataUpload))
   }
 }

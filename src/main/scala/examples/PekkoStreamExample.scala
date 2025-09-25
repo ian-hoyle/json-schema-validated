@@ -9,10 +9,11 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.scaladsl.*
 import validation.error.ValidationErrors
+import validation.generated.ConfigDomains.TDRMetadataUpload
 import validation.jsonschema.ValidationDataUtils.{addJsonForValidation, mapKeys}
 import validation.jsonschema.ValidatedSchema
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
-import validation.{DataValidation, Parameters, Data}
+import validation.{Data, DataValidation, Parameters}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,7 +33,7 @@ object PekkoStreamExample {
       "sample.csv",
       Some("Filepath"),
       Some("organisationBase.json"),
-      Some("TDRMetadataUpload")
+      Some(TDRMetadataUpload)
     )
 
     val configuration = prepareValidationConfiguration(
@@ -50,17 +51,17 @@ object PekkoStreamExample {
 
     val startTime = System.currentTimeMillis
     val processedData: Future[Validated[NonEmptyList[ValidationErrors], List[Data]]] = csvSource
-      .map(row => mapKeys(configuration.domainKeyToProperty("TDRMetadataUpload"))(List(row)))
+      .map(row => mapKeys(configuration.domainKeyToProperty(TDRMetadataUpload))(List(row)))
       .map(row => row andThen addJsonForValidation(configuration.valueMapper))
       .map(row =>
         row andThen validateSchemaSingleRow(
           parameters.requiredSchema,
-          configuration.propertyToDomainKey("TDRMetadataUpload")
+          configuration.propertyToDomainKey(TDRMetadataUpload)
         )
       )
       .mapAsync(20)(row =>
         Future(
-          row andThen composeMultipleValidated(parameters.schema, configuration.propertyToDomainKey("TDRMetadataUpload"))
+          row andThen composeMultipleValidated(parameters.schema, configuration.propertyToDomainKey(TDRMetadataUpload))
         )
       )
       .runFold(Validated.valid[NonEmptyList[ValidationErrors], List[Data]](List.empty)) { (acc, current) =>
