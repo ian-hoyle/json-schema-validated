@@ -58,8 +58,7 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       configuration <- IO(
         prepareValidationConfiguration(
           parameters.configFile,
-          parameters.baseSchema,
-          parameters.inputAlternateKey
+          parameters.baseSchema
         )
       )
       dataLoader              = loadCSVData(parameters.fileToValidate, parameters.idKey)
@@ -76,9 +75,9 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       configuration: ValidatorConfiguration
   ): List[List[Data] => DataValidation] = {
     List(
-      mapKeys(configuration.altInToKey),
+      mapKeys(configuration.altInToKey("TDRMetadataUpload")),
       addJsonForValidation(configuration.valueMapper),
-      validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey)
+      validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey("TDRMetadataUpload"))
     )
   }
 
@@ -86,6 +85,6 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       schemas: List[String],
       configuration: ValidatorConfiguration
   ): List[List[Data] => DataValidation] = {
-    generateSchemaValidatedList(schemas, configuration.inputAlternateKey)
+    generateSchemaValidatedList(schemas, configuration.inputAlternateKey("TDRMetadataUpload"))
   }
 }

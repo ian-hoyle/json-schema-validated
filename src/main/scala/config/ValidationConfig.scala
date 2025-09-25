@@ -1,28 +1,22 @@
 package config
 
 import cats.data.Reader
+import cats.implicits.*
+import io.circe.generic.auto.*
+import io.circe.parser.decode
 import ujson.{Arr, Obj, Value}
 import upickle.core.LinkedHashMap
 import validation.ValidatorConfiguration
-
-import scala.collection.mutable
-import io.circe.generic.auto.*
-import io.circe.parser.decode
-import cats.implicits.*
 import validation.jsonschema.ValidatedSchema.loadData
 
+import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 object ValidationConfig:
 
   private val ARRAY_SPLIT_CHAR = '|'
 
-  case class ConfigParameters(
-      csConfig: String,
-      alternates: Option[String],
-      baseSchema: String,
-      jsonConfig: JsonConfig
-  )
+  case class ConfigParameters(csConfig: String, baseSchema: String, jsonConfig: JsonConfig)
 
   case class JsonConfig(configItems: List[ConfigItem])
 
@@ -34,42 +28,60 @@ object ValidationConfig:
 
   def prepareValidationConfiguration(
       configFile: String,
-      baseSchema: String,
-      alternateKey: Option[String]
+      baseSchema: String
   ): ValidatorConfiguration = {
 
     val csvConfigurationReader = for {
-      altHeaderToPropertyMapper <- Reader(ValidationConfig.domainKeyToPropertyMapper)
-      propertyToAltHeaderMapper <- Reader(ValidationConfig.propertyToDomainKeyMapper)
-      valueMapper               <- Reader(ValidationConfig.stringValueMapper)
+      altHeaderToPropertyMapper <- Reader(domainPropertyToBasePropertyMapper) // expects single-arg version
+      propertyToAltHeaderMapper <- Reader(domainBasePropertyToPropertyMapper)
+      valueMapper               <- Reader(stringValueMapper)
     } yield ValidatorConfiguration(
       altHeaderToPropertyMapper,
       propertyToAltHeaderMapper,
       valueMapper
     )
     csvConfigurationReader.run(
-      ConfigParameters(configFile, alternateKey, baseSchema, decodeConfig(configFile))
+      ConfigParameters(configFile, baseSchema, decodeConfig(configFile))
     )
   }
 
-  def domainKeyToPropertyMapper(parameters: ConfigParameters): String => String =
+  def alternateKeys(parameters: ConfigParameters): List[String] = {
+    parameters.jsonConfig.configItems.foldLeft(Set.empty[String])((acc, item) => acc ++ item.domainKeys.getOrElse(List.empty).map(_.domain)).toList
+
+  }
+
+  def domainPropertyToBasePropertyMapper(parameters: ConfigParameters): String => String => String =
+    val domains: List[String] = alternateKeys(parameters)
+    val domainToMapper: Map[String, String => String] = domains.distinct.map { d =>
+      d -> domainKeyToPropertyMapper(parameters, d)
+    }.toMap
+    (domain: String) => domainToMapper.getOrElse(domain, (s: String) => s)
+
+  def domainBasePropertyToPropertyMapper(parameters: ConfigParameters): String => String => String =
+    val domains: List[String] = alternateKeys(parameters)
+    val domainToMapper: Map[String, String => String] = domains.distinct.map { d =>
+      d -> propertyToDomainKeyMapper(parameters, d)
+    }.toMap
+    (domain: String) => domainToMapper.getOrElse(domain, (s: String) => s)
+
+  def domainKeyToPropertyMapper(parameters: ConfigParameters, domainVal: String): String => String =
     val configMap: Map[String, String] =
       parameters.jsonConfig.configItems.foldLeft(Map[String, String]())((acc, item) => {
         item.domainKeys match
           case Some(domainKeys) =>
-            domainKeys.find(x => Option(x.domain) === parameters.alternates) match
+            domainKeys.find(x => x.domain == domainVal) match
               case Some(domainKey) => acc + (domainKey.domainKey -> item.key)
               case None            => acc + (item.key            -> item.key)
           case None => acc + (item.key -> item.key)
       })
     (x: String) => configMap.getOrElse(x, x)
 
-  def propertyToDomainKeyMapper(parameters: ConfigParameters): String => String =
+  def propertyToDomainKeyMapper(parameters: ConfigParameters, domainVal: String): String => String =
     val configMap: Map[String, String] =
       parameters.jsonConfig.configItems.foldLeft(Map[String, String]())((acc, item) => {
         item.domainKeys match
           case Some(domainKeys) =>
-            domainKeys.find(x => Option(x.domain) === parameters.alternates) match
+            domainKeys.find(x => x.domain == domainVal) match
               case Some(domainKey) => acc + (item.key -> domainKey.domainKey)
               case None            => acc + (item.key -> item.key)
           case None => acc + (item.key -> item.key)

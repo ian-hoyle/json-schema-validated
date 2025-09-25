@@ -11,7 +11,7 @@
         },
         {
           "domain": "TDRDataLoad",
-          "domainKey": "Filepath"
+          "domainKey": "FilePath"
         }
       ]
     },

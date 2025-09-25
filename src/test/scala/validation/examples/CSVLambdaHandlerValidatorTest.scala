@@ -13,16 +13,7 @@ class CSVLambdaHandlerValidatorTest extends AnyFunSuite:
 
     val altKey = "TDRMetadataUpload"
     val idKey  = "Filepath"
-    val params = Parameters(
-      jsonConfigFileName,
-      baseFile,
-      List(baseFile, "openRecord.json"),
-      Some(altKey),
-      "sample.csv",
-      Some(idKey),
-      Some(baseFile),
-      Some(altKey)
-    )
+    val params = Parameters(jsonConfigFileName, baseFile, List(baseFile, "openRecord.json"), "sample.csv", Some(idKey), Some(baseFile), Some(altKey))
 
     import cats.effect.unsafe.implicits.*
     val runMe = CSVFileValidationLambdaHandler.csvFileValidation(params).unsafeRunSync()

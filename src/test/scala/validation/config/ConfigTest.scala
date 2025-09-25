@@ -11,43 +11,32 @@ class ConfigTest extends AnyFunSuite:
     val jsonConfigFileName =
       "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
     val jsonConfigFileResources = "config.json"
-    val altKey                  = "TDRMetadataUpload"
     val idKey                   = "File path"
-    val params = ConfigParameters(
-      jsonConfigFileResources,
-      Some(altKey),
-      "organisationBase.json",
-      decodeConfig(jsonConfigFileResources)
-    )
-
-    val propertyToAlternateKey = ValidationConfig.propertyToDomainKeyMapper(params)
-    assert(propertyToAlternateKey("date_last_modified") == "Date last modified")
-
-    val alternateKeyToProperty = ValidationConfig.domainKeyToPropertyMapper(params)
-
-    assert(alternateKeyToProperty("Date last modified") == "date_last_modified")
+    val params                  = ConfigParameters(jsonConfigFileResources, "organisationBase.json", decodeConfig(jsonConfigFileResources))
 
     val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 
     assert(propertyValueConvertor("description_closed", "YES") == true)
 
+    val alternateKeys = ValidationConfig.alternateKeys(params)
+    assert(alternateKeys.contains("TDRMetadataUpload"))
+
+    val domainPropertyToBaseProperty = ValidationConfig.domainPropertyToBasePropertyMapper(params)
+    assert(domainPropertyToBaseProperty("TDRMetadataUpload")("Filepath") == "file_path")
+    assert(domainPropertyToBaseProperty("TDRDataLoad")("FilePath") == "file_path")
   }
+
   test("Creates header property convertors") {
     val jsonConfigFileName = "config.json"
     val altKey             = "TDRMetadataUpload"
-    val params = ConfigParameters(
-      jsonConfigFileName,
-      Some(altKey),
-      "organisationBase.json",
-      decodeConfig(jsonConfigFileName)
-    )
+    val params             = ConfigParameters(jsonConfigFileName, "organisationBase.json", decodeConfig(jsonConfigFileName))
 
-    val propertyToAlternateKey = ValidationConfig.propertyToDomainKeyMapper(params)
-    assert(propertyToAlternateKey("date_last_modified") == "Date last modified")
+    val propertyToAlternateKey = ValidationConfig.domainBasePropertyToPropertyMapper(params)
+    assert(propertyToAlternateKey("TDRMetadataUpload")("date_last_modified") == "Date last modified")
 
-    val alternateKeyToProperty = ValidationConfig.domainKeyToPropertyMapper(params)
+    val alternateKeyToProperty = ValidationConfig.domainPropertyToBasePropertyMapper(params)
 
-    assert(alternateKeyToProperty("Date last modified") == "date_last_modified")
+    assert(alternateKeyToProperty("TDRMetadataUpload")("Date last modified") == "date_last_modified")
 
     val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 
@@ -59,19 +48,14 @@ class ConfigTest extends AnyFunSuite:
     val jsonConfigFileName =
       "https://raw.githubusercontent.com/nationalarchives/da-metadata-schema/main/metadata-schema/baseSchema.schema.json"
     val altKey = "badKey"
-    val params = ConfigParameters(
-      jsonConfigFileName,
-      Some(altKey),
-      "organisationBase.json",
-      decodeConfig("config.json")
-    )
+    val params = ConfigParameters(jsonConfigFileName, "organisationBase.json", decodeConfig("config.json"))
 
-    val propertyToAlternateKey = ValidationConfig.propertyToDomainKeyMapper(params)
-    assert(propertyToAlternateKey("date_last_modified") == "date_last_modified")
+    val propertyToAlternateKey = ValidationConfig.domainBasePropertyToPropertyMapper(params)
+    assert(propertyToAlternateKey(altKey)("date_last_modified") == "date_last_modified")
 
-    val alternateKeyToProperty = ValidationConfig.domainKeyToPropertyMapper(params)
+    val alternateKeyToProperty = ValidationConfig.domainPropertyToBasePropertyMapper(params)
 
-    assert(alternateKeyToProperty("Date last modified") == "Date last modified")
+    assert(alternateKeyToProperty(altKey)("Date last modified") == "Date last modified")
 
     val propertyValueConvertor = ValidationConfig.stringValueMapper(params)
 

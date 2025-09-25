@@ -4,11 +4,10 @@ import io.circe.*
 import io.circe.parser.*
 
 case class ClosureFields(
-      closure_type: Option[String] = None,
-      closure_period: List[Int] = List.empty,
-      foi_exemption_code: List[String] = List.empty
+    closure_type: Option[String] = None,
+    closure_period: List[Int] = List.empty,
+    foi_exemption_code: List[String] = List.empty
 )
-
 
 object ClosureFields {
   implicit val closureFieldsDecoder: Decoder[ClosureFields] = Decoder.instance { cursor =>

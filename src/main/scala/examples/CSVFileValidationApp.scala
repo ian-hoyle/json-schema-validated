@@ -22,7 +22,6 @@ object CSVFileValidationApp extends App {
     configFile = "config.json",
     baseSchema = "organisationBase.json",
     schema = List("organisationBase.json", "openRecord.json", "closedRecord.json"),
-    inputAlternateKey = Some("TDRMetadataUpload"),
     fileToValidate = fileToValidate,
     idKey = Some("Filepath"),
     requiredSchema = None,
@@ -31,8 +30,7 @@ object CSVFileValidationApp extends App {
 
   private val configuration: ValidatorConfiguration = prepareValidationConfiguration(
     parameters.configFile,
-    parameters.baseSchema,
-    parameters.inputAlternateKey
+    parameters.baseSchema
   )
 
   // Validate the data can be loaded
@@ -48,7 +46,7 @@ object CSVFileValidationApp extends App {
   // Validations that can be combined and run after the fail-fast validations
   private val combiningValidations: List[List[Data] => DataValidation] =
     getCombiningValidations(parameters.schema, configuration)
-  private val customJsonValidation = CustomJsonValidation.validateClosureFields(configuration.inputAlternateKey)
+  private val customJsonValidation = CustomJsonValidation.validateClosureFields(configuration.inputAlternateKey("TDRMetadataUpload"))
 
   private val startTime = System.currentTimeMillis
   private val result = validate(
@@ -72,7 +70,7 @@ private def getCombiningValidations(
     schemas: List[String],
     validatorConfiguration: ValidatorConfiguration
 ): List[List[Data] => DataValidation] = {
-  ValidatedSchema.generateSchemaValidatedList(schemas, validatorConfiguration.inputAlternateKey)
+  ValidatedSchema.generateSchemaValidatedList(schemas, validatorConfiguration.inputAlternateKey("TDRMetadataUpload"))
 }
 
 private def getFailFastValidations(
@@ -80,10 +78,10 @@ private def getFailFastValidations(
     configuration: ValidatorConfiguration
 ): List[List[Data] => DataValidation] = {
   List(
-    mapKeys(configuration.altInToKey),
+    mapKeys(configuration.altInToKey("TDRMetadataUpload")),
     addJsonForValidation(configuration.valueMapper),
     DebugPrintFirstRow.printFirstRow,
-    validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey)
+    validateSchemaSingleRow(parameters.requiredSchema, configuration.inputAlternateKey("TDRMetadataUpload"))
   )
 }
 

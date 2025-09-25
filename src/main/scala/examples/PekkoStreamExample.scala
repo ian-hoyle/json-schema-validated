@@ -29,7 +29,6 @@ object PekkoStreamExample {
       "config.json",
       "organisationBase.json",
       List("organisationBase.json", "openRecord.json", "closedRecord.json"),
-      Some("TDRMetadataUpload"),
       "sample.csv",
       Some("Filepath"),
       Some("organisationBase.json"),
@@ -38,8 +37,7 @@ object PekkoStreamExample {
 
     val configuration = prepareValidationConfiguration(
       parameters.configFile,
-      parameters.baseSchema,
-      parameters.inputAlternateKey
+      parameters.baseSchema
     )
     // Load the CSV data and generate 10,000 rows for each row in the CSV to simulate a large dataset
     val smallDataSet: List[Data] = loadCSV(parameters.fileToValidate, parameters.idKey)
@@ -52,17 +50,17 @@ object PekkoStreamExample {
 
     val startTime = System.currentTimeMillis
     val processedData: Future[Validated[NonEmptyList[ValidationErrors], List[Data]]] = csvSource
-      .map(row => mapKeys(configuration.altInToKey)(List(row)))
+      .map(row => mapKeys(configuration.altInToKey("TDRMetadataUpload"))(List(row)))
       .map(row => row andThen addJsonForValidation(configuration.valueMapper))
       .map(row =>
         row andThen validateSchemaSingleRow(
           parameters.requiredSchema,
-          configuration.inputAlternateKey
+          configuration.inputAlternateKey("TDRMetadataUpload")
         )
       )
       .mapAsync(20)(row =>
         Future(
-          row andThen composeMultipleValidated(parameters.schema, configuration.inputAlternateKey)
+          row andThen composeMultipleValidated(parameters.schema, configuration.inputAlternateKey("TDRMetadataUpload"))
         )
       )
       .runFold(Validated.valid[NonEmptyList[ValidationErrors], List[Data]](List.empty)) { (acc, current) =>

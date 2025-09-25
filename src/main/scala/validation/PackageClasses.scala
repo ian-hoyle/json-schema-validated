@@ -13,8 +13,8 @@ case class Data(
 )
 
 case class ValidatorConfiguration(
-    altInToKey: String => String,
-    inputAlternateKey: String => String,
+    altInToKey: String => String => String,
+    inputAlternateKey: String => String => String,
     valueMapper: (String, String) => Any
 )
 
@@ -22,7 +22,6 @@ case class Parameters(
     configFile: String,
     baseSchema: String,
     schema: List[String],
-    inputAlternateKey: Option[String],
     fileToValidate: String,
     idKey: Option[String] = None,
     requiredSchema: Option[String] = None,
