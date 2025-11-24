@@ -10,7 +10,7 @@ import io.circe.generic.auto.*
 import io.circe.syntax.*
 import validation.custom.{CustomJsonValidation, DebugPrintFirstRow, FailedValidation}
 import validation.generated.ConfigDomains
-import validation.generated.ConfigDomains.TDRMetadataUpload
+import validation.generated.ConfigDomains.Domain.TDRMetadataUpload
 import validation.jsonschema.ValidatedSchema.validateSchemaSingleRow
 import validation.jsonschema.ValidationDataUtils.{addJsonForValidation, mapKeys}
 import validation.jsonschema.{ValidatedSchema, ValidationDataUtils}
@@ -27,7 +27,7 @@ object CSVFileValidationApp extends App {
     fileToValidate = fileToValidate,
     idKey = Some("Filepath"),
     requiredSchema = None,
-    keyToOutAlternate = Some(TDRMetadataUpload)
+    keyToOutAlternate = Some(TDRMetadataUpload.value)
   )
 
   private val configuration: ValidatorConfiguration = prepareValidationConfiguration(
@@ -44,11 +44,11 @@ object CSVFileValidationApp extends App {
 
   // Validations that can stop processing early
   private val failFastValidations: List[List[Data] => DataValidation] =
-    getFailFastValidations(parameters, configuration, TDRMetadataUpload)
+    getFailFastValidations(parameters, configuration, TDRMetadataUpload.value)
   // Validations that can be combined and run after the fail-fast validations
   private val combiningValidations: List[List[Data] => DataValidation] =
-    getCombiningValidations(parameters.schema, configuration, TDRMetadataUpload)
-  private val customJsonValidation = CustomJsonValidation.validateClosureFields(configuration.propertyToDomainKey(TDRMetadataUpload))
+    getCombiningValidations(parameters.schema, configuration, TDRMetadataUpload.value)
+  private val customJsonValidation = CustomJsonValidation.validateClosureFields(configuration.propertyToDomainKey(TDRMetadataUpload.value))
 
   private val startTime = System.currentTimeMillis
   private val result = validate(
@@ -79,7 +79,7 @@ private def getCombiningValidations(
 private def getFailFastValidations(
     parameters: Parameters,
     configuration: ValidatorConfiguration,
-    domainKey: String = TDRMetadataUpload
+    domainKey: String = TDRMetadataUpload.value
 ): List[List[Data] => DataValidation] = {
   List(
     mapKeys(configuration.domainKeyToProperty(domainKey)),

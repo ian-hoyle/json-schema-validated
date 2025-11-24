@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "config.schema.json",
+  "title": "Config Schema",
+  "type": "object",
+  "required": ["configItems"],
+  "properties": {
+    "configItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "domainKeys"],
+        "properties": {
+          "key": { "type": "string" },
+          "domainKeys": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["domain", "domainKey"],
+              "properties": {
+                "domain": { "type": "string" },
+                "domainKey": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

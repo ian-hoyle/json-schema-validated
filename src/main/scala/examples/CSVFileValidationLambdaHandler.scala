@@ -10,7 +10,7 @@ import io.circe.parser.decode
 import io.circe.syntax.*
 import config.ValidationConfig.prepareValidationConfiguration
 import datalaoader.CSVLoader.loadCSVData
-import validation.generated.ConfigDomains.TDRMetadataUpload
+import validation.generated.ConfigDomains.Domain.TDRMetadataUpload
 import validation.jsonschema.ValidationDataUtils.*
 import validation.jsonschema.ValidatedSchema.{generateSchemaValidatedList, validateSchemaSingleRow}
 import validation.{Data, DataValidation, Parameters, Validation, ValidatorConfiguration}
@@ -76,9 +76,9 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       configuration: ValidatorConfiguration
   ): List[List[Data] => DataValidation] = {
     List(
-      mapKeys(configuration.domainKeyToProperty(TDRMetadataUpload)),
+      mapKeys(configuration.domainKeyToProperty(TDRMetadataUpload.value)),
       addJsonForValidation(configuration.valueMapper),
-      validateSchemaSingleRow(parameters.requiredSchema, configuration.propertyToDomainKey(TDRMetadataUpload))
+      validateSchemaSingleRow(parameters.requiredSchema, configuration.propertyToDomainKey(TDRMetadataUpload.value))
     )
   }
 
@@ -86,6 +86,6 @@ object CSVFileValidationLambdaHandler extends RequestHandler[APIGatewayProxyRequ
       schemas: List[String],
       configuration: ValidatorConfiguration
   ): List[List[Data] => DataValidation] = {
-    generateSchemaValidatedList(schemas, configuration.propertyToDomainKey(TDRMetadataUpload))
+    generateSchemaValidatedList(schemas, configuration.propertyToDomainKey(TDRMetadataUpload.value))
   }
 }

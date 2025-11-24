@@ -46,3 +46,5 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-generic",
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
+
+// Inline schema case class generation removed; now handled by SchemaCaseClassGeneratorPlugin.
